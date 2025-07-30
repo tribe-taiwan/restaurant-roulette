@@ -13,8 +13,8 @@ window.updateSearchRadius = function(newRadius) {
   console.log('🔄 搜索半徑已更新為:', newRadius, '公尺');
 };
 
-// 全局函數用於將經緯度轉換為地址
-window.getAddressFromCoordinates = async function(lat, lng) {
+// 全局函數用於將經緯度轉換為地址（支援語言切換）
+window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
   try {
     if (!geocoder) {
       await initializeGoogleMaps();
@@ -23,7 +23,13 @@ window.getAddressFromCoordinates = async function(lat, lng) {
     const latlng = new google.maps.LatLng(lat, lng);
     
     return new Promise((resolve, reject) => {
-      geocoder.geocode({ location: latlng }, (results, status) => {
+      // 根據語言設定請求參數
+      const geocodeRequest = {
+        location: latlng,
+        language: language === 'zh' ? 'zh-TW' : 'en'
+      };
+      
+      geocoder.geocode(geocodeRequest, (results, status) => {
         if (status === 'OK' && results[0]) {
           // 提取有意義的地址組件
           const result = results[0];
@@ -39,47 +45,70 @@ window.getAddressFromCoordinates = async function(lat, lng) {
           components.forEach(component => {
             const types = component.types;
             
+            // 根據語言選擇合適的名稱格式
+            const componentName = language === 'zh' ? component.long_name : 
+                                  (component.short_name || component.long_name);
+            
             // 市級行政區域（台南市、高雄市等）
             if (types.includes('administrative_area_level_2') || types.includes('locality')) {
-              admin_area_level_2 = component.long_name;
+              admin_area_level_2 = componentName;
             }
             // 區級行政區域（西港區、東區等）
             else if (types.includes('administrative_area_level_3')) {
-              admin_area_level_3 = component.long_name;
+              admin_area_level_3 = componentName;
             }
             // 街道路名
             else if (types.includes('route')) {
-              route = component.long_name;
+              route = componentName;
             }
             // 次級地區（可能包含更具體的區域）
             else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
               if (!admin_area_level_3) { // 只有在沒有區域時才使用
-                district = component.long_name;
+                district = componentName;
               }
             }
           });
           
-          // 組合地址：優先顯示「市 + 區 + 路」格式
+          // 組合地址：根據語言格式化
           let address = '';
           
-          if (admin_area_level_2 && admin_area_level_3 && route) {
-            address = `${admin_area_level_2}${admin_area_level_3}${route}`;
-          } else if (admin_area_level_2 && admin_area_level_3) {
-            address = `${admin_area_level_2}${admin_area_level_3}`;
-          } else if (admin_area_level_2 && route) {
-            address = `${admin_area_level_2}${route}`;
-          } else if (admin_area_level_2 && district) {
-            address = `${admin_area_level_2}${district}`;
-          } else if (admin_area_level_2) {
-            address = admin_area_level_2;
+          if (language === 'zh') {
+            // 中文格式：市 + 區 + 路
+            if (admin_area_level_2 && admin_area_level_3 && route) {
+              address = `${admin_area_level_2}${admin_area_level_3}${route}`;
+            } else if (admin_area_level_2 && admin_area_level_3) {
+              address = `${admin_area_level_2}${admin_area_level_3}`;
+            } else if (admin_area_level_2 && route) {
+              address = `${admin_area_level_2}${route}`;
+            } else if (admin_area_level_2 && district) {
+              address = `${admin_area_level_2}${district}`;
+            } else if (admin_area_level_2) {
+              address = admin_area_level_2;
+            } else {
+              // 回退：使用格式化地址的前部分
+              const formatted = result.formatted_address;
+              const parts = formatted.split(',');
+              address = parts[0] || '位置已確認';
+            }
           } else {
-            // 最後回退：使用 formatted_address 的前兩個部分
-            const formatted = result.formatted_address;
-            const parts = formatted.split(',');
-            address = parts.slice(0, 2).join('').replace(/\d+號?/g, '').trim();
+            // 英文格式：Route, District, City
+            const addressParts = [];
+            if (route) addressParts.push(route);
+            if (admin_area_level_3) addressParts.push(admin_area_level_3);
+            if (admin_area_level_2) addressParts.push(admin_area_level_2);
+            
+            if (addressParts.length > 0) {
+              address = addressParts.join(', ');
+            } else {
+              // 回退：使用格式化地址的前部分
+              const formatted = result.formatted_address;
+              const parts = formatted.split(',');
+              address = parts.slice(0, 2).join(', ').trim() || 'Location confirmed';
+            }
           }
           
           console.log('✅ 地址轉換成功:', { 
+            language,
             admin_area_level_2, 
             admin_area_level_3, 
             route, 
@@ -89,14 +118,14 @@ window.getAddressFromCoordinates = async function(lat, lng) {
           resolve(address);
         } else {
           console.warn('⚠️ 地址轉換失敗:', status);
-          resolve('位置已確認');
+          resolve(language === 'zh' ? '位置已確認' : 'Location confirmed');
         }
       });
     });
     
   } catch (error) {
     console.error('❌ 地址轉換出錯:', error);
-    return '位置已確認';
+    return language === 'zh' ? '位置已確認' : 'Location confirmed';
   }
 };
 
