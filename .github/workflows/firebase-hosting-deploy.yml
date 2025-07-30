@@ -1,0 +1,26 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main # 或您的主要分支名稱
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # 如果您的專案需要建構步驟 (例如 Next.js, React), 請在此處新增建構步驟
+      # 根據您提供的資訊，您的專案使用了 Next.js，所以您可能需要新增建構步驟
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build # 或者您的建構命令
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIBE_RESTAURANT_ROULETTE }}' # 引用您在 GitHub Secrets 中設定的服務帳戶金鑰 Secret
+          channelId: live
+          projectId: tribe-restaurant-roulette # 您的 Firebase 專案 ID
