@@ -40,6 +40,7 @@ function App() {
     const [currentRestaurant, setCurrentRestaurant] = React.useState(null);
     const [isSpinning, setIsSpinning] = React.useState(false);
     const [userLocation, setUserLocation] = React.useState(null);
+    const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
     const [spinError, setSpinError] = React.useState(null);
     const [searchRadius, setSearchRadius] = React.useState(5); // 預設5公里
@@ -58,7 +59,9 @@ function App() {
         radiusLabel: "Search radius:",
         radiusKm: "km",
         locationSuccess: "Location found",
-        locationDetected: "Located at"
+        locationDetected: "Located at",
+        addressLoading: "Getting address...",
+        addressError: "Address unavailable"
       },
       zh: {
         title: "餐廳輪盤",
@@ -72,7 +75,9 @@ function App() {
         radiusLabel: "搜索範圍：",
         radiusKm: "公里",
         locationSuccess: "定位成功",
-        locationDetected: "當前位置"
+        locationDetected: "當前位置",
+        addressLoading: "正在獲取地址...",
+        addressError: "地址無法取得"
       }
     };
 
@@ -91,6 +96,19 @@ function App() {
       });
     }, [searchRadius]);
 
+    // 獲取地址資訊
+    const getAddressFromCoords = async (lat, lng) => {
+      try {
+        if (window.getAddressFromCoordinates) {
+          const address = await window.getAddressFromCoordinates(lat, lng);
+          setUserAddress(address);
+        }
+      } catch (error) {
+        console.error('獲取地址失敗:', error);
+        setUserAddress(t.addressError);
+      }
+    };
+
     const getUserLocation = () => {
       setLocationStatus('loading');
       setIsRelocating(true);
@@ -104,13 +122,18 @@ function App() {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const coords = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
+          };
+          setUserLocation(coords);
           setLocationStatus('success');
           setIsRelocating(false);
-          console.log('Location detected:', position.coords.latitude, position.coords.longitude);
+          console.log('Location detected:', coords.lat, coords.lng);
+          
+          // 獲取地址資訊
+          setUserAddress(t.addressLoading);
+          getAddressFromCoords(coords.lat, coords.lng);
         },
         (error) => {
           console.log('Location error:', error.message);
@@ -168,34 +191,44 @@ function App() {
               onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
             />
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
-                {t.title}
-              </h1>
-              <button
-                onClick={getUserLocation}
-                disabled={isRelocating}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform ${
-                  isRelocating 
-                    ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
-                    : locationStatus === 'success'
-                      ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
-                      : locationStatus === 'error'
-                        ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
-                        : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
-                }`}
-                title={locationStatus === 'success' && userLocation 
-                  ? `${t.locationDetected}: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` 
-                  : t.relocateButton}
-              >
-                {isRelocating ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <div className={`icon-map-pin text-white text-lg ${
-                    locationStatus === 'success' ? 'animate-pulse' : ''
-                  }`}></div>
-                )}
-              </button>
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <div className="flex items-center justify-center gap-4">
+                <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
+                  {t.title}
+                </h1>
+                <button
+                  onClick={getUserLocation}
+                  disabled={isRelocating}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform ${
+                    isRelocating 
+                      ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
+                      : locationStatus === 'success'
+                        ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
+                        : locationStatus === 'error'
+                          ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
+                          : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
+                  }`}
+                  title={t.relocateButton}
+                >
+                  {isRelocating ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <div className={`icon-map-pin text-white text-lg ${
+                      locationStatus === 'success' ? 'animate-pulse' : ''
+                    }`}></div>
+                  )}
+                </button>
+              </div>
+              
+              {/* 位置資訊顯示 */}
+              {locationStatus === 'success' && userAddress && (
+                <div className="bg-[var(--surface-color)] rounded-lg px-4 py-2 text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
+                    <span>{userAddress}</span>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* 搜索範圍設定 */}

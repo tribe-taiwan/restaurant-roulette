@@ -13,6 +13,66 @@ window.updateSearchRadius = function(newRadius) {
   console.log('🔄 搜索半徑已更新為:', newRadius, '公尺');
 };
 
+// 全局函數用於將經緯度轉換為地址
+window.getAddressFromCoordinates = async function(lat, lng) {
+  try {
+    if (!geocoder) {
+      await initializeGoogleMaps();
+    }
+    
+    const latlng = new google.maps.LatLng(lat, lng);
+    
+    return new Promise((resolve, reject) => {
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          // 提取有意義的地址組件
+          const result = results[0];
+          const components = result.address_components;
+          
+          // 優先顯示：區域 + 城市
+          let district = '';
+          let city = '';
+          let country = '';
+          
+          components.forEach(component => {
+            const types = component.types;
+            if (types.includes('administrative_area_level_3') || types.includes('sublocality')) {
+              district = component.long_name;
+            } else if (types.includes('administrative_area_level_1') || types.includes('locality')) {
+              city = component.long_name;
+            } else if (types.includes('country')) {
+              country = component.long_name;
+            }
+          });
+          
+          // 組合地址，優先顯示最有意義的部分
+          let address = '';
+          if (district && city) {
+            address = `${city}${district}`;
+          } else if (city) {
+            address = city;
+          } else {
+            // 回退到formatted_address，但只取前半部
+            const formatted = result.formatted_address;
+            const parts = formatted.split(',');
+            address = parts.slice(0, 2).join(',').trim();
+          }
+          
+          console.log('✅ 地址轉換成功:', address);
+          resolve(address);
+        } else {
+          console.warn('⚠️ 地址轉換失敗:', status);
+          resolve('位置已確認');
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('❌ 地址轉換出錯:', error);
+    return '位置已確認';
+  }
+};
+
 // 全局變數儲存 Google Maps 服務
 let placesService = null;
 let geocoder = null;
