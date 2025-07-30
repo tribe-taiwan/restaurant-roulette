@@ -67,3 +67,8 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# exclude folder
+_secret
+_doc
+_ignore
