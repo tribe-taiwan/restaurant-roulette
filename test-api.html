@@ -58,6 +58,29 @@
     <script>
         let testResults = [];
         
+        // 確保 Google Maps API 載入完成的輔助函數
+        async function ensureGoogleMapsLoaded() {
+            if (window.google && window.google.maps) {
+                return true;
+            }
+            
+            // 等待 API 載入
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (window.google && window.google.maps) {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                
+                // 10秒超時
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    resolve(false);
+                }, 10000);
+            });
+        }
+        
         function log(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             testResults.push({ timestamp, message, type });
@@ -111,6 +134,14 @@
                 };
                 
                 log(`📍 位置獲取成功: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`, 'success');
+                
+                // 確保 Google Maps API 已載入
+                log('🗺️ 檢查 Google Maps API...', 'info');
+                const mapsLoaded = await ensureGoogleMapsLoaded();
+                if (!mapsLoaded) {
+                    throw new Error('Google Maps API 載入超時');
+                }
+                log('✅ Google Maps API 已準備就緒', 'success');
                 
                 // 測試餐廳搜索
                 log('🔍 測試 Google Places API 餐廳搜索...', 'info');
