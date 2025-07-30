@@ -2,9 +2,15 @@
 const GOOGLE_PLACES_CONFIG = {
   API_KEY: 'AIzaSyC7tj6X8c5QwX0uVR7fUNcate1Sapn7lyQ',
   SEARCH_PARAMS: {
-    radius: 5000, // 5公里範圍
+    radius: 5000, // 預設5公里範圍，可動態更新
     type: 'restaurant'
   }
+};
+
+// 全局函數用於更新搜索半徑
+window.updateSearchRadius = function(newRadius) {
+  GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = newRadius;
+  console.log('🔄 搜索半徑已更新為:', newRadius, '公尺');
 };
 
 // 全局變數儲存 Google Maps 服務
@@ -114,7 +120,7 @@ async function searchNearbyRestaurants(userLocation) {
       type: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.type
     };
     
-    console.log('📡 發送 PlacesService.nearbySearch 請求...', request);
+    console.log(`📡 發送 PlacesService.nearbySearch 請求... (半徑: ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km)`, request);
     
     // 使用 Promise 包裝 PlacesService 回調
     const results = await new Promise((resolve, reject) => {
@@ -152,7 +158,7 @@ async function searchNearbyRestaurants(userLocation) {
         totalResults: 0
       };
       
-      throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。技術資訊: ${JSON.stringify(errorDetails)}`);
+      throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
     console.log(`✅ 找到 ${results.length} 家餐廳`);

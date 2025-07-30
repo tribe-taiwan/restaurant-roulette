@@ -77,6 +77,32 @@
                 transform: translateY(-1600px); 
             }
         }
+        
+        /* 滑桿樣式 */
+        .slider {
+            background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) var(--value, 25%), #374151 var(--value, 25%), #374151 100%);
+        }
+        
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
+        }
+        
+        .slider::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3);
+        }
     }
 
     @layer components {

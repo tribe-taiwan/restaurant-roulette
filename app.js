@@ -42,6 +42,8 @@ function App() {
     const [userLocation, setUserLocation] = React.useState(null);
     const [locationStatus, setLocationStatus] = React.useState('loading');
     const [spinError, setSpinError] = React.useState(null);
+    const [searchRadius, setSearchRadius] = React.useState(5); // 預設5公里
+    const [isRelocating, setIsRelocating] = React.useState(false);
 
     const translations = {
       en: {
@@ -52,7 +54,11 @@ function App() {
         locationLoading: "Getting your location...",
         relocateButton: "Relocate",
         spinErrorPrefix: "Error: ",
-        apiSearching: "Searching nearby restaurants..."
+        apiSearching: "Searching nearby restaurants...",
+        radiusLabel: "Search radius:",
+        radiusKm: "km",
+        locationSuccess: "Location found",
+        locationDetected: "Located at"
       },
       zh: {
         title: "餐廳輪盤",
@@ -62,7 +68,11 @@ function App() {
         locationLoading: "正在獲取您的位置...",
         relocateButton: "重新定位",
         spinErrorPrefix: "錯誤：",
-        apiSearching: "正在搜索附近餐廳..."
+        apiSearching: "正在搜索附近餐廳...",
+        radiusLabel: "搜索範圍：",
+        radiusKm: "公里",
+        locationSuccess: "定位成功",
+        locationDetected: "當前位置"
       }
     };
 
@@ -71,13 +81,24 @@ function App() {
     React.useEffect(() => {
       getUserLocation();
     }, []);
+    
+    // 更新滑桿填充顏色
+    React.useEffect(() => {
+      const percentage = ((searchRadius - 1) / (20 - 1)) * 100;
+      const sliders = document.querySelectorAll('.slider');
+      sliders.forEach(slider => {
+        slider.style.setProperty('--value', `${percentage}%`);
+      });
+    }, [searchRadius]);
 
     const getUserLocation = () => {
       setLocationStatus('loading');
+      setIsRelocating(true);
       
       if (!navigator.geolocation) {
         console.log('Geolocation is not supported by this browser');
         setLocationStatus('error');
+        setIsRelocating(false);
         return;
       }
 
@@ -88,11 +109,13 @@ function App() {
             lng: position.coords.longitude
           });
           setLocationStatus('success');
+          setIsRelocating(false);
           console.log('Location detected:', position.coords.latitude, position.coords.longitude);
         },
         (error) => {
           console.log('Location error:', error.message);
           setLocationStatus('error');
+          setIsRelocating(false);
         },
         {
           enableHighAccuracy: true,
@@ -115,6 +138,11 @@ function App() {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         console.log('🔍 開始搜索餐廳，用戶位置:', userLocation);
+        
+        // 更新搜索半徑
+        if (window.updateSearchRadius) {
+          window.updateSearchRadius(searchRadius * 1000); // 轉換為公尺
+        }
         
         // 調用更新後的 getRandomRestaurant 函數（現在是 async）
         const restaurant = await getRandomRestaurant(userLocation);
@@ -146,11 +174,51 @@ function App() {
               </h1>
               <button
                 onClick={getUserLocation}
-                className="w-12 h-12 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-105"
-                title={t.relocateButton}
+                disabled={isRelocating}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform ${
+                  isRelocating 
+                    ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
+                    : locationStatus === 'success'
+                      ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
+                      : locationStatus === 'error'
+                        ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
+                        : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
+                }`}
+                title={locationStatus === 'success' && userLocation 
+                  ? `${t.locationDetected}: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` 
+                  : t.relocateButton}
               >
-                <div className="icon-map-pin text-white text-lg"></div>
+                {isRelocating ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <div className={`icon-map-pin text-white text-lg ${
+                    locationStatus === 'success' ? 'animate-pulse' : ''
+                  }`}></div>
+                )}
               </button>
+            </div>
+            
+            {/* 搜索範圍設定 */}
+            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-[var(--text-secondary)] font-medium">
+                  {t.radiusLabel}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={searchRadius}
+                    onChange={(e) => setSearchRadius(Number(e.target.value))}
+                    className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    style={{'--value': `${((searchRadius - 1) / (20 - 1)) * 100}%`}}
+                  />
+                  <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
+                    {searchRadius} {t.radiusKm}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -202,6 +270,27 @@ function App() {
             </div>
           )}
         </div>
+        
+        {/* Footer */}
+        <footer className="mt-16 py-8 border-t border-gray-700">
+          <div className="max-w-6xl mx-auto text-center">
+            <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+              <span>© 2025</span>
+              <a 
+                href="https://tribe.org.tw" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[var(--primary-color)] hover:text-[var(--secondary-color)] transition-colors duration-200 font-medium"
+              >
+                tribe.org.tw
+              </a>
+              <span>All rights reserved.</span>
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              Restaurant Roulette - Discover amazing food near you
+            </div>
+          </div>
+        </footer>
       </div>
     );
   } catch (error) {
