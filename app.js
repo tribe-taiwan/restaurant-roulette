@@ -41,6 +41,7 @@ function App() {
     const [isSpinning, setIsSpinning] = React.useState(false);
     const [userLocation, setUserLocation] = React.useState(null);
     const [locationStatus, setLocationStatus] = React.useState('loading');
+    const [spinError, setSpinError] = React.useState(null); // New state for spin errors
 
     const translations = {
       en: {
@@ -49,7 +50,8 @@ function App() {
         spinning: "Finding your restaurant...",
         locationError: "Please allow location access to find nearby restaurants.",
         locationLoading: "Getting your location...",
-        relocateButton: "Relocate"
+        relocateButton: "Relocate",
+        spinErrorPrefix: "Error spinning: " // Added translation for spin error prefix
       },
       zh: {
         title: "餐廳輪盤",
@@ -57,7 +59,8 @@ function App() {
         spinning: "正在尋找您的餐廳...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
-        relocateButton: "重新定位"
+        relocateButton: "重新定位",
+        spinErrorPrefix: "轉動錯誤：" // Added translation for spin error prefix
       }
     };
 
@@ -102,13 +105,20 @@ function App() {
       
       setIsSpinning(true);
       setCurrentRestaurant(null);
+      setSpinError(null); // Clear previous errors
 
-      // Simulate API call delay
-      setTimeout(() => {
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2500)); // Use await for the delay
+
         const restaurant = getRandomRestaurant(userLocation);
         setCurrentRestaurant(restaurant);
-        setIsSpinning(false);
-      }, 2500);
+      } catch (error) {
+        console.error('Spinning error:', error.message); // Log the error
+        setSpinError(error.message); // Set the error state to display the message
+      } finally {
+        setIsSpinning(false); // Ensure spinning state is reset
+      }
     };
 
     return (
@@ -146,7 +156,7 @@ function App() {
           </div>
 
           {/* Restaurant Result */}
-          {currentRestaurant && !isSpinning && (
+          {currentRestaurant && !isSpinning && !spinError && ( // Only show result if no error
             <div className="mt-8">
               <RestaurantCard 
                 restaurant={currentRestaurant}
@@ -168,6 +178,13 @@ function App() {
             <div className="text-center text-[var(--warning-color)] mt-4 bg-[var(--surface-color)] rounded-lg p-3 max-w-md mx-auto">
               <div className="icon-map-pin text-[var(--warning-color)] text-lg mb-2"></div>
               {t.locationError}
+            </div>
+          )}
+
+          {spinError && ( // Display spin errors
+            <div className="text-center text-[var(--warning-color)] mt-4 bg-[var(--surface-color)] rounded-lg p-3 max-w-md mx-auto">
+              <div className="icon-warning text-[var(--warning-color)] text-lg mb-2"></div>
+              {t.spinErrorPrefix}{spinError} {/* Display error message */}
             </div>
           )}
         </div>

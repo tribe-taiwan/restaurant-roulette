@@ -23,10 +23,10 @@ function deg2rad(deg) {
 function getRandomRestaurant(userLocation) {
   try {
     if (!userLocation) {
-      return mockRestaurants[Math.floor(Math.random() * mockRestaurants.length)];
+      throw new Error("User location not available. Please ensure location access is enabled.");
     }
 
-    // Filter restaurants within 50km for better coverage
+    // Filter restaurants within 10km
     const nearbyRestaurants = mockRestaurants.filter(restaurant => {
       const distance = getDistanceFromLatLng(
         userLocation.lat, 
@@ -34,13 +34,17 @@ function getRandomRestaurant(userLocation) {
         restaurant.lat, 
         restaurant.lng
       );
-      return distance <= 50;
+      return distance <= 10; // Changed radius to 10km
     });
 
-    const restaurants = nearbyRestaurants.length > 0 ? nearbyRestaurants : mockRestaurants;
-    return restaurants[Math.floor(Math.random() * restaurants.length)];
+    if (nearbyRestaurants.length === 0) {
+      throw new Error("No restaurants found within 10km of your location. Please try again later or report this issue.");
+    }
+
+    return nearbyRestaurants[Math.floor(Math.random() * nearbyRestaurants.length)];
   } catch (error) {
-    console.error('Get random restaurant error:', error);
-    return mockRestaurants[Math.floor(Math.random() * mockRestaurants.length)];
+    console.error('Get random restaurant error:', error.message); // Log the specific error message
+    // Re-throw the error so the calling function can handle it (e.g., display an error message to the user)
+    throw error; 
   }
 }
