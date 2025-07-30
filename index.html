@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Restaurant Roulette - Random Restaurant Finder</title>
+    <meta name="description" content="Discover random restaurants near you with our fun slot machine interface">
+    <meta name="keywords" content="restaurant finder, random restaurant, food discovery, nearby restaurants">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Restaurant Roulette - Random Restaurant Finder">
+    <meta property="og:description" content="Discover random restaurants near you with our fun slot machine interface">
+    
+    <!-- Twitter -->
+    <meta name="twitter:title" content="Restaurant Roulette - Random Restaurant Finder">
+    <meta name="twitter:description" content="Discover random restaurants near you with our fun slot machine interface">
+
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
+
+    <!-- Predefined Tailwind CSS, use it as needed, or update base on your -->
+    <style type="text/tailwindcss">
+    @layer theme {
+        :root {
+            --primary-color: #ff6b35;
+            --secondary-color: #f7931e;
+            --accent-color: #ffd23f;
+            --background-color: #1a1a2e;
+            --surface-color: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e5e5;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --border-radius: 12px;
+            --shadow-lg: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+    }
+
+    @layer base {
+        body {
+            background: linear-gradient(135deg, var(--background-color) 0%, var(--surface-color) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .slot-reel {
+            animation: spin 2s ease-in-out;
+        }
+        
+        @keyframes spin {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-200px); }
+            100% { transform: translateY(0); }
+        }
+        
+        .animate-scroll-names {
+            animation: scrollNames 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        @keyframes scrollNames {
+            0% { 
+                transform: translateY(0); 
+                animation-timing-function: ease-out;
+            }
+            70% { 
+                transform: translateY(-1500px); 
+                animation-timing-function: ease-in;
+            }
+            100% { 
+                transform: translateY(-1600px); 
+            }
+        }
+    }
+
+    @layer components {
+        .btn-primary {
+            @apply bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white font-semibold py-3 px-8 rounded-[var(--border-radius)] transition-all duration-300 transform hover:scale-105;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card {
+            @apply bg-[var(--surface-color)] rounded-[var(--border-radius)] p-6 border border-gray-700;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .slot-machine {
+            @apply bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-2xl p-8 border-4 border-yellow-300;
+            box-shadow: 0 20px 40px rgba(255, 210, 63, 0.4);
+        }
+    }
+
+    @layer utilities {
+        /* Define custom utility classes (e.g., .text-shadow, .skew-10) */
+    }
+    </style>
+
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel" src="components/LanguageSelector.js"></script>
+    <script type="text/babel" src="components/SlotMachine.js"></script>
+    <script type="text/babel" src="components/RestaurantCard.js"></script>
+    <script type="text/babel" src="utils/locationUtils.js"></script>
+    <script type="text/babel" src="utils/mockData.js"></script>
+    <script type="text/babel" src="app.js"></script>
+</body>
+</html>
