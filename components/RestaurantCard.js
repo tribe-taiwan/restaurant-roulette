@@ -12,8 +12,9 @@ function RestaurantCard({ restaurant, language }) {
       return hours;
     };
 
-    const handleImageClick = (type) => {
-      setSelectedImage(type);
+    const handleImageClick = () => {
+      // 點擊照片直接跳轉到Google Maps
+      window.open(restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}&query_place_id=${restaurant.id}`, '_blank');
     };
 
     const closeModal = () => {
@@ -21,8 +22,35 @@ function RestaurantCard({ restaurant, language }) {
     };
 
     const getDirectionsUrl = () => {
-      const query = encodeURIComponent(`${restaurant.name}, ${restaurant.address}`);
-      return `https://www.google.com/maps/search/?api=1&query=${query}`;
+      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}&query_place_id=${restaurant.id}`;
+    };
+
+    // Google風格的星級顯示
+    const renderGoogleStars = () => {
+      const rating = restaurant.rating || 0;
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      
+      return (
+        <div className="flex items-center gap-1">
+          {/* 實心星星 */}
+          {[...Array(fullStars)].map((_, i) => (
+            <span key={`full-${i}`} className="text-[#fbbc04] text-lg">★</span>
+          ))}
+          {/* 半星 */}
+          {hasHalfStar && (
+            <span className="text-[#fbbc04] text-lg relative">
+              <span className="absolute inset-0">☆</span>
+              <span className="absolute inset-0 overflow-hidden w-1/2">★</span>
+            </span>
+          )}
+          {/* 空心星星 */}
+          {[...Array(emptyStars)].map((_, i) => (
+            <span key={`empty-${i}`} className="text-gray-400 text-lg">☆</span>
+          ))}
+        </div>
+      );
     };
 
     return (
@@ -31,9 +59,9 @@ function RestaurantCard({ restaurant, language }) {
         <div className="mb-6">
           <h2 className="text-3xl font-bold mb-3 text-[var(--text-primary)]">{restaurant.name}</h2>
           <div className="flex items-center gap-2 mb-3">
-            <div className="icon-star text-[var(--accent-color)] text-lg"></div>
-            <span className="text-[var(--text-secondary)]">{restaurant.rating} / 5</span>
-            <span className="text-[var(--text-secondary)]">• {restaurant.reviewCount} {language === 'zh' ? '評論' : 'reviews'}</span>
+            {renderGoogleStars()}
+            <span className="text-[var(--text-secondary)] font-medium ml-1">{restaurant.rating}</span>
+            <span className="text-[var(--text-secondary)]">({restaurant.reviewCount.toLocaleString()})</span>
           </div>
         </div>
 
@@ -44,14 +72,17 @@ function RestaurantCard({ restaurant, language }) {
               <img 
                 src={restaurant.image} 
                 alt={restaurant.name}
-                className="w-full h-64 object-cover rounded-lg"
+                className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={handleImageClick}
+                title={language === 'zh' ? '點擊在Google地圖中查看' : 'Click to view in Google Maps'}
               />
               <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                 {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
               </div>
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                📸 {language === 'zh' ? '點擊查看位置' : 'Click to view location'}
+              </div>
             </div>
-
-
           </div>
 
           {/* Restaurant Info */}
@@ -99,22 +130,55 @@ function RestaurantCard({ restaurant, language }) {
               ))}
             </div>
 
-            {/* Menu Highlights */}
-            {restaurant.menuHighlights && (
-              <div>
-                <h3 className="font-semibold mb-3 text-[var(--text-primary)]">
-                  {language === 'zh' ? '招牌菜品' : 'Popular Dishes'}
-                </h3>
-                <div className="space-y-2">
-                  {restaurant.menuHighlights.map((dish, index) => (
-                    <div key={index} className="bg-gray-700 rounded-lg p-3 flex justify-between items-center">
-                      <span className="font-medium">{dish.name}</span>
-                      <span className="text-[var(--accent-color)] font-semibold">${dish.price}</span>
-                    </div>
-                  ))}
+            {/* 營業狀態 */}
+            {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
+              <div className="bg-[var(--warning-color)] bg-opacity-20 border border-[var(--warning-color)] rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
+                  <span className="text-[var(--warning-color)] font-medium">
+                    {language === 'zh' ? '注意：可能暫停營業' : 'Note: May be temporarily closed'}
+                  </span>
                 </div>
               </div>
             )}
+
+            {/* 附加資訊 */}
+            {restaurant.website && (
+              <div className="flex items-start gap-3 mb-4">
+                <div className="icon-globe text-[var(--accent-color)] text-lg mt-1"></div>
+                <div>
+                  <div className="font-medium text-[var(--text-primary)] mb-1">
+                    {language === 'zh' ? '網站' : 'Website'}
+                  </div>
+                  <a 
+                    href={restaurant.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[var(--accent-color)] hover:underline text-sm"
+                  >
+                    {language === 'zh' ? '查看官網' : 'Visit Website'}
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {/* Google Maps 連結 */}
+            <div className="flex items-start gap-3 mb-4">
+              <div className="icon-navigation text-[var(--primary-color)] text-lg mt-1"></div>
+              <div>
+                <div className="font-medium text-[var(--text-primary)] mb-1">
+                  {language === 'zh' ? '導航' : 'Directions'}
+                </div>
+                <a 
+                  href={getDirectionsUrl()}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[var(--primary-color)] hover:underline text-sm"
+                >
+                  {language === 'zh' ? '在Google地圖中查看' : 'View in Google Maps'}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 

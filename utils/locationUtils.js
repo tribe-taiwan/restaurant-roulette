@@ -29,36 +29,63 @@ window.getAddressFromCoordinates = async function(lat, lng) {
           const result = results[0];
           const components = result.address_components;
           
-          // 優先顯示：區域 + 城市
-          let district = '';
+          // 尋找：區域、街道、城市
+          let district = ''; // 區
+          let route = ''; // 路/街道
           let city = '';
-          let country = '';
+          let admin_area_level_3 = ''; // 區級行政區域
+          let admin_area_level_2 = ''; // 市級行政區域
           
           components.forEach(component => {
             const types = component.types;
-            if (types.includes('administrative_area_level_3') || types.includes('sublocality')) {
-              district = component.long_name;
-            } else if (types.includes('administrative_area_level_1') || types.includes('locality')) {
-              city = component.long_name;
-            } else if (types.includes('country')) {
-              country = component.long_name;
+            
+            // 市級行政區域（台南市、高雄市等）
+            if (types.includes('administrative_area_level_2') || types.includes('locality')) {
+              admin_area_level_2 = component.long_name;
+            }
+            // 區級行政區域（西港區、東區等）
+            else if (types.includes('administrative_area_level_3')) {
+              admin_area_level_3 = component.long_name;
+            }
+            // 街道路名
+            else if (types.includes('route')) {
+              route = component.long_name;
+            }
+            // 次級地區（可能包含更具體的區域）
+            else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+              if (!admin_area_level_3) { // 只有在沒有區域時才使用
+                district = component.long_name;
+              }
             }
           });
           
-          // 組合地址，優先顯示最有意義的部分
+          // 組合地址：優先顯示「市 + 區 + 路」格式
           let address = '';
-          if (district && city) {
-            address = `${city}${district}`;
-          } else if (city) {
-            address = city;
+          
+          if (admin_area_level_2 && admin_area_level_3 && route) {
+            address = `${admin_area_level_2}${admin_area_level_3}${route}`;
+          } else if (admin_area_level_2 && admin_area_level_3) {
+            address = `${admin_area_level_2}${admin_area_level_3}`;
+          } else if (admin_area_level_2 && route) {
+            address = `${admin_area_level_2}${route}`;
+          } else if (admin_area_level_2 && district) {
+            address = `${admin_area_level_2}${district}`;
+          } else if (admin_area_level_2) {
+            address = admin_area_level_2;
           } else {
-            // 回退到formatted_address，但只取前半部
+            // 最後回退：使用 formatted_address 的前兩個部分
             const formatted = result.formatted_address;
             const parts = formatted.split(',');
-            address = parts.slice(0, 2).join(',').trim();
+            address = parts.slice(0, 2).join('').replace(/\d+號?/g, '').trim();
           }
           
-          console.log('✅ 地址轉換成功:', address);
+          console.log('✅ 地址轉換成功:', { 
+            admin_area_level_2, 
+            admin_area_level_3, 
+            route, 
+            district, 
+            final: address 
+          });
           resolve(address);
         } else {
           console.warn('⚠️ 地址轉換失敗:', status);
@@ -148,11 +175,68 @@ function initializeGoogleMaps() {
 }
 
 /**
+ * 檢查餐廳是否在指定時間營業
+ * @param {Object} openingHours - Google Places opening_hours 對象
+ * @param {string} selectedMealTime - 選擇的用餐時段 ('breakfast', 'lunch', 'dinner', 'all')
+ * @returns {boolean} 是否營業
+ */
+function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
+  if (!openingHours || selectedMealTime === 'all') {
+    return true; // 如果沒有營業時間資訊或選擇全部時段，則顯示所有餐廳
+  }
+  
+  const now = new Date();
+  const currentHour = now.getHours();
+  const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  
+  // 定義用餐時段
+  const mealTimes = {
+    breakfast: { start: 6, end: 11 },
+    lunch: { start: 11, end: 14 },
+    dinner: { start: 17, end: 22 }
+  };
+  
+  const selectedTime = mealTimes[selectedMealTime];
+  if (!selectedTime) return true;
+  
+  try {
+    // 如果有 periods 資訊
+    if (openingHours.periods) {
+      const today = openingHours.periods.find(period => period.open && period.open.day === dayOfWeek);
+      if (!today) return false; // 今天不營業
+      
+      const openTime = parseInt(today.open.time.substring(0, 2));
+      const closeTime = today.close ? parseInt(today.close.time.substring(0, 2)) : 24;
+      
+      // 檢查選擇的用餐時段是否與營業時間重疊
+      return (selectedTime.start >= openTime && selectedTime.start < closeTime) ||
+             (selectedTime.end > openTime && selectedTime.end <= closeTime) ||
+             (selectedTime.start < openTime && selectedTime.end > closeTime);
+    }
+    
+    // 如果只有 weekday_text 資訊，簡單檢查
+    if (openingHours.weekday_text) {
+      const todayText = openingHours.weekday_text[dayOfWeek === 0 ? 6 : dayOfWeek - 1]; // 調整星期格式
+      if (todayText && todayText.includes('Closed')) {
+        return false;
+      }
+    }
+    
+    return true; // 無法確定時預設顯示
+    
+  } catch (error) {
+    console.warn('⚠️ 解析營業時間時出錯:', error);
+    return true; // 出錯時預設顯示
+  }
+}
+
+/**
  * 使用 Google Places JavaScript API 搜索附近餐廳
  * @param {Object} userLocation - 用戶位置 {lat, lng}
+ * @param {string} selectedMealTime - 選擇的用餐時段
  * @returns {Promise<Object>} 隨機餐廳資訊
  */
-async function searchNearbyRestaurants(userLocation) {
+async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
   if (!userLocation) {
     const errorDetails = {
       errorType: 'LocationError',
@@ -165,7 +249,7 @@ async function searchNearbyRestaurants(userLocation) {
   }
 
   try {
-    console.log('🔍 開始搜索附近餐廳...', userLocation);
+    console.log('🔍 開始搜索附近餐廳...', userLocation, '用餐時段:', selectedMealTime);
     
     // 確保 Google Maps API 已載入
     if (!placesService) {
@@ -223,8 +307,38 @@ async function searchNearbyRestaurants(userLocation) {
 
     console.log(`✅ 找到 ${results.length} 家餐廳`);
 
+    // 如果選擇了特定用餐時段，先篩選出符合營業時間的餐廳
+    let filteredResults = results;
+    if (selectedMealTime !== 'all') {
+      console.log('🕐 開始篩選符合用餐時段的餐廳...');
+      
+      // 獲取詳細營業時間資訊並篩選
+      const restaurantsWithHours = await Promise.all(
+        results.map(async (restaurant) => {
+          try {
+            const details = await getPlaceDetails(restaurant.place_id);
+            const isOpen = isRestaurantOpenForMealTime(details?.opening_hours, selectedMealTime);
+            return { restaurant, isOpen, details };
+          } catch (error) {
+            console.warn('⚠️ 無法獲取餐廳營業時間:', restaurant.name, error);
+            return { restaurant, isOpen: true, details: null }; // 無法確定時預設顯示
+          }
+        })
+      );
+      
+      filteredResults = restaurantsWithHours
+        .filter(item => item.isOpen)
+        .map(item => ({ ...item.restaurant, detailsCache: item.details }));
+      
+      console.log(`🕐 篩選後剩餘 ${filteredResults.length} 家符合${selectedMealTime}時段的餐廳`);
+      
+      if (filteredResults.length === 0) {
+        throw new Error(`在您選擇的用餐時段內未找到營業的餐廳。請選擇其他時段或擴大搜索範圍。`);
+      }
+    }
+
     // 隨機選擇一家餐廳
-    const randomRestaurant = results[Math.floor(Math.random() * results.length)];
+    const randomRestaurant = filteredResults[Math.floor(Math.random() * filteredResults.length)];
     
     // 轉換為應用程式格式
     return await formatRestaurantData(randomRestaurant);
@@ -248,7 +362,7 @@ async function getPlaceDetails(placeId) {
     
     const request = {
       placeId: placeId,
-      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level']
+      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url']
     };
     
     return new Promise((resolve) => {
@@ -277,8 +391,8 @@ async function formatRestaurantData(place) {
   try {
     console.log('🔄 正在格式化餐廳資料:', place.name);
 
-    // 獲取詳細資訊
-    const details = await getPlaceDetails(place.place_id);
+    // 獲取詳細資訊（如果有快取則使用快取）
+    const details = place.detailsCache || await getPlaceDetails(place.place_id);
     
     // 處理照片
     let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
@@ -292,12 +406,25 @@ async function formatRestaurantData(place) {
     // 處理營業時間
     let hours = '營業時間請洽餐廳';
     if (details && details.opening_hours && details.opening_hours.weekday_text) {
-      hours = details.opening_hours.weekday_text.join(', ');
+      hours = details.opening_hours.weekday_text.slice(0, 3).join(', '); // 只顯示前3天避免太長
     }
 
     // 處理餐廳類型
     const cuisine = place.types ? 
-      place.types.filter(type => !['establishment', 'point_of_interest'].includes(type)) :
+      place.types.filter(type => !['establishment', 'point_of_interest', 'food'].includes(type))
+        .map(type => {
+          // 轉換英文類型為中文
+          const typeMap = {
+            'restaurant': '餐廳',
+            'meal_takeaway': '外帶',
+            'meal_delivery': '外送',
+            'bakery': '烘焙店',
+            'cafe': '咖啡廳',
+            'bar': '酒吧',
+            'night_club': '夜店'
+          };
+          return typeMap[type] || type;
+        }) :
       ['餐廳'];
 
     // 格式化資料
@@ -306,7 +433,7 @@ async function formatRestaurantData(place) {
       name: place.name,
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
-      rating: place.rating || 0,
+      rating: Math.round((place.rating || 0) * 10) / 10, // 保留一位小數
       reviewCount: place.user_ratings_total || 0,
       priceLevel: priceLevel,
       cuisine: cuisine,
@@ -315,12 +442,8 @@ async function formatRestaurantData(place) {
       hours: hours,
       image: imageUrl,
       website: (details && details.website) || null,
-      businessStatus: place.business_status || 'OPERATIONAL',
-      menuHighlights: [
-        { name: "招牌料理", price: "請洽餐廳" },
-        { name: "主廚推薦", price: "請洽餐廳" },
-        { name: "熱門餐點", price: "請洽餐廳" }
-      ]
+      googleMapsUrl: (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ', ' + (place.formatted_address || place.vicinity))}&query_place_id=${place.place_id}`,
+      businessStatus: place.business_status || 'OPERATIONAL'
     };
 
     console.log('✅ 餐廳資料格式化完成:', formattedData.name);
@@ -346,12 +469,13 @@ async function formatRestaurantData(place) {
 /**
  * 獲取隨機餐廳 - 使用 JavaScript API
  * @param {Object} userLocation - 用戶位置
+ * @param {string} selectedMealTime - 選擇的用餐時段
  * @returns {Promise<Object>} 隨機餐廳
  */
-async function getRandomRestaurant(userLocation) {
-  console.log('🎯 開始獲取隨機餐廳...');
+async function getRandomRestaurant(userLocation, selectedMealTime = 'all') {
+  console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime });
   
-  const restaurant = await searchNearbyRestaurants(userLocation);
+  const restaurant = await searchNearbyRestaurants(userLocation, selectedMealTime);
   
   console.log('🎉 成功獲取餐廳:', restaurant.name);
   return restaurant;
