@@ -69,8 +69,7 @@ function App() {
         locationDetected: "Located at",
         addressLoading: "Getting address...",
         addressError: "Address unavailable",
-        mealTimeLabel: "Meal time:",
-        mealTimeAll: "All time",
+
         breakfast: "Breakfast",
         lunch: "Lunch", 
         dinner: "Dinner",
@@ -94,8 +93,7 @@ function App() {
         locationDetected: "當前位置",
         addressLoading: "正在獲取地址...",
         addressError: "地址無法取得",
-        mealTimeLabel: "用餐時段：",
-        mealTimeAll: "全時段",
+
         breakfast: "早餐",
         lunch: "午餐",
         dinner: "晚餐",
@@ -205,7 +203,7 @@ function App() {
     };
 
     // 儲存位置
-    const saveLocation = (type) => {
+    const saveLocation = async (type) => {
       if (!userLocation || !userAddress) return;
       
       const newLocation = {
@@ -221,9 +219,13 @@ function App() {
       
       setSavedLocations(updatedLocations);
       saveLocationToStorage(updatedLocations);
+      
+      // 儲存後立刻更新顯示地址為簡化版本
+      const simplifiedAddress = getSimplifiedAddress(userAddress);
+      setUserAddress(simplifiedAddress);
       setShowAddressInput(false);
       
-      console.log('✅ 位置已儲存:', newLocation);
+      console.log('✅ 位置已儲存並更新顯示:', newLocation, '簡化地址:', simplifiedAddress);
     };
 
     // 使用已儲存的位置
@@ -476,16 +478,10 @@ function App() {
               </div>
             </div>
             
-            {/* 用餐時段選擇 */}
+            {/* 用餐時段選擇 - 去掉標題和all time按鈕 */}
             <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
-              <div className="text-center mb-3">
-                <label className="text-[var(--text-secondary)] font-medium">
-                  {t.mealTimeLabel}
-                </label>
-              </div>
               <div className="flex gap-2 justify-center">
                 {[
-                  { id: 'all', label: t.mealTimeAll, icon: '🍽️' },
                   { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
                   { id: 'lunch', label: t.lunch, icon: '☀️', time: '11-14' },
                   { id: 'dinner', label: t.dinner, icon: '🌃', time: '17-22' }

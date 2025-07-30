@@ -456,6 +456,9 @@ async function formatRestaurantData(place) {
         }) :
       ['餐廳'];
 
+    // 計算營業狀態
+    const businessStatusInfo = getBusinessStatus(details?.opening_hours);
+    
     // 格式化資料
     const formattedData = {
       id: place.place_id,
@@ -472,7 +475,8 @@ async function formatRestaurantData(place) {
       image: imageUrl,
       website: (details && details.website) || null,
       googleMapsUrl: (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ', ' + (place.formatted_address || place.vicinity))}&query_place_id=${place.place_id}`,
-      businessStatus: place.business_status || 'OPERATIONAL'
+      businessStatus: place.business_status || 'OPERATIONAL',
+      operatingStatus: businessStatusInfo
     };
 
     console.log('✅ 餐廳資料格式化完成:', formattedData.name);
@@ -496,6 +500,121 @@ async function formatRestaurantData(place) {
 }
 
 /**
+ * 計算兩點間距離（公里）
+ * @param {number} lat1 - 第一點緯度
+ * @param {number} lng1 - 第一點經度
+ * @param {number} lat2 - 第二點緯度
+ * @param {number} lng2 - 第二點經度
+ * @returns {number} 距離（公里）
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // 地球半徑（公里）
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+  return Math.round(distance * 100) / 100; // 保留兩位小數
+}
+
+/**
+ * 計算營業狀態和時間
+ * @param {Object} openingHours - Google Places opening_hours 對象
+ * @returns {Object} 營業狀態信息
+ */
+function getBusinessStatus(openingHours) {
+  if (!openingHours) {
+    return { status: 'unknown', message: '營業時間未知' };
+  }
+  
+  const now = new Date();
+  const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+  
+  try {
+    if (openingHours.periods) {
+      // 找到今天的營業時間
+      const todayPeriods = openingHours.periods.filter(period => 
+        period.open && period.open.day === currentDay
+      );
+      
+      if (todayPeriods.length === 0) {
+        return { status: 'closed', message: '今日不營業' };
+      }
+      
+      for (const period of todayPeriods) {
+        const openTime = parseInt(period.open.time);
+        const closeTime = period.close ? parseInt(period.close.time) : 2400;
+        
+        if (currentTime >= openTime && currentTime < closeTime) {
+          // 目前營業中，計算還有多久關門
+          const closeHour = Math.floor(closeTime / 100);
+          const closeMinute = closeTime % 100;
+          const closeDateTime = new Date(now);
+          closeDateTime.setHours(closeHour, closeMinute, 0, 0);
+          
+          const hoursUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60 * 60));
+          return { 
+            status: 'open', 
+            message: hoursUntilClose > 0 ? `${hoursUntilClose}小時後打烊` : '即將打烊'
+          };
+        } else if (currentTime < openTime) {
+          // 今天還未營業
+          const openHour = Math.floor(openTime / 100);
+          const openMinute = openTime % 100;
+          const openDateTime = new Date(now);
+          openDateTime.setHours(openHour, openMinute, 0, 0);
+          
+          const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
+          return { 
+            status: 'closed', 
+            message: hoursUntilOpen > 0 ? `${hoursUntilOpen}小時後開始營業` : '即將營業'
+          };
+        }
+      }
+      
+      // 今天已經打烊，找明天的營業時間
+      const tomorrow = (currentDay + 1) % 7;
+      const tomorrowPeriods = openingHours.periods.filter(period => 
+        period.open && period.open.day === tomorrow
+      );
+      
+      if (tomorrowPeriods.length > 0) {
+        const openTime = parseInt(tomorrowPeriods[0].open.time);
+        const openHour = Math.floor(openTime / 100);
+        const openMinute = openTime % 100;
+        const openDateTime = new Date(now);
+        openDateTime.setDate(openDateTime.getDate() + 1);
+        openDateTime.setHours(openHour, openMinute, 0, 0);
+        
+        const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
+        return { 
+          status: 'closed', 
+          message: `${hoursUntilOpen}小時後開始營業`
+        };
+      }
+    }
+    
+    // 如果有 open_now 資訊
+    if (openingHours.hasOwnProperty('open_now')) {
+      return {
+        status: openingHours.open_now ? 'open' : 'closed',
+        message: openingHours.open_now ? '營業中' : '已打烊'
+      };
+    }
+    
+    return { status: 'unknown', message: '營業時間未知' };
+    
+  } catch (error) {
+    console.warn('⚠️ 解析營業狀態時出錯:', error);
+    return { status: 'unknown', message: '營業時間未知' };
+  }
+}
+
+/**
  * 獲取隨機餐廳 - 使用 JavaScript API
  * @param {Object} userLocation - 用戶位置
  * @param {string} selectedMealTime - 選擇的用餐時段
@@ -506,6 +625,18 @@ async function getRandomRestaurant(userLocation, selectedMealTime = 'all') {
   
   const restaurant = await searchNearbyRestaurants(userLocation, selectedMealTime);
   
+  // 添加距離和營業狀態信息
+  if (userLocation) {
+    restaurant.distance = calculateDistance(
+      userLocation.lat, userLocation.lng,
+      restaurant.lat, restaurant.lng
+    );
+  }
+  
   console.log('🎉 成功獲取餐廳:', restaurant.name);
   return restaurant;
 }
+
+// 全局函數用於計算距離
+window.calculateDistance = calculateDistance;
+window.getBusinessStatus = getBusinessStatus;
