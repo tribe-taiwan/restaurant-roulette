@@ -21,7 +21,14 @@ const GOOGLE_PLACES_CONFIG = {
  */
 async function searchNearbyRestaurants(userLocation) {
   if (!userLocation) {
-    throw new Error("用戶位置不可用。請確保已啟用位置存取權限。");
+    const errorDetails = {
+      errorType: 'LocationError',
+      errorMessage: '用戶位置不可用',
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      geolocationSupported: !!navigator.geolocation
+    };
+    throw new Error(`定位失敗。技術資訊: ${JSON.stringify(errorDetails)}`);
   }
 
   try {
@@ -37,11 +44,31 @@ async function searchNearbyRestaurants(userLocation) {
 
     console.log('📡 API 請求 URL:', searchUrl.toString());
 
-    // 發送 API 請求
-    const response = await fetch(searchUrl);
+    // 發送 API 請求 - 檢查 CORS 問題
+    const response = await fetch(searchUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    console.log('📡 API 響應狀態:', response.status, response.statusText);
     
     if (!response.ok) {
-      throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('❌ API 錯誤詳情:', errorText);
+      
+      const errorDetails = {
+        errorType: 'APIError',
+        errorMessage: `HTTP ${response.status}: ${response.statusText}`,
+        responseBody: errorText,
+        timestamp: new Date().toISOString(),
+        requestURL: searchUrl.toString().replace(GOOGLE_PLACES_CONFIG.API_KEY, 'AIzaSyC7xxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+        userLocation: userLocation,
+        corsIssue: response.status === 0 ? 'Possible CORS issue' : 'No CORS issue detected'
+      };
+      
+      throw new Error(`Google Places API 請求失敗。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
     const data = await response.json();
@@ -49,13 +76,33 @@ async function searchNearbyRestaurants(userLocation) {
     console.log('📨 API 響應:', data);
 
     if (data.status !== 'OK') {
-      throw new Error(`API 錯誤: ${data.status} - ${data.error_message || '未知錯誤'}`);
+      const errorDetails = {
+        errorType: 'GoogleAPIError',
+        errorMessage: data.error_message || '未知錯誤',
+        apiStatus: data.status,
+        timestamp: new Date().toISOString(),
+        userLocation: userLocation,
+        apiKey: `${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}xxxxxxxxxxxxxxxxxxxxxxxx`,
+        requestURL: searchUrl.toString().replace(GOOGLE_PLACES_CONFIG.API_KEY, 'AIzaSyC7xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+      };
+      
+      throw new Error(`Google Places API 回傳錯誤: ${data.status}。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
     const restaurants = data.results;
     
     if (!restaurants || restaurants.length === 0) {
-      throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。`);
+      const errorDetails = {
+        errorType: 'NoRestaurantsFound',
+        errorMessage: '搜索範圍內無餐廳',
+        searchRadius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
+        userLocation: userLocation,
+        timestamp: new Date().toISOString(),
+        apiResponseStatus: data.status,
+        totalResults: 0
+      };
+      
+      throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
     console.log(`✅ 找到 ${restaurants.length} 家餐廳`);
@@ -69,18 +116,8 @@ async function searchNearbyRestaurants(userLocation) {
   } catch (error) {
     console.error('❌ 搜索餐廳時發生錯誤:', error);
     
-    // 提供詳細的技術資訊用於偵錯
-    const technicalInfo = {
-      errorType: error.name,
-      errorMessage: error.message,
-      timestamp: new Date().toISOString(),
-      userLocation: userLocation,
-      apiKey: GOOGLE_PLACES_CONFIG.API_KEY ? `${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}...` : '未設定'
-    };
-    
-    console.error('🔧 技術偵錯資訊:', technicalInfo);
-    
-    throw new Error(`無法獲取附近餐廳資料。錯誤: ${error.message}。技術資訊: ${JSON.stringify(technicalInfo)}`);
+    // 不使用回退機制，直接拋出詳細錯誤
+    throw error;
   }
 }
 
@@ -98,12 +135,18 @@ async function getPlaceDetails(placeId) {
     detailsUrl.searchParams.append('language', GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.language);
 
     const response = await fetch(detailsUrl);
+    
+    if (!response.ok) {
+      console.warn('⚠️ 無法獲取地點詳細資訊 HTTP錯誤:', response.status, response.statusText);
+      return null;
+    }
+    
     const data = await response.json();
 
     if (data.status === 'OK') {
       return data.result;
     } else {
-      console.warn('⚠️ 無法獲取地點詳細資訊:', data.status);
+      console.warn('⚠️ 無法獲取地點詳細資訊 API錯誤:', data.status, data.error_message);
       return null;
     }
   } catch (error) {
@@ -118,132 +161,88 @@ async function getPlaceDetails(placeId) {
  * @returns {Promise<Object>} 格式化後的餐廳資料
  */
 async function formatRestaurantData(place) {
-  console.log('🔄 正在格式化餐廳資料:', place.name);
+  try {
+    console.log('🔄 正在格式化餐廳資料:', place.name);
 
-  // 獲取詳細資訊
-  const details = await getPlaceDetails(place.place_id);
-  
-  // 處理照片
-  let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
-  if (place.photos && place.photos.length > 0) {
-    const photoReference = place.photos[0].photo_reference;
-    imageUrl = `${GOOGLE_PLACES_CONFIG.BASE_URL}/photo?maxwidth=800&photoreference=${photoReference}&key=${GOOGLE_PLACES_CONFIG.API_KEY}`;
+    // 獲取詳細資訊
+    const details = await getPlaceDetails(place.place_id);
+    
+    // 處理照片
+    let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
+    if (place.photos && place.photos.length > 0) {
+      const photoReference = place.photos[0].photo_reference;
+      imageUrl = `${GOOGLE_PLACES_CONFIG.BASE_URL}/photo?maxwidth=800&photoreference=${photoReference}&key=${GOOGLE_PLACES_CONFIG.API_KEY}`;
+    }
+
+    // 處理價格等級
+    const priceLevel = place.price_level || (details && details.price_level) || 2;
+    
+    // 處理營業時間
+    let hours = '營業時間請洽餐廳';
+    if (details && details.opening_hours && details.opening_hours.weekday_text) {
+      hours = details.opening_hours.weekday_text.join(', ');
+    }
+
+    // 處理餐廳類型
+    const cuisine = place.types ? 
+      place.types.filter(type => !['establishment', 'point_of_interest'].includes(type)) :
+      ['餐廳'];
+
+    // 格式化資料
+    const formattedData = {
+      id: place.place_id,
+      name: place.name,
+      lat: place.geometry.location.lat,
+      lng: place.geometry.location.lng,
+      rating: place.rating || 0,
+      reviewCount: place.user_ratings_total || 0,
+      priceLevel: priceLevel,
+      cuisine: cuisine,
+      address: place.formatted_address || place.vicinity,
+      phone: (details && details.formatted_phone_number) || '電話請洽餐廳',
+      hours: hours,
+      image: imageUrl,
+      website: (details && details.website) || null,
+      businessStatus: place.business_status || 'OPERATIONAL',
+      // 保持與原始格式相容的菜單亮點（使用預設值）
+      menuHighlights: [
+        { name: "招牌料理", price: "請洽餐廳" },
+        { name: "主廚推薦", price: "請洽餐廳" },
+        { name: "熱門餐點", price: "請洽餐廳" }
+      ]
+    };
+
+    console.log('✅ 餐廳資料格式化完成:', formattedData.name);
+    return formattedData;
+
+  } catch (error) {
+    const errorDetails = {
+      errorType: 'FormatError',
+      errorMessage: error.message,
+      timestamp: new Date().toISOString(),
+      placeData: {
+        place_id: place.place_id,
+        name: place.name,
+        hasPhotos: !!(place.photos && place.photos.length > 0),
+        hasGeometry: !!place.geometry
+      }
+    };
+    
+    throw new Error(`格式化餐廳資料失敗。技術資訊: ${JSON.stringify(errorDetails)}`);
   }
-
-  // 處理價格等級
-  const priceLevel = place.price_level || (details && details.price_level) || 2;
-  
-  // 處理營業時間
-  let hours = '營業時間請洽餐廳';
-  if (details && details.opening_hours && details.opening_hours.weekday_text) {
-    hours = details.opening_hours.weekday_text.join(', ');
-  }
-
-  // 處理餐廳類型
-  const cuisine = place.types ? 
-    place.types.filter(type => !['establishment', 'point_of_interest'].includes(type)) :
-    ['餐廳'];
-
-  // 格式化資料
-  const formattedData = {
-    id: place.place_id,
-    name: place.name,
-    lat: place.geometry.location.lat,
-    lng: place.geometry.location.lng,
-    rating: place.rating || 0,
-    reviewCount: place.user_ratings_total || 0,
-    priceLevel: priceLevel,
-    cuisine: cuisine,
-    address: place.formatted_address || place.vicinity,
-    phone: (details && details.formatted_phone_number) || '電話請洽餐廳',
-    hours: hours,
-    image: imageUrl,
-    website: (details && details.website) || null,
-    businessStatus: place.business_status || 'OPERATIONAL',
-    // 保持與原始格式相容的菜單亮點（使用預設值）
-    menuHighlights: [
-      { name: "招牌料理", price: "請洽餐廳" },
-      { name: "主廚推薦", price: "請洽餐廳" },
-      { name: "熱門餐點", price: "請洽餐廳" }
-    ]
-  };
-
-  console.log('✅ 餐廳資料格式化完成:', formattedData.name);
-  return formattedData;
 }
 
 /**
- * 獲取隨機餐廳 - 更新版本使用真實 API
+ * 獲取隨機餐廳 - 僅使用真實 API，不回退
  * @param {Object} userLocation - 用戶位置
  * @returns {Promise<Object>} 隨機餐廳
  */
 async function getRandomRestaurant(userLocation) {
   console.log('🎯 開始獲取隨機餐廳...');
   
-  try {
-    // 使用 Google Places API 搜索真實餐廳
-    const restaurant = await searchNearbyRestaurants(userLocation);
-    
-    console.log('🎉 成功獲取餐廳:', restaurant.name);
-    return restaurant;
-    
-  } catch (error) {
-    console.error('❌ 獲取隨機餐廳失敗，回退到模擬數據:', error.message);
-    
-    // 如果 API 失敗，回退到模擬數據
-    return getRandomRestaurantFromMockData(userLocation);
-  }
-}
-
-/**
- * 回退方案：從模擬數據獲取隨機餐廳
- * @param {Object} userLocation - 用戶位置
- * @returns {Object} 隨機餐廳
- */
-function getRandomRestaurantFromMockData(userLocation) {
-  console.log('⚠️ 使用模擬數據作為回退方案');
+  // 直接使用 Google Places API，不回退
+  const restaurant = await searchNearbyRestaurants(userLocation);
   
-  if (!userLocation) {
-    throw new Error("用戶位置不可用。請確保已啟用位置存取權限。");
-  }
-
-  // 過濾 10 公里範圍內的餐廳
-  const nearbyRestaurants = mockRestaurants.filter(restaurant => {
-    const distance = getDistanceFromLatLng(
-      userLocation.lat, 
-      userLocation.lng, 
-      restaurant.lat, 
-      restaurant.lng
-    );
-    return distance <= 10;
-  });
-
-  if (nearbyRestaurants.length === 0) {
-    throw new Error("在您附近 10km 範圍內未找到餐廳。請嘗試擴大搜索範圍或回報此問題給開發團隊。");
-  }
-
-  return nearbyRestaurants[Math.floor(Math.random() * nearbyRestaurants.length)];
-}
-
-// 保留原有的距離計算函數
-function getDistanceFromLatLng(lat1, lng1, lat2, lng2) {
-  try {
-    const R = 6371; // 地球半徑（公里）
-    const dLat = deg2rad(lat2 - lat1);
-    const dLng = deg2rad(lng2 - lng1);
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = R * c; // 距離（公里）
-    return d;
-  } catch (error) {
-    console.error('距離計算錯誤:', error);
-    return 0;
-  }
-}
-
-function deg2rad(deg) {
-  return deg * (Math.PI/180);
+  console.log('🎉 成功獲取餐廳:', restaurant.name);
+  return restaurant;
 }
