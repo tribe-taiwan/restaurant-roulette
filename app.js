@@ -45,6 +45,7 @@ function App() {
     const [spinError, setSpinError] = React.useState(null);
     const [searchRadius, setSearchRadius] = React.useState(5); // 預設5公里
     const [isRelocating, setIsRelocating] = React.useState(false);
+    const [selectedMealTime, setSelectedMealTime] = React.useState('all'); // 用餐時段
 
     const translations = {
       en: {
@@ -61,7 +62,11 @@ function App() {
         locationSuccess: "Location found",
         locationDetected: "Located at",
         addressLoading: "Getting address...",
-        addressError: "Address unavailable"
+        addressError: "Address unavailable",
+        mealTimeLabel: "Meal time:",
+        breakfast: "Breakfast",
+        lunch: "Lunch", 
+        dinner: "Dinner"
       },
       zh: {
         title: "餐廳輪盤",
@@ -77,7 +82,11 @@ function App() {
         locationSuccess: "定位成功",
         locationDetected: "當前位置",
         addressLoading: "正在獲取地址...",
-        addressError: "地址無法取得"
+        addressError: "地址無法取得",
+        mealTimeLabel: "用餐時段：",
+        breakfast: "早餐",
+        lunch: "午餐",
+        dinner: "晚餐"
       }
     };
 
@@ -232,7 +241,7 @@ function App() {
             </div>
             
             {/* 搜索範圍設定 */}
-            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
+            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-4">
               <div className="flex items-center justify-between gap-4">
                 <label className="text-[var(--text-secondary)] font-medium">
                   {t.radiusLabel}
@@ -251,6 +260,37 @@ function App() {
                     {searchRadius} {t.radiusKm}
                   </span>
                 </div>
+              </div>
+            </div>
+            
+            {/* 用餐時段選擇 */}
+            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
+              <div className="text-center mb-3">
+                <label className="text-[var(--text-secondary)] font-medium">
+                  {t.mealTimeLabel}
+                </label>
+              </div>
+              <div className="flex gap-2 justify-center">
+                {[
+                  { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
+                  { id: 'lunch', label: t.lunch, icon: '🍽️', time: '11-14' },
+                  { id: 'dinner', label: t.dinner, icon: '🌃', time: '17-22' }
+                ].map((mealTime) => (
+                  <button
+                    key={mealTime.id}
+                    onClick={() => setSelectedMealTime(mealTime.id)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      selectedMealTime === mealTime.id
+                        ? 'bg-[var(--primary-color)] text-white'
+                        : 'bg-gray-700 text-[var(--text-secondary)] hover:bg-gray-600'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-lg">{mealTime.icon}</span>
+                      <span className="text-xs">{mealTime.label}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
