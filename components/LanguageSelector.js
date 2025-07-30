@@ -22,7 +22,6 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
                   : 'text-[var(--text-secondary)] hover:bg-gray-700'
               }`}
             >
-              <span>{lang.flag}</span>
               <span>{lang.name}</span>
             </button>
           ))}
