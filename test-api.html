@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Places API 測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-result {
+            background: #16213e;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b35;
+        }
+        .success { border-left-color: #4caf50; }
+        .error { border-left-color: #f44336; }
+        .loading { border-left-color: #ff9800; }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover { background: #f7931e; }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🍽️ 餐廳輪盤 - Google Places API 測試</h1>
+    
+    <div id="status" class="test-result loading">
+        ⏳ 準備中...請點擊測試按鈕
+    </div>
+    
+    <button onclick="testAPI()">🎯 測試 API 功能</button>
+    <button onclick="clearResults()">🗑️ 清除結果</button>
+    
+    <div id="results"></div>
+    
+    <script src="utils/locationUtils.js"></script>
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push({ timestamp, message, type });
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div class="test-result ${result.type}">
+                    <strong>${result.timestamp}</strong> - ${result.message}
+                </div>`
+            ).join('');
+        }
+        
+        function clearResults() {
+            testResults = [];
+            updateDisplay();
+            document.getElementById('status').className = 'test-result loading';
+            document.getElementById('status').innerHTML = '⏳ 結果已清除...';
+        }
+        
+        async function testAPI() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'test-result loading';
+            statusDiv.innerHTML = '🔄 測試進行中...';
+            
+            try {
+                log('🚀 開始測試 Google Places API 整合', 'info');
+                
+                // 測試地理位置
+                log('📍 檢查地理位置支援...', 'info');
+                if (!navigator.geolocation) {
+                    throw new Error('瀏覽器不支援地理位置');
+                }
+                log('✅ 地理位置 API 可用', 'success');
+                
+                // 獲取用戶位置
+                log('🌍 獲取用戶位置...', 'info');
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    });
+                });
+                
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                
+                log(`📍 位置獲取成功: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`, 'success');
+                
+                // 測試餐廳搜索
+                log('🔍 測試 Google Places API 餐廳搜索...', 'info');
+                const restaurant = await getRandomRestaurant(userLocation);
+                
+                if (restaurant) {
+                    log('🎉 餐廳搜索成功！', 'success');
+                    log(`📄 餐廳詳情：<pre>${JSON.stringify(restaurant, null, 2)}</pre>`, 'success');
+                    
+                    statusDiv.className = 'test-result success';
+                    statusDiv.innerHTML = `✅ 測試成功！找到餐廳：${restaurant.name}`;
+                } else {
+                    throw new Error('餐廳搜索返回空結果');
+                }
+                
+            } catch (error) {
+                log(`❌ 測試失敗：${error.message}`, 'error');
+                log(`🔧 錯誤詳情：<pre>${error.stack || error}</pre>`, 'error');
+                
+                statusDiv.className = 'test-result error';
+                statusDiv.innerHTML = `❌ 測試失敗：${error.message}`;
+            }
+        }
+        
+        // 監聽控制台輸出
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(`📝 控制台：${args.join(' ')}`, 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log(`🚨 控制台錯誤：${args.join(' ')}`, 'error');
+        };
+        
+        log('🔧 測試頁面已載入，準備就緒', 'info');
+    </script>
+</body>
+</html>
