@@ -101,6 +101,19 @@ function RestaurantCard({ restaurant, language }) {
                 <span>📸</span>
                 <span>{language === 'zh' ? '點擊查看相片' : 'Click to view photos'}</span>
               </div>
+              {/* 新增：點擊查看位置按鈕 */}
+              <div 
+                className="absolute bottom-4 right-4 bg-blue-600 bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-all"
+                onClick={(e) => {
+                  e.stopPropagation(); // 防止觸發圖片點擊
+                  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=place_id:${restaurant.id}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+                  window.open(directionsUrl, '_blank');
+                }}
+                title={language === 'zh' ? '點擊查看路線' : 'Click for directions'}
+              >
+                <span>📍</span>
+                <span>{language === 'zh' ? '查看位置' : 'View location'}</span>
+              </div>
             </div>
           </div>
 
@@ -142,26 +155,63 @@ function RestaurantCard({ restaurant, language }) {
 
             {/* Cuisine Type 已移至星級評分右邊，此處移除 */}
 
-            {/* 營業狀態 */}
+            {/* 營業狀態 - 改善排版 */}
+            {restaurant.operatingStatus && (
+              <div className={`rounded-lg p-4 mb-4 border-l-4 ${
+                restaurant.operatingStatus.status === 'open' 
+                  ? 'bg-green-50 border-green-500 dark:bg-green-900/20' 
+                  : restaurant.operatingStatus.status === 'closed' 
+                    ? 'bg-red-50 border-red-500 dark:bg-red-900/20' 
+                    : 'bg-yellow-50 border-yellow-500 dark:bg-yellow-900/20'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className={`text-2xl ${
+                    restaurant.operatingStatus.status === 'open' ? 'text-green-600' : 
+                    restaurant.operatingStatus.status === 'closed' ? 'text-red-600' : 'text-yellow-600'
+                  }`}>
+                    {restaurant.operatingStatus.status === 'open' ? '🟢' : 
+                     restaurant.operatingStatus.status === 'closed' ? '🔴' : '🟡'}
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-sm mb-1 ${
+                      restaurant.operatingStatus.status === 'open' ? 'text-green-800 dark:text-green-300' : 
+                      restaurant.operatingStatus.status === 'closed' ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'
+                    }`}>
+                      {restaurant.operatingStatus.status === 'open' 
+                        ? (language === 'zh' ? '營業中' : 'Open Now')
+                        : restaurant.operatingStatus.status === 'closed'
+                          ? (language === 'zh' ? '已打烊' : 'Closed')
+                          : (language === 'zh' ? '營業狀況未明' : 'Hours Unknown')
+                      }
+                    </div>
+                    <div className={`text-sm ${
+                      restaurant.operatingStatus.status === 'open' ? 'text-green-700 dark:text-green-400' : 
+                      restaurant.operatingStatus.status === 'closed' ? 'text-red-700 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400'
+                    }`}>
+                      {restaurant.operatingStatus.message}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* 非營業狀態警告 */}
             {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
               <div className="bg-[var(--warning-color)] bg-opacity-20 border border-[var(--warning-color)] rounded-lg p-3 mb-4">
                 <div className="flex items-center gap-2">
                   <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
-                  <span className="text-[var(--warning-color)] font-medium">
-                    {language === 'zh' ? '注意：可能暫停營業' : 'Note: May be temporarily closed'}
+                  <span className="text-[var(--warning-color)] font-medium text-sm">
+                    {language === 'zh' ? '⚠️ 此餐廳可能暫停營業，建議致電確認' : '⚠️ This restaurant may be temporarily closed, please call to confirm'}
                   </span>
                 </div>
               </div>
             )}
 
-            {/* 附加資訊 */}
-            {restaurant.website && (
-              <div className="flex items-start gap-3 mb-4">
-                <div className="icon-globe text-[var(--accent-color)] text-lg mt-1"></div>
-                <div>
-                  <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {language === 'zh' ? '網站' : 'Website'}
-                  </div>
+            {/* 網站和導航 - 一行顯示 */}
+            <div className="flex flex-wrap gap-4 mb-4">
+              {restaurant.website && (
+                <div className="flex items-center gap-2">
+                  <div className="icon-globe text-[var(--accent-color)] text-lg"></div>
                   <a 
                     href={restaurant.website} 
                     target="_blank" 
@@ -171,16 +221,10 @@ function RestaurantCard({ restaurant, language }) {
                     {language === 'zh' ? '查看官網' : 'Visit Website'}
                   </a>
                 </div>
-              </div>
-            )}
-            
-            {/* Google Maps 連結 */}
-            <div className="flex items-start gap-3 mb-4">
-              <div className="icon-navigation text-[var(--primary-color)] text-lg mt-1"></div>
-              <div>
-                <div className="font-medium text-[var(--text-primary)] mb-1">
-                  {language === 'zh' ? '導航' : 'Directions'}
-                </div>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
                 <a 
                   href={getDirectionsUrl()}
                   target="_blank" 
@@ -189,10 +233,22 @@ function RestaurantCard({ restaurant, language }) {
                 >
                   {language === 'zh' ? '在Google地圖中查看' : 'View in Google Maps'}
                 </a>
+                <span className="text-[var(--text-secondary)] text-sm">
+                  {language === 'zh' ? '導航' : 'Directions'}
+                </span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* TODO: Google菜單功能 - 需要額外的Places Details API呼叫 */}
+        {/* 
+        Google Places API可能包含菜單連結，但需要：
+        1. 使用getDetails API取得更多餐廳資訊
+        2. 檢查是否有菜單URL (如menu_url, delivery_url等)
+        3. 由於API配額和複雜性，暫時不實現
+        如需實現，可在formatRestaurantData函數中添加菜單資料獲取邏輯
+        */}
 
         {/* Modal for Image Views */}
         {selectedImage && (

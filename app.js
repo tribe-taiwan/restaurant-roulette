@@ -279,10 +279,10 @@ function App() {
           const address = await window.getAddressFromCoordinates(lat, lng, selectedLanguage);
           setUserAddress(address);
           
-          // 初次載入時自動執行餐廳搜索
-          if (isInitialLoad) {
+          // 初次載入時自動執行餐廳搜索 - 確保userLocation已設定
+          if (isInitialLoad && userLocation) {
             setIsInitialLoad(false);
-            console.log('🎯 初次載入，自動搜索餐廳...');
+            console.log('🎯 初次載入，自動搜索餐廳...', { userLocation });
             setTimeout(() => {
               handleSpin();
             }, 500); // 延遲500ms確保UI已更新
@@ -292,9 +292,9 @@ function App() {
         console.error('獲取地址失敗:', error);
         setUserAddress(t.addressError);
         // 即使地址獲取失敗，如果是初次載入也要嘗試搜索餐廳
-        if (isInitialLoad) {
+        if (isInitialLoad && userLocation) {
           setIsInitialLoad(false);
-          console.log('🎯 初次載入（地址失敗），仍自動搜索餐廳...');
+          console.log('🎯 初次載入（地址失敗），仍自動搜索餐廳...', { userLocation });
           setTimeout(() => {
             handleSpin();
           }, 500);
@@ -416,6 +416,7 @@ function App() {
               onSpin={handleSpin}
               translations={t}
               finalRestaurant={currentRestaurant}
+              language={selectedLanguage}
             />
           </div>
 

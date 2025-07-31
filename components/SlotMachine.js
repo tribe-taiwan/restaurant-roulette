@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant }) {
+function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, language }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     
@@ -42,6 +42,15 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant }) {
                   <div className="text-2xl font-bold text-[var(--primary-color)] mb-2">
                     🎉 {finalRestaurant.name}
                   </div>
+                  {/* 新增：顯示簡化地址 */}
+                  {finalRestaurant.address && (
+                    <div className="text-sm text-gray-600 mb-2 max-w-xs mx-auto">
+                      <span className="icon-map-pin text-xs mr-1"></span>
+                      {finalRestaurant.address.length > 30 
+                        ? finalRestaurant.address.substring(0, 30) + '...' 
+                        : finalRestaurant.address}
+                    </div>
+                  )}
                   <div className="text-sm text-gray-600 space-y-1">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
