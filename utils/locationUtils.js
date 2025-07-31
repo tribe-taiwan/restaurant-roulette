@@ -708,11 +708,11 @@ function getBusinessStatus(openingHours, language = 'zh') {
  * @param {string} selectedMealTime - 選擇的用餐時段
  * @returns {Promise<Object>} 隨機餐廳
  */
-async function getRandomRestaurant(userLocation, selectedMealTime = 'all') {
+window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all') {
   console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime });
-  
+
   const restaurant = await searchNearbyRestaurants(userLocation, selectedMealTime);
-  
+
   // 添加距離和營業狀態信息
   if (userLocation) {
     restaurant.distance = calculateDistance(
@@ -720,12 +720,11 @@ async function getRandomRestaurant(userLocation, selectedMealTime = 'all') {
       restaurant.lat, restaurant.lng
     );
   }
-  
+
   console.log('🎉 成功獲取餐廳:', restaurant.name);
   return restaurant;
-}
+};
 
 // 全局函數用於計算距離
 window.calculateDistance = calculateDistance;
 window.getBusinessStatus = getBusinessStatus;
-window.getRandomRestaurant = getRandomRestaurant;

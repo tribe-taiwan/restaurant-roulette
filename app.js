@@ -570,7 +570,7 @@ function App() {
         }
         
         // 調用更新後的 getRandomRestaurant 函數（現在支援營業時間篩選）
-        const restaurant = await getRandomRestaurant(userLocation, selectedMealTime);
+        const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime);
         
         // 重新計算營業狀態以支援多國語言
         if (restaurant.operatingStatus && window.getBusinessStatus) {
