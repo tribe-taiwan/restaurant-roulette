@@ -633,7 +633,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
           const hoursUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60 * 60));
           return { 
             status: 'open', 
-            message: hoursUntilClose > 0 ? `${getTranslation('hoursAfterClosing')} ${hoursUntilClose} ${getTranslation('hours')}` : getTranslation('closingSoon')
+            message: hoursUntilClose > 0 ? `${hoursUntilClose} ${getTranslation('hoursAfterClosing')}}` : getTranslation('closingSoon')
           };
         } else if (currentTime < openTime) {
           // 今天還未營業
