@@ -53,7 +53,7 @@ function StatusMessages({ locationStatus, spinError, locationError, translations
                       className="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-2 py-1 rounded text-xs transition-colors flex items-center gap-1"
                       title="複製錯誤訊息"
                     >
-                      📋 複製錯誤
+                      📋 複製錯誤訊息
                     </button>
                   </div>
                   <details className="text-left">
@@ -75,19 +75,17 @@ function StatusMessages({ locationStatus, spinError, locationError, translations
             <div className="icon-warning text-[var(--warning-color)] text-lg mb-2"></div>
             <div className="text-sm text-left">
               <strong>{t.spinErrorPrefix}</strong>
-              <div className="mt-3">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <button
-                    onClick={() => copyErrorToClipboard(spinError)}
-                    className="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-2 py-1 rounded text-xs transition-colors flex items-center gap-1"
-                    title="複製錯誤訊息"
-                  >
-                    📋 複製錯誤
-                  </button>
-                </div>
-                <div className="mt-2 p-2 bg-gray-800 rounded text-xs text-gray-300 font-mono overflow-auto">
-                  {spinError}
-                </div>
+              <div className="mt-2 p-2 bg-gray-800 rounded text-xs text-gray-300 font-mono overflow-auto">
+                {spinError}
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <button
+                  onClick={() => copyErrorToClipboard(spinError)}
+                  className="bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-2 py-1 rounded text-xs transition-colors flex items-center gap-1"
+                  title="複製錯誤訊息"
+                >
+                  📋 複製錯誤訊息
+                </button>
               </div>
             </div>
           </div>

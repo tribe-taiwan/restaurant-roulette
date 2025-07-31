@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Restaurant Roulette (餐廳輪盤) is a bilingual (English/Traditional Chinese) web application that helps users discover restaurants near their location using Google Places API. The app features a slot machine-style interface for randomly selecting restaurants with real-time location detection and meal time filtering.
+Restaurant Roulette (吃這家) is a bilingual (English/Traditional Chinese) web application that helps users discover restaurants near their location using Google Places API. The app features a slot machine-style interface for randomly selecting restaurants with real-time location detection and meal time filtering.
 
 ## Development Commands
 

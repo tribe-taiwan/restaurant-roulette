@@ -600,7 +600,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
         hours: 'horas'
       },
       fr: {
-        closedToday: 'Fermé aujourd\\'hui',
+        closedToday: 'Fermé aujourd\'hui',
         closingSoon: 'Ferme bientôt',
         openingSoon: 'Ouvre bientôt',
         openNow: 'Ouvert maintenant',

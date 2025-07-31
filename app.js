@@ -90,7 +90,7 @@ function App() {
         hours: "hours"
       },
       zh: {
-        title: "餐廳輪盤",
+        title: "吃這家",
         spinButton: "想吃什麼？",
         spinning: "正在尋找您的餐廳...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
