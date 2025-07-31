@@ -43,7 +43,7 @@ function App() {
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
     const [spinError, setSpinError] = React.useState(null);
-    const [searchRadius, setSearchRadius] = React.useState(5); // 預設5公里
+    const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里
     const [isRelocating, setIsRelocating] = React.useState(false);
     const [selectedMealTime, setSelectedMealTime] = React.useState('all'); // 用餐時段
     
@@ -56,7 +56,7 @@ function App() {
     const translations = {
       en: {
         title: "Restaurant Roulette",
-        spinButton: "Spin for Restaurant",
+        spinButton: "What shall we eat?",
         spinning: "Finding your restaurant...",
         locationError: "Please allow location access to find nearby restaurants.",
         locationLoading: "Getting your location...",
@@ -80,7 +80,7 @@ function App() {
       },
       zh: {
         title: "餐廳輪盤",
-        spinButton: "轉動尋找餐廳",
+        spinButton: "等一下要吃什麼？",
         spinning: "正在尋找您的餐廳...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
@@ -189,13 +189,14 @@ function App() {
         const result = await geocodeAddress(addressInput.trim());
         setUserLocation({ lat: result.lat, lng: result.lng });
         
-        // 根據語言獲取地址
+        // 根據語言獲取地址並立即更新顯示
         const address = await window.getAddressFromCoordinates(result.lat, result.lng, selectedLanguage);
-        setUserAddress(address);
+        const simplifiedAddress = getSimplifiedAddress(address);
+        setUserAddress(simplifiedAddress);
         setLocationStatus('success');
         setShowAddressInput(false);
         setAddressInput('');
-        console.log('✅ 地址校正成功:', result);
+        console.log('✅ 地址校正成功:', result, '簡化地址:', simplifiedAddress);
       } catch (error) {
         console.error('❌ 地址校正失敗:', error);
         alert('無法找到該地址，請重新輸入');
@@ -206,11 +207,14 @@ function App() {
     const saveLocation = async (type) => {
       if (!userLocation || !userAddress) return;
       
+      // 獲取完整地址用於儲存
+      const fullAddress = await window.getAddressFromCoordinates(userLocation.lat, userLocation.lng, selectedLanguage);
+      
       const newLocation = {
         type: type,
         lat: userLocation.lat,
         lng: userLocation.lng,
-        address: userAddress,
+        address: fullAddress,
         savedAt: new Date().toISOString()
       };
       
@@ -221,7 +225,7 @@ function App() {
       saveLocationToStorage(updatedLocations);
       
       // 儲存後立刻更新顯示地址為簡化版本
-      const simplifiedAddress = getSimplifiedAddress(userAddress);
+      const simplifiedAddress = getSimplifiedAddress(fullAddress);
       setUserAddress(simplifiedAddress);
       setShowAddressInput(false);
       
@@ -366,10 +370,10 @@ function App() {
                   
                   <button
                     onClick={() => setShowAddressInput(!showAddressInput)}
-                    className="w-12 h-12 rounded-full bg-[var(--accent-color)] hover:bg-yellow-500 text-black flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+                    className="w-12 h-12 rounded-full bg-[var(--accent-color)] hover:bg-yellow-500 text-black flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg"
                     title="校正位置"
                   >
-                    <div className="icon-edit-3 text-lg"></div>
+                    <div className="icon-edit-3 text-lg font-bold" style={{textShadow: '0 0 2px rgba(255,255,255,0.8)'}}>✏️</div>
                   </button>
                 </div>
               </div>
