@@ -34,12 +34,32 @@ function RestaurantCard({ restaurant, language, userLocation }) {
     };
 
     const getDirectionsUrl = () => {
-      // 使用完整路線規劃 - 起點為用戶位置，終點為餐廳
-      if (userLocation && restaurant.address) {
-        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+      // 參考 auto_publish 的邏輯：nav_origin = urllib.parse.quote(start_point if start_point else nav_origin)
+      let navOrigin = null;
+
+      // 優先使用當前用戶位置作為 start_point
+      if (userLocation) {
+        navOrigin = `${userLocation.lat},${userLocation.lng}`;
+      } else {
+        // 如果沒有當前位置，嘗試使用最後一次定位點作為 nav_origin
+        try {
+          const lastKnownLocation = localStorage.getItem('lastKnownLocation');
+          if (lastKnownLocation) {
+            const lastLocation = JSON.parse(lastKnownLocation);
+            navOrigin = `${lastLocation.lat},${lastLocation.lng}`;
+          }
+        } catch (error) {
+          console.warn('⚠️ 無法讀取最後一次的定位點:', error);
+        }
+      }
+
+      // 如果有起點和餐廳地址，建立路線規劃連結（參考 auto_publish 的 URL 格式）
+      if (navOrigin && restaurant.address) {
+        const origin = encodeURIComponent(navOrigin);
         const destination = encodeURIComponent(restaurant.address);
         return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
       }
+
       // 回退選項
       return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
     };
@@ -212,7 +232,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                   rel="noopener noreferrer"
                   className="text-[var(--primary-color)] hover:underline text-sm"
                 >
-                  {language === 'zh' ? '在Google地圖中查看導航' : 'View in Google Maps'}
+                  {language === 'zh' ? '查看路線規劃與導航' : 'View in Google Maps'}
                 </a>
               </div>
               
