@@ -134,6 +134,35 @@ function RestaurantCard({ restaurant, language, userLocation }) {
 
           {/* Restaurant Info */}
           <div>
+            {/* 網站和導航 - 移到地址上面 */}
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
+                <a
+                  href={getDirectionsUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--primary-color)] hover:underline text-sm"
+                >
+                  {language === 'zh' ? '查看路線規劃與導航' : 'View in Google Maps'}
+                </a>
+              </div>
+
+              {restaurant.website && (
+                <div className="flex items-center gap-2">
+                  <div className="icon-globe text-[var(--accent-color)] text-lg"></div>
+                  <a
+                    href={restaurant.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--accent-color)] hover:underline text-sm"
+                  >
+                    {language === 'zh' ? '查看官網' : 'Visit Website'}
+                  </a>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4 mb-6">
               <div className="flex items-start gap-3">
                 <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
@@ -222,34 +251,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
               </div>
             )}
 
-            {/* 網站和導航 - 一行顯示 */}
-            <div className="flex flex-wrap gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
-                <a 
-                  href={getDirectionsUrl()}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[var(--primary-color)] hover:underline text-sm"
-                >
-                  {language === 'zh' ? '查看路線規劃與導航' : 'View in Google Maps'}
-                </a>
-              </div>
-              
-              {restaurant.website && (
-                <div className="flex items-center gap-2">
-                  <div className="icon-globe text-[var(--accent-color)] text-lg"></div>
-                  <a 
-                    href={restaurant.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-[var(--accent-color)] hover:underline text-sm"
-                  >
-                    {language === 'zh' ? '查看官網' : 'Visit Website'}
-                  </a>
-                </div>
-              )}
-            </div>
+
           </div>
         </div>
 
