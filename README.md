@@ -99,8 +99,13 @@ restaurant-roulette/
 
 如遇到問題，請查看瀏覽器控制台的詳細錯誤訊息，或使用 `test-api.html` 進行診斷。
 
+## 🤖 AI 開發協助規則
+
+- **無論用戶使用何種語言，AI都用繁體中文回應**
+- **修改代碼結束後幫我GIT COMMIT並 PUSH --force**
+
 ---
 
-**Commit Hash**: `54fd4f7`  
+**Commit Hash**: `9b94b11`  
 **最後更新**: 2025-07-31  
-**版本**: v2.0 - Google Places API 整合版
+**版本**: v2.1 - 介面優化與功能改進版
