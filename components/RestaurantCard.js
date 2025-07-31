@@ -9,6 +9,10 @@ function RestaurantCard({ restaurant, language }) {
 
     const formatHours = (hours) => {
       if (!hours) return language === 'zh' ? '營業時間未提供' : 'Hours not available';
+      // 如果包含HTML標籤，直接返回（已經格式化）
+      if (hours.includes('<br>')) {
+        return <span dangerouslySetInnerHTML={{ __html: hours }} />;
+      }
       return hours;
     };
 

@@ -432,10 +432,16 @@ async function formatRestaurantData(place) {
     // 處理價格等級
     const priceLevel = place.price_level || (details && details.price_level) || 2;
     
-    // 處理營業時間
+    // 處理營業時間 - 改善排版格式
     let hours = '營業時間請洽餐廳';
     if (details && details.opening_hours && details.opening_hours.weekday_text) {
-      hours = details.opening_hours.weekday_text.slice(0, 3).join(', '); // 只顯示前3天避免太長
+      // 格式化營業時間，每個星期幾為一行，AM/PM字體小
+      hours = details.opening_hours.weekday_text
+        .map(dayHours => {
+          // 將AM/PM字體變小
+          return dayHours.replace(/AM|PM/g, match => `<small>${match}</small>`);
+        })
+        .join('<br>'); // 使用<br>換行
     }
 
     // 處理餐廳類型
