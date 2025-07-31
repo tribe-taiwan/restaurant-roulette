@@ -280,7 +280,7 @@ function App() {
           setUserAddress(address);
           
           // 初次載入時自動執行餐廳搜索
-          if (isInitialLoad && userLocation) {
+          if (isInitialLoad) {
             setIsInitialLoad(false);
             console.log('🎯 初次載入，自動搜索餐廳...');
             setTimeout(() => {
@@ -292,7 +292,7 @@ function App() {
         console.error('獲取地址失敗:', error);
         setUserAddress(t.addressError);
         // 即使地址獲取失敗，如果是初次載入也要嘗試搜索餐廳
-        if (isInitialLoad && userLocation) {
+        if (isInitialLoad) {
           setIsInitialLoad(false);
           console.log('🎯 初次載入（地址失敗），仍自動搜索餐廳...');
           setTimeout(() => {
@@ -384,179 +384,29 @@ function App() {
               onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
             />
-            <div className="flex flex-col items-center gap-4 mb-8">
-              <div className="flex items-center justify-center gap-4">
-                <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
-                  {t.title}
-                </h1>
-                <div className="flex gap-2">
-                  <button
-                    onClick={getUserLocation}
-                    disabled={isRelocating}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform ${
-                      isRelocating 
-                        ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
-                        : locationStatus === 'success'
-                          ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
-                          : locationStatus === 'error'
-                            ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
-                            : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
-                    }`}
-                    title={t.relocateButton}
-                  >
-                    {isRelocating ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <div className={`icon-map-pin text-white text-lg ${
-                        locationStatus === 'success' ? 'animate-pulse' : ''
-                      }`}></div>
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowAddressInput(!showAddressInput)}
-                    className="w-12 h-12 rounded-full bg-[var(--accent-color)] hover:bg-yellow-500 text-black flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    title="校正位置"
-                  >
-                    <div className="icon-edit-3 text-lg font-bold" style={{textShadow: '0 0 2px rgba(255,255,255,0.8)'}}>✏️</div>
-                  </button>
-                </div>
-              </div>
-              
-              {/* 位置資訊顯示 */}
-              {locationStatus === 'success' && userAddress && (
-                <div className="bg-[var(--surface-color)] rounded-lg px-4 py-2 text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
-                    <span>{userAddress}</span>
-                  </div>
-                </div>
-              )}
-              
-              {/* 地址校正輸入區域 - 優化版 */}
-              {showAddressInput && (
-                <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
-                  {/* 已儲存的位置 - 使用新的合併邏輯 */}
-                  {savedLocations.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex gap-2">
-                        {savedLocations.map((location) => (
-                          <button
-                            key={location.type}
-                            onClick={() => handleLocationButton(location.type)}
-                            className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
-                          >
-                            <span>{location.type === 'home' ? '🏠' : '🏢'}</span>
-                            <span>{location.type === 'home' ? t.home : t.office}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* 地址輸入 - 去掉標題 */}
-                  <div className="mb-3">
-                    <input
-                      type="text"
-                      value={addressInput}
-                      onChange={(e) => setAddressInput(e.target.value)}
-                      placeholder={t.enterAddress}
-                      className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-[var(--primary-color)] focus:outline-none"
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddressConfirm()}
-                    />
-                  </div>
-                  
-                  {/* 智能按鈕群組 - 合併定位和儲存功能 */}
-                  <div className="flex gap-2">
-                    {/* 定位到這裡按鈕 */}
-                    <button
-                      onClick={handleAddressConfirm}
-                      disabled={!addressInput.trim() || isGeocodingAddress}
-                      className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] disabled:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
-                    >
-                      {isGeocodingAddress ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        t.locateHere
-                      )}
-                    </button>
-                    
-                    {/* 智能住家按鈕 */}
-                    <button
-                      onClick={() => handleLocationButton('home')}
-                      disabled={isGeocodingAddress}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span>🏠</span>
-                      <span>
-                        {addressInput.trim() ? `${selectedLanguage === 'zh' ? '儲存' : t.saveText} ${t.home}` : t.home}
-                      </span>
-                    </button>
-                    
-                    {/* 智能公司按鈕 */}
-                    <button
-                      onClick={() => handleLocationButton('office')}
-                      disabled={isGeocodingAddress}
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span>🏢</span>
-                      <span>
-                        {addressInput.trim() ? `儲存${t.office}` : t.office}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <LocationManager 
+              locationStatus={locationStatus}
+              userAddress={userAddress}
+              showAddressInput={showAddressInput}
+              setShowAddressInput={setShowAddressInput}
+              savedLocations={savedLocations}
+              addressInput={addressInput}
+              setAddressInput={setAddressInput}
+              isGeocodingAddress={isGeocodingAddress}
+              onRelocate={getUserLocation}
+              onAddressConfirm={handleAddressConfirm}
+              onLocationButton={handleLocationButton}
+              translations={t}
+              isRelocating={isRelocating}
+            />
             
-            {/* 搜索範圍設定 */}
-            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-4">
-              <div className="flex items-center justify-between gap-4">
-                <label className="text-[var(--text-secondary)] font-medium">
-                  {t.radiusLabel}
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min="1"
-                    max="20"
-                    value={searchRadius}
-                    onChange={(e) => setSearchRadius(Number(e.target.value))}
-                    className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                    style={{'--value': `${((searchRadius - 1) / (20 - 1)) * 100}%`}}
-                  />
-                  <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
-                    {searchRadius} {t.radiusKm}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* 用餐時段選擇 - 去掉標題和all time按鈕 */}
-            <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
-              <div className="flex gap-2 justify-center">
-                {[
-                  { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
-                  { id: 'lunch', label: t.lunch, icon: '☀️', time: '11-14' },
-                  { id: 'dinner', label: t.dinner, icon: '🌃', time: '17-22' }
-                ].map((mealTime) => (
-                  <button
-                    key={mealTime.id}
-                    onClick={() => setSelectedMealTime(mealTime.id)}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      selectedMealTime === mealTime.id
-                        ? 'bg-[var(--primary-color)] text-white'
-                        : 'bg-gray-700 text-[var(--text-secondary)] hover:bg-gray-600'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-lg">{mealTime.icon}</span>
-                      <span className="text-xs">{mealTime.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <SearchSettings 
+              searchRadius={searchRadius}
+              setSearchRadius={setSearchRadius}
+              selectedMealTime={selectedMealTime}
+              setSelectedMealTime={setSelectedMealTime}
+              translations={t}
+            />
           </div>
 
           {/* Slot Machine */}
@@ -579,33 +429,11 @@ function App() {
             </div>
           )}
 
-          {locationStatus === 'loading' && (
-            <div className="text-center text-[var(--secondary-color)] mt-4">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-[var(--secondary-color)] border-t-transparent rounded-full animate-spin"></div>
-                {t.locationLoading}
-              </div>
-            </div>
-          )}
-          
-          {locationStatus === 'error' && (
-            <div className="text-center text-[var(--warning-color)] mt-4 bg-[var(--surface-color)] rounded-lg p-3 max-w-md mx-auto">
-              <div className="icon-map-pin text-[var(--warning-color)] text-lg mb-2"></div>
-              {t.locationError}
-            </div>
-          )}
-
-          {spinError && (
-            <div className="text-center text-[var(--warning-color)] mt-4 bg-[var(--surface-color)] rounded-lg p-3 max-w-lg mx-auto">
-              <div className="icon-warning text-[var(--warning-color)] text-lg mb-2"></div>
-              <div className="text-sm text-left">
-                <strong>{t.spinErrorPrefix}</strong>
-                <div className="mt-2 p-2 bg-gray-800 rounded text-xs text-gray-300 font-mono overflow-auto">
-                  {spinError}
-                </div>
-              </div>
-            </div>
-          )}
+          <StatusMessages 
+            locationStatus={locationStatus}
+            spinError={spinError}
+            translations={t}
+          />
         </div>
         
         {/* Footer */}
