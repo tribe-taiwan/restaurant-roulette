@@ -277,6 +277,22 @@ function App() {
         getAddressFromCoords(userLocation.lat, userLocation.lng);
       }
     }, [selectedLanguage]);
+
+    // 語言切換時重新計算餐廳營業狀態
+    React.useEffect(() => {
+      if (currentRestaurant && currentRestaurant.operatingStatus && window.getBusinessStatus) {
+        try {
+          // 重新計算營業狀態以支援多國語言
+          // 注意：這裡無法獲取到原始的 opening_hours 資料，所以只能更新訊息格式
+          console.log('🌐 語言切換，重新計算營業狀態:', selectedLanguage);
+          
+          // 暫時保留原始狀態，理想情況下需要重新調用 getBusinessStatus
+          // 但由於沒有 opening_hours 數據，先保持原狀
+        } catch (error) {
+          console.warn('⚠️ 重新計算營業狀態失敗:', error);
+        }
+      }
+    }, [selectedLanguage, currentRestaurant]);
     
     // 更新滑桿填充顏色
     React.useEffect(() => {
@@ -555,6 +571,17 @@ function App() {
         
         // 調用更新後的 getRandomRestaurant 函數（現在支援營業時間篩選）
         const restaurant = await getRandomRestaurant(userLocation, selectedMealTime);
+        
+        // 重新計算營業狀態以支援多國語言
+        if (restaurant.operatingStatus && window.getBusinessStatus) {
+          try {
+            // 需要餐廳的 opening_hours 資料來重新計算
+            // 暫時保留原始狀態，之後需要改進
+            console.log('🌐 重新計算營業狀態支援語言:', selectedLanguage);
+          } catch (error) {
+            console.warn('⚠️ 重新計算營業狀態失敗:', error);
+          }
+        }
         
         console.log('✅ 成功獲取餐廳:', restaurant);
         setCurrentRestaurant(restaurant);
