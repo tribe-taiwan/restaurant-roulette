@@ -45,7 +45,8 @@ function App() {
     const [spinError, setSpinError] = React.useState(null);
     const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里
     const [isRelocating, setIsRelocating] = React.useState(false);
-    const [selectedMealTime, setSelectedMealTime] = React.useState('all'); // 用餐時段
+    const [selectedMealTime, setSelectedMealTime] = React.useState('lunch'); // 預設午餐時段
+    const [isInitialLoad, setIsInitialLoad] = React.useState(true); // 追蹤是否為初次載入
     
     // 地址校正相關狀態
     const [showAddressInput, setShowAddressInput] = React.useState(false);
@@ -76,7 +77,8 @@ function App() {
         enterAddress: "Enter address to correct location",
         locateHere: "📍 Locate here",
         home: "Home",
-        office: "Office"
+        office: "Office",
+        saveText: "Save"
       },
       zh: {
         title: "餐廳輪盤",
@@ -203,33 +205,59 @@ function App() {
       }
     };
 
-    // 儲存位置
-    const saveLocation = async (type) => {
-      if (!userLocation || !userAddress) return;
+    // 智能住家/公司按鈕處理 - 根據輸入框狀態決定行為
+    const handleLocationButton = async (type) => {
+      if (addressInput.trim()) {
+        // 輸入框有內容時：儲存位置功能
+        await saveLocationFromInput(type);
+      } else {
+        // 輸入框為空時：使用已儲存位置
+        const savedLocation = savedLocations.find(loc => loc.type === type);
+        if (savedLocation) {
+          await useSavedLocation(savedLocation);
+        }
+      }
+    };
+
+    // 從輸入框儲存位置（新功能）
+    const saveLocationFromInput = async (type) => {
+      if (!addressInput.trim()) return;
       
-      // 獲取完整地址用於儲存
-      const fullAddress = await window.getAddressFromCoordinates(userLocation.lat, userLocation.lng, selectedLanguage);
-      
-      const newLocation = {
-        type: type,
-        lat: userLocation.lat,
-        lng: userLocation.lng,
-        address: fullAddress,
-        savedAt: new Date().toISOString()
-      };
-      
-      const updatedLocations = savedLocations.filter(loc => loc.type !== type);
-      updatedLocations.push(newLocation);
-      
-      setSavedLocations(updatedLocations);
-      saveLocationToStorage(updatedLocations);
-      
-      // 儲存後立刻更新顯示地址為簡化版本
-      const simplifiedAddress = getSimplifiedAddress(fullAddress);
-      setUserAddress(simplifiedAddress);
-      setShowAddressInput(false);
-      
-      console.log('✅ 位置已儲存並更新顯示:', newLocation, '簡化地址:', simplifiedAddress);
+      try {
+        // 先將輸入地址轉為座標
+        const result = await geocodeAddress(addressInput.trim());
+        const coords = { lat: result.lat, lng: result.lng };
+        
+        // 獲取完整地址用於儲存
+        const fullAddress = await window.getAddressFromCoordinates(coords.lat, coords.lng, selectedLanguage);
+        
+        const newLocation = {
+          type: type,
+          lat: coords.lat,
+          lng: coords.lng,
+          address: fullAddress,
+          savedAt: new Date().toISOString()
+        };
+        
+        const updatedLocations = savedLocations.filter(loc => loc.type !== type);
+        updatedLocations.push(newLocation);
+        
+        setSavedLocations(updatedLocations);
+        saveLocationToStorage(updatedLocations);
+        
+        // 立即更新當前定位到儲存的位置
+        setUserLocation(coords);
+        const simplifiedAddress = getSimplifiedAddress(fullAddress);
+        setUserAddress(simplifiedAddress);
+        setLocationStatus('success');
+        setShowAddressInput(false);
+        setAddressInput('');
+        
+        console.log('✅ 位置已儲存並更新定位:', newLocation, '簡化地址:', simplifiedAddress);
+      } catch (error) {
+        console.error('❌ 儲存位置失敗:', error);
+        alert('無法儲存該地址，請重新輸入');
+      }
     };
 
     // 使用已儲存的位置
@@ -250,10 +278,27 @@ function App() {
         if (window.getAddressFromCoordinates) {
           const address = await window.getAddressFromCoordinates(lat, lng, selectedLanguage);
           setUserAddress(address);
+          
+          // 初次載入時自動執行餐廳搜索
+          if (isInitialLoad && userLocation) {
+            setIsInitialLoad(false);
+            console.log('🎯 初次載入，自動搜索餐廳...');
+            setTimeout(() => {
+              handleSpin();
+            }, 500); // 延遲500ms確保UI已更新
+          }
         }
       } catch (error) {
         console.error('獲取地址失敗:', error);
         setUserAddress(t.addressError);
+        // 即使地址獲取失敗，如果是初次載入也要嘗試搜索餐廳
+        if (isInitialLoad && userLocation) {
+          setIsInitialLoad(false);
+          console.log('🎯 初次載入（地址失敗），仍自動搜索餐廳...');
+          setTimeout(() => {
+            handleSpin();
+          }, 500);
+        }
       }
     };
 
@@ -391,14 +436,14 @@ function App() {
               {/* 地址校正輸入區域 - 優化版 */}
               {showAddressInput && (
                 <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
-                  {/* 已儲存的位置 - 去掉標題 */}
+                  {/* 已儲存的位置 - 使用新的合併邏輯 */}
                   {savedLocations.length > 0 && (
                     <div className="mb-4">
                       <div className="flex gap-2">
                         {savedLocations.map((location) => (
                           <button
                             key={location.type}
-                            onClick={() => useSavedLocation(location)}
+                            onClick={() => handleLocationButton(location.type)}
                             className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
                           >
                             <span>{location.type === 'home' ? '🏠' : '🏢'}</span>
@@ -421,8 +466,9 @@ function App() {
                     />
                   </div>
                   
-                  {/* 按鈕群組 - 去掉取消按鈕，改進確認按鈕 */}
-                  <div className="flex gap-2 mb-3">
+                  {/* 智能按鈕群組 - 合併定位和儲存功能 */}
+                  <div className="flex gap-2">
+                    {/* 定位到這裡按鈕 */}
                     <button
                       onClick={handleAddressConfirm}
                       disabled={!addressInput.trim() || isGeocodingAddress}
@@ -434,27 +480,31 @@ function App() {
                         t.locateHere
                       )}
                     </button>
+                    
+                    {/* 智能住家按鈕 */}
+                    <button
+                      onClick={() => handleLocationButton('home')}
+                      disabled={isGeocodingAddress}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span>🏠</span>
+                      <span>
+                        {addressInput.trim() ? `${selectedLanguage === 'zh' ? '儲存' : t.saveText} ${t.home}` : t.home}
+                      </span>
+                    </button>
+                    
+                    {/* 智能公司按鈕 */}
+                    <button
+                      onClick={() => handleLocationButton('office')}
+                      disabled={isGeocodingAddress}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span>🏢</span>
+                      <span>
+                        {addressInput.trim() ? `儲存${t.office}` : t.office}
+                      </span>
+                    </button>
                   </div>
-                  
-                  {/* 儲存位置按鈕 */}
-                  {userLocation && userAddress && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveLocation('home')}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors flex items-center justify-center gap-1"
-                      >
-                        <span>🏠</span>
-                        <span>儲存{t.home}</span>
-                      </button>
-                      <button
-                        onClick={() => saveLocation('office')}
-                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition-colors flex items-center justify-center gap-1"
-                      >
-                        <span>🏢</span>
-                        <span>儲存{t.office}</span>
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
