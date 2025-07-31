@@ -435,11 +435,19 @@ async function formatRestaurantData(place) {
     // 處理營業時間 - 改善排版格式
     let hours = '營業時間請洽餐廳';
     if (details && details.opening_hours && details.opening_hours.weekday_text) {
-      // 格式化營業時間，每個星期幾為一行，AM/PM字體小
+      // 格式化營業時間，每個星期幾為一行，AM/PM字體小且顏色淺
       hours = details.opening_hours.weekday_text
         .map(dayHours => {
-          // 將AM/PM字體變小
-          return dayHours.replace(/AM|PM/g, match => `<small>${match}</small>`);
+          // 將星期幾改為縮寫並使用等寬字體對齊，AM/PM字體更小且顏色更淺
+          return dayHours
+            .replace(/Monday/g, '<span style="font-family: monospace; font-weight: bold;">Mon</span>')
+            .replace(/Tuesday/g, '<span style="font-family: monospace; font-weight: bold;">Tue</span>')
+            .replace(/Wednesday/g, '<span style="font-family: monospace; font-weight: bold;">Wed</span>')
+            .replace(/Thursday/g, '<span style="font-family: monospace; font-weight: bold;">Thu</span>')
+            .replace(/Friday/g, '<span style="font-family: monospace; font-weight: bold;">Fri</span>')
+            .replace(/Saturday/g, '<span style="font-family: monospace; font-weight: bold;">Sat</span>')
+            .replace(/Sunday/g, '<span style="font-family: monospace; font-weight: bold;">Sun</span>')
+            .replace(/AM|PM/g, match => `<small style="color: #ccc; font-size: 0.7em;">${match}</small>`);
         })
         .join('<br>'); // 使用<br>換行
     }

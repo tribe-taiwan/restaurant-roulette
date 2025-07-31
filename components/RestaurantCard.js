@@ -1,4 +1,4 @@
-function RestaurantCard({ restaurant, language }) {
+function RestaurantCard({ restaurant, language, userLocation }) {
   try {
     const [selectedImage, setSelectedImage] = React.useState(null);
 
@@ -34,9 +34,11 @@ function RestaurantCard({ restaurant, language }) {
     };
 
     const getDirectionsUrl = () => {
-      // 優先使用路線規劃功能
-      if (restaurant.id) {
-        return `https://www.google.com/maps/dir/?api=1&destination=place_id:${restaurant.id}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+      // 使用完整路線規劃 - 起點為用戶位置，終點為餐廳
+      if (userLocation && restaurant.address) {
+        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+        const destination = encodeURIComponent(restaurant.address);
+        return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
       }
       // 回退選項
       return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
@@ -91,7 +93,7 @@ function RestaurantCard({ restaurant, language }) {
               <img 
                 src={restaurant.image} 
                 alt={restaurant.name}
-                className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                className="w-full aspect-video object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleImageClick}
                 title={language === 'zh' ? '點擊查看Google地圖相片' : 'Click to view Google Maps photos'}
               />
@@ -202,6 +204,18 @@ function RestaurantCard({ restaurant, language }) {
 
             {/* 網站和導航 - 一行顯示 */}
             <div className="flex flex-wrap gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
+                <a 
+                  href={getDirectionsUrl()}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[var(--primary-color)] hover:underline text-sm"
+                >
+                  {language === 'zh' ? '在Google地圖中查看導航' : 'View in Google Maps'}
+                </a>
+              </div>
+              
               {restaurant.website && (
                 <div className="flex items-center gap-2">
                   <div className="icon-globe text-[var(--accent-color)] text-lg"></div>
@@ -215,18 +229,6 @@ function RestaurantCard({ restaurant, language }) {
                   </a>
                 </div>
               )}
-              
-              <div className="flex items-center gap-2">
-                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
-                <a 
-                  href={getDirectionsUrl()}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[var(--primary-color)] hover:underline text-sm"
-                >
-                  {language === 'zh' ? '在Google地圖中查看導航' : 'View in Google Maps'}
-                </a>
-              </div>
             </div>
           </div>
         </div>
