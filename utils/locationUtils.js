@@ -728,3 +728,4 @@ async function getRandomRestaurant(userLocation, selectedMealTime = 'all') {
 // 全局函數用於計算距離
 window.calculateDistance = calculateDistance;
 window.getBusinessStatus = getBusinessStatus;
+window.getRandomRestaurant = getRandomRestaurant;
