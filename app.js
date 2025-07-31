@@ -47,6 +47,8 @@ function App() {
     const [isRelocating, setIsRelocating] = React.useState(false);
     const [selectedMealTime, setSelectedMealTime] = React.useState('lunch'); // 預設午餐時段
     const [isInitialLoad, setIsInitialLoad] = React.useState(true); // 追蹤是否為初次載入
+    const [lastKnownLocation, setLastKnownLocation] = React.useState(null); // 儲存上一次成功的定位
+    const [locationError, setLocationError] = React.useState(null); // 儲存定位錯誤訊息
     
     // 地址校正相關狀態
     const [showAddressInput, setShowAddressInput] = React.useState(false);
@@ -82,7 +84,7 @@ function App() {
       },
       zh: {
         title: "餐廳輪盤",
-        spinButton: "等一下要吃什麼？",
+        spinButton: "想吃什麼？",
         spinning: "正在尋找您的餐廳...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
@@ -108,11 +110,17 @@ function App() {
 
     const t = translations[selectedLanguage];
 
-    // 載入已儲存的位置
+    // 載入已儲存的位置和上一次的定位
     React.useEffect(() => {
       const saved = localStorage.getItem('savedLocations');
       if (saved) {
         setSavedLocations(JSON.parse(saved));
+      }
+      
+      // 載入上一次的定位
+      const lastLocation = localStorage.getItem('lastKnownLocation');
+      if (lastLocation) {
+        setLastKnownLocation(JSON.parse(lastLocation));
       }
     }, []);
 
@@ -305,11 +313,11 @@ function App() {
     const getUserLocation = () => {
       setLocationStatus('loading');
       setIsRelocating(true);
+      setLocationError(null); // 清除之前的錯誤
       
       if (!navigator.geolocation) {
         console.log('Geolocation is not supported by this browser');
-        setLocationStatus('error');
-        setIsRelocating(false);
+        handleLocationError('瀏覽器不支援定位功能');
         return;
       }
 
@@ -319,9 +327,19 @@ function App() {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
+          
+          // 儲存成功的定位到localStorage和狀態
+          const locationData = {
+            ...coords,
+            timestamp: new Date().toISOString()
+          };
+          localStorage.setItem('lastKnownLocation', JSON.stringify(locationData));
+          setLastKnownLocation(locationData);
+          
           setUserLocation(coords);
           setLocationStatus('success');
           setIsRelocating(false);
+          setLocationError(null);
           console.log('Location detected:', coords.lat, coords.lng);
           
           // 獲取地址資訊
@@ -330,8 +348,33 @@ function App() {
         },
         (error) => {
           console.log('Location error:', error.message);
-          setLocationStatus('error');
-          setIsRelocating(false);
+          
+          // 嘗試使用上一次的定位
+          if (lastKnownLocation) {
+            console.log('使用上一次的定位:', lastKnownLocation);
+            setUserLocation({ lat: lastKnownLocation.lat, lng: lastKnownLocation.lng });
+            setLocationStatus('success');
+            setUserAddress('使用上一次的位置');
+            setIsRelocating(false);
+            
+            // 獲取地址資訊
+            setTimeout(() => {
+              getAddressFromCoords(lastKnownLocation.lat, lastKnownLocation.lng);
+            }, 100);
+          } else {
+            // 沒有上一次的定位，顯示錯誤
+            const errorDetails = {
+              errorType: 'LocationError',
+              errorMessage: '用戶位置不可用',
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              geolocationSupported: !!navigator.geolocation,
+              errorCode: error.code,
+              originalMessage: error.message
+            };
+            
+            handleLocationError(`定位失敗。技術資訊: ${JSON.stringify(errorDetails)}`);
+          }
         },
         {
           enableHighAccuracy: true,
@@ -339,6 +382,13 @@ function App() {
           maximumAge: 300000
         }
       );
+    };
+    
+    // 處理定位錯誤
+    const handleLocationError = (errorMessage) => {
+      setLocationStatus('error');
+      setIsRelocating(false);
+      setLocationError(errorMessage);
     };
 
     const handleSpin = async () => {
@@ -433,6 +483,7 @@ function App() {
           <StatusMessages 
             locationStatus={locationStatus}
             spinError={spinError}
+            locationError={locationError}
             translations={t}
           />
         </div>

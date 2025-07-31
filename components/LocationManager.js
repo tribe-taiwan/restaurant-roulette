@@ -72,23 +72,38 @@ function LocationManager({
         {/* 地址校正輸入區域 */}
         {showAddressInput && (
           <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
-            {/* 已儲存的位置 */}
-            {savedLocations.length > 0 && (
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  {savedLocations.map((location) => (
-                    <button
-                      key={location.type}
-                      onClick={() => onLocationButton(location.type)}
-                      className="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span>{location.type === 'home' ? '🏠' : '🏢'}</span>
-                      <span>{location.type === 'home' ? t.home : t.office}</span>
-                    </button>
-                  ))}
-                </div>
+            {/* 住家公司按鈕 - 總是顯示 */}
+            <div className="mb-4">
+              <div className="flex gap-2">
+                {/* 住家按鈕 */}
+                <button
+                  onClick={() => onLocationButton('home')}
+                  className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${
+                    savedLocations.some(loc => loc.type === 'home')
+                      ? 'bg-[var(--success-color)] hover:bg-green-600'
+                      : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]'
+                  }`}
+                  title={savedLocations.some(loc => loc.type === 'home') ? '使用已儲存的住家位置' : '將當前輸入儲存為住家位置'}
+                >
+                  <span>🏠</span>
+                  <span>{t.home}</span>
+                </button>
+                
+                {/* 公司按鈕 */}
+                <button
+                  onClick={() => onLocationButton('office')}
+                  className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${
+                    savedLocations.some(loc => loc.type === 'office')
+                      ? 'bg-[var(--success-color)] hover:bg-green-600'
+                      : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]'
+                  }`}
+                  title={savedLocations.some(loc => loc.type === 'office') ? '使用已儲存的公司位置' : '將當前輸入儲存為公司位置'}
+                >
+                  <span>🏢</span>
+                  <span>{t.office}</span>
+                </button>
               </div>
-            )}
+            </div>
             
             {/* 地址輸入 */}
             <div className="mb-3">

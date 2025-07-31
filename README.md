@@ -103,7 +103,7 @@ restaurant-roulette/
 
 - **無論用戶使用何種語言，AI都用繁體中文回應**
 - **修改代碼結束後幫我GIT COMMIT並 PUSH --force**
-
+- **最小化成程度修改，不要優化**
 ---
 
 **Commit Hash**: `9b94b11`  

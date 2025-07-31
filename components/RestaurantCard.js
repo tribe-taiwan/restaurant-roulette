@@ -30,15 +30,19 @@ function RestaurantCard({ restaurant, language }) {
     };
 
     const getDirectionsUrl = () => {
-      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}&query_place_id=${restaurant.id}`;
+      // 優先使用路線規劃功能
+      if (restaurant.id) {
+        return `https://www.google.com/maps/dir/?api=1&destination=place_id:${restaurant.id}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+      }
+      // 回退選項
+      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
     };
 
-    // Google風格的星級顯示
+    // Google風格的星級顯示（簡化版，無半顆星）
     const renderGoogleStars = () => {
       const rating = restaurant.rating || 0;
-      const fullStars = Math.floor(rating);
-      const hasHalfStar = rating % 1 >= 0.5;
-      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      const fullStars = Math.round(rating); // 四捨五入到最接近的整數
+      const emptyStars = 5 - fullStars;
       
       return (
         <div className="flex items-center gap-1">
@@ -46,13 +50,6 @@ function RestaurantCard({ restaurant, language }) {
           {[...Array(fullStars)].map((_, i) => (
             <span key={`full-${i}`} className="text-[#fbbc04] text-lg">★</span>
           ))}
-          {/* 半星 */}
-          {hasHalfStar && (
-            <span className="text-[#fbbc04] text-lg relative">
-              <span className="absolute inset-0">☆</span>
-              <span className="absolute inset-0 overflow-hidden w-1/2">★</span>
-            </span>
-          )}
           {/* 空心星星 */}
           {[...Array(emptyStars)].map((_, i) => (
             <span key={`empty-${i}`} className="text-gray-400 text-lg">☆</span>
@@ -97,19 +94,11 @@ function RestaurantCard({ restaurant, language }) {
               <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                 {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
               </div>
-              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-                <span>📸</span>
-                <span>{language === 'zh' ? '點擊查看相片' : 'Click to view photos'}</span>
-              </div>
-              {/* 新增：點擊查看位置按鈕 */}
+              {/* 點擊查看位置按鈕 - 與點擊照片功能相同 */}
               <div 
                 className="absolute bottom-4 right-4 bg-blue-600 bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-all"
-                onClick={(e) => {
-                  e.stopPropagation(); // 防止觸發圖片點擊
-                  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=place_id:${restaurant.id}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-                  window.open(directionsUrl, '_blank');
-                }}
-                title={language === 'zh' ? '點擊查看路線' : 'Click for directions'}
+                onClick={handleImageClick}
+                title={language === 'zh' ? '點擊查看Google地圖相片' : 'Click to view Google Maps photos'}
               >
                 <span>📍</span>
                 <span>{language === 'zh' ? '查看位置' : 'View location'}</span>
@@ -231,11 +220,8 @@ function RestaurantCard({ restaurant, language }) {
                   rel="noopener noreferrer"
                   className="text-[var(--primary-color)] hover:underline text-sm"
                 >
-                  {language === 'zh' ? '在Google地圖中查看' : 'View in Google Maps'}
+                  {language === 'zh' ? '在Google地圖中查看導航' : 'View in Google Maps'}
                 </a>
-                <span className="text-[var(--text-secondary)] text-sm">
-                  {language === 'zh' ? '導航' : 'Directions'}
-                </span>
               </div>
             </div>
           </div>
