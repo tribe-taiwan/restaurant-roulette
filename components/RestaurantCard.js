@@ -13,8 +13,16 @@ function RestaurantCard({ restaurant, language }) {
     };
 
     const handleImageClick = () => {
-      // 點擊照片直接跳轉到Google Maps
-      window.open(restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}&query_place_id=${restaurant.id}`, '_blank');
+      // 點擊照片跳轉到Google Maps相片功能
+      let url;
+      if (restaurant.id) {
+        // 使用place_id直接跳轉到相片頁面  
+        url = `https://www.google.com/maps/place/?q=place_id:${restaurant.id}&hl=${language === 'zh' ? 'zh-TW' : 'en'}&tab=photos`;
+      } else {
+        // 回退到一般搜索
+        url = `https://www.google.com/maps/search/${encodeURIComponent(restaurant.name + ', ' + restaurant.address)}/photos`;
+      }
+      window.open(url, '_blank');
     };
 
     const closeModal = () => {
@@ -58,10 +66,20 @@ function RestaurantCard({ restaurant, language }) {
         {/* Restaurant Header */}
         <div className="mb-6">
           <h2 className="text-3xl font-bold mb-3 text-[var(--text-primary)]">{restaurant.name}</h2>
-          <div className="flex items-center gap-2 mb-3">
-            {renderGoogleStars()}
-            <span className="text-[var(--text-secondary)] font-medium ml-1">{restaurant.rating}</span>
-            <span className="text-[var(--text-secondary)]">({restaurant.reviewCount.toLocaleString()})</span>
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              {renderGoogleStars()}
+              <span className="text-[var(--text-secondary)] font-medium ml-1">{restaurant.rating}</span>
+              <span className="text-[var(--text-secondary)]">({restaurant.reviewCount.toLocaleString()})</span>
+            </div>
+            {/* Cuisine Type 顯示在星級評分右邊 */}
+            <div className="flex flex-wrap gap-1 ml-2">
+              {restaurant.cuisine.map((type, index) => (
+                <span key={index} className="bg-[var(--primary-color)] text-white px-2 py-1 rounded-full text-xs">
+                  {type}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -74,13 +92,14 @@ function RestaurantCard({ restaurant, language }) {
                 alt={restaurant.name}
                 className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleImageClick}
-                title={language === 'zh' ? '點擊在Google地圖中查看' : 'Click to view in Google Maps'}
+                title={language === 'zh' ? '點擊查看Google地圖相片' : 'Click to view Google Maps photos'}
               />
               <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                 {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
               </div>
-              <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                📸 {language === 'zh' ? '點擊查看位置' : 'Click to view location'}
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+                <span>📸</span>
+                <span>{language === 'zh' ? '點擊查看相片' : 'Click to view photos'}</span>
               </div>
             </div>
           </div>
@@ -121,14 +140,7 @@ function RestaurantCard({ restaurant, language }) {
               </div>
             </div>
 
-            {/* Cuisine Type */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {restaurant.cuisine.map((type, index) => (
-                <span key={index} className="bg-[var(--primary-color)] text-white px-3 py-1 rounded-full text-sm">
-                  {type}
-                </span>
-              ))}
-            </div>
+            {/* Cuisine Type 已移至星級評分右邊，此處移除 */}
 
             {/* 營業狀態 */}
             {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
