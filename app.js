@@ -643,9 +643,10 @@ function App() {
           {/* Restaurant Result */}
           {currentRestaurant && !isSpinning && !spinError && (
             <div className="mt-8">
-              <RestaurantCard 
+              <RestaurantCard
                 restaurant={currentRestaurant}
                 language={selectedLanguage}
+                userLocation={userLocation}
               />
             </div>
           )}
