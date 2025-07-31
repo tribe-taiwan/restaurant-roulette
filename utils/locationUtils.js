@@ -262,8 +262,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 /**
  * 使用 Google Places JavaScript API 搜索附近餐廳
  * @param {Object} userLocation - 用戶位置 {lat, lng}
- * @param {string} selectedMealTime - 選擇的用餐時段
- * @returns {Promise<Object>} 隨機餐廳資訊
+ * @param {string} selectedMealTime - 選擇的用餐時段（保留參數以保持兼容性）
+ * @returns {Promise<Array>} 餐廳列表
  */
 async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
   if (!userLocation) {
@@ -336,41 +336,27 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
 
     console.log(`✅ 找到 ${results.length} 家餐廳`);
 
-    // 如果選擇了特定用餐時段，先篩選出符合營業時間的餐廳
-    let filteredResults = results;
-    if (selectedMealTime !== 'all') {
-      console.log('🕐 開始篩選符合用餐時段的餐廳...');
-      
-      // 獲取詳細營業時間資訊並篩選
-      const restaurantsWithHours = await Promise.all(
-        results.map(async (restaurant) => {
-          try {
-            const details = await getPlaceDetails(restaurant.place_id);
-            const isOpen = isRestaurantOpenForMealTime(details?.opening_hours, selectedMealTime);
-            return { restaurant, isOpen, details };
-          } catch (error) {
-            console.warn('⚠️ 無法獲取餐廳營業時間:', restaurant.name, error);
-            return { restaurant, isOpen: true, details: null }; // 無法確定時預設顯示
-          }
-        })
-      );
-      
-      filteredResults = restaurantsWithHours
-        .filter(item => item.isOpen)
-        .map(item => ({ ...item.restaurant, detailsCache: item.details }));
-      
-      console.log(`🕐 篩選後剩餘 ${filteredResults.length} 家符合${selectedMealTime}時段的餐廳`);
-      
-      if (filteredResults.length === 0) {
-        throw new Error(`在您選擇的用餐時段內未找到營業的餐廳。請選擇其他時段或擴大搜索範圍。`);
-      }
-    }
+    // 獲取所有餐廳的詳細營業時間資訊
+    console.log('🕐 獲取餐廳詳細資訊...');
+    const restaurantsWithDetails = await Promise.all(
+      results.map(async (restaurant) => {
+        try {
+          const details = await getPlaceDetails(restaurant.place_id);
+          return { ...restaurant, detailsCache: details };
+        } catch (error) {
+          console.warn('⚠️ 無法獲取餐廳詳細資訊:', restaurant.name, error);
+          return { ...restaurant, detailsCache: null };
+        }
+      })
+    );
 
-    // 隨機選擇一家餐廳
-    const randomRestaurant = filteredResults[Math.floor(Math.random() * filteredResults.length)];
-    
     // 轉換為應用程式格式
-    return await formatRestaurantData(randomRestaurant);
+    const formattedRestaurants = await Promise.all(
+      restaurantsWithDetails.map(restaurant => formatRestaurantData(restaurant))
+    );
+
+    console.log(`🎯 返回 ${formattedRestaurants.length} 家格式化餐廳`);
+    return formattedRestaurants;
 
   } catch (error) {
     console.error('❌ 搜索餐廳時發生錯誤:', error);
@@ -703,6 +689,81 @@ function getBusinessStatus(openingHours, language = 'zh') {
 }
 
 /**
+ * 餐廳歷史記錄管理
+ */
+function getRestaurantHistory() {
+  try {
+    const history = localStorage.getItem('restaurant_history');
+    if (!history) return null;
+
+    const data = JSON.parse(history);
+    const now = Date.now();
+
+    // 檢查是否超過24小時
+    if (now - data.timestamp > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem('restaurant_history');
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn('⚠️ 讀取餐廳歷史記錄失敗:', error);
+    localStorage.removeItem('restaurant_history');
+    return null;
+  }
+}
+
+function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
+  try {
+    let history = getRestaurantHistory();
+
+    if (!history) {
+      history = {
+        timestamp: Date.now(),
+        shown_restaurants: [],
+        expanded_radius: expandedRadius
+      };
+    }
+
+    // 添加餐廳ID到歷史記錄
+    if (!history.shown_restaurants.includes(restaurantId)) {
+      history.shown_restaurants.push(restaurantId);
+    }
+
+    // 更新擴展半徑
+    history.expanded_radius = expandedRadius;
+
+    localStorage.setItem('restaurant_history', JSON.stringify(history));
+    console.log('📝 更新餐廳歷史記錄:', { restaurantId, expandedRadius, totalShown: history.shown_restaurants.length });
+  } catch (error) {
+    console.warn('⚠️ 更新餐廳歷史記錄失敗:', error);
+  }
+}
+
+/**
+ * 檢查餐廳是否在指定時段營業
+ * @param {Object} restaurant - 餐廳資訊
+ * @param {string} timeSlot - 時段 ('breakfast', 'lunch', 'dinner', 'all')
+ * @returns {boolean} 是否營業
+ */
+function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
+  if (timeSlot === 'all' || !restaurant.detailsCache?.opening_hours) {
+    return true; // 無法確定時預設可用
+  }
+
+  const timeSlots = {
+    breakfast: { start: 6, end: 11 },
+    lunch: { start: 11, end: 14 },
+    dinner: { start: 17, end: 22 }
+  };
+
+  const slot = timeSlots[timeSlot];
+  if (!slot) return true;
+
+  return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, timeSlot);
+}
+
+/**
  * 獲取隨機餐廳 - 使用 JavaScript API
  * @param {Object} userLocation - 用戶位置
  * @param {string} selectedMealTime - 選擇的用餐時段
@@ -711,18 +772,71 @@ function getBusinessStatus(openingHours, language = 'zh') {
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all') {
   console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime });
 
-  const restaurant = await searchNearbyRestaurants(userLocation, selectedMealTime);
+  const history = getRestaurantHistory() || { shown_restaurants: [], expanded_radius: 0 };
+  const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
 
-  // 添加距離和營業狀態信息
-  if (userLocation) {
-    restaurant.distance = calculateDistance(
-      userLocation.lat, userLocation.lng,
-      restaurant.lat, restaurant.lng
-    );
+  // 最多嘗試3次，每次擴大1km
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const currentExpandedRadius = history.expanded_radius + attempt;
+    const searchRadius = originalRadius + (currentExpandedRadius * 1000); // 每次增加1000米
+
+    console.log(`🔍 第${attempt + 1}次搜索，半徑: ${searchRadius/1000}km`);
+
+    // 臨時更新搜索半徑
+    GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
+
+    try {
+      // 獲取餐廳列表
+      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime);
+
+      // 篩選：營業中 + 未出現過
+      const availableRestaurants = restaurants.filter(restaurant => {
+        const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
+        const notShown = !history.shown_restaurants.includes(restaurant.id);
+        return isOpen && notShown;
+      });
+
+      console.log(`📊 篩選結果: ${availableRestaurants.length}家可用餐廳 (總共${restaurants.length}家)`);
+
+      if (availableRestaurants.length > 0) {
+        // 隨機選擇一家餐廳
+        const selectedRestaurant = availableRestaurants[Math.floor(Math.random() * availableRestaurants.length)];
+
+        // 添加距離信息
+        if (userLocation) {
+          selectedRestaurant.distance = calculateDistance(
+            userLocation.lat, userLocation.lng,
+            selectedRestaurant.lat, selectedRestaurant.lng
+          );
+        }
+
+        // 更新歷史記錄
+        updateRestaurantHistory(selectedRestaurant.id, currentExpandedRadius);
+
+        // 恢復原始搜索半徑
+        GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+
+        console.log('🎉 成功獲取餐廳:', selectedRestaurant.name);
+        return selectedRestaurant;
+      }
+
+      console.log(`⚠️ 在${searchRadius/1000}km範圍內沒有找到合適的餐廳，嘗試擴大搜索範圍...`);
+
+    } catch (error) {
+      console.error(`❌ 第${attempt + 1}次搜索失敗:`, error);
+
+      // 如果是最後一次嘗試，拋出錯誤
+      if (attempt === 2) {
+        GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+        throw error;
+      }
+    }
   }
 
-  console.log('🎉 成功獲取餐廳:', restaurant.name);
-  return restaurant;
+  // 恢復原始搜索半徑
+  GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+
+  throw new Error('在擴大搜索範圍後仍未找到合適的餐廳，請稍後再試或調整搜索條件。');
 };
 
 // 全局函數用於計算距離
