@@ -3,11 +3,24 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant }) {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     
     const restaurantNames = [
-      "Sakura Sushi", "Mama's Italian Kitchen", "Spice Garden", 
-      "The Burger Joint", "Le Petit Bistro", "Taco Libre",
-      "Golden Dragon", "Pizza Palace", "Curry House", "Steakhouse Elite",
-      "Ocean View Seafood", "Mountain Grill", "City Cafe", "Garden Bistro",
-      "Fire Kitchen", "Sweet Treats", "Corner Deli", "Royal Dining"
+      "櫻町壽司",
+      "阿母義麵屋",
+      "香料事務所",
+      "堡來了漢堡店",
+      "小巴黎餐酒館",
+      "塔可炸翻天",
+      "金龍食堂",
+      "披薩殿",
+      "咖哩日常",
+      "牛排俱樂部",
+      "海景鮮味屋",
+      "山上燒肉鋪",
+      "城市角落咖啡",
+      "花園日子",
+      "火烤食研所",
+      "甜在心",
+      "巷口熟食店",
+      "皇族大食堂"
     ];
 
     React.useEffect(() => {
