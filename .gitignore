@@ -21,6 +21,11 @@ desktop.ini
 *.backup
 *.bak
 
+# API 金鑰配置文件 (重要：絕不能提交)
+.api_key
+utils/locationUtils.js.bak
+utils/locationUtils.js.backup
+
 # Node.js (如果將來需要)
 node_modules/
 npm-debug.log*

@@ -1,6 +1,6 @@
 // Google Places JavaScript API 配置
 const GOOGLE_PLACES_CONFIG = {
-  API_KEY: 'AIzaSyC7tj6X8c5QwX0uVR7fUNcate1Sapn7lyQ',
+  API_KEY: '%%GOOGLE_PLACES_API_KEY%%', // 將在部署時被 GitHub Actions 替換
   SEARCH_PARAMS: {
     radius: 5000, // 預設5公里範圍，可動態更新
     type: 'restaurant'

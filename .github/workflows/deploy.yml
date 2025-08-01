@@ -1,0 +1,23 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Replace API Key
+        run: |
+          sed -i "s/%%GOOGLE_PLACES_API_KEY%%/${{ secrets.GOOGLE_PLACES_API_KEY }}/g" utils/locationUtils.js
+        
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: restaurant-roulette # 替換為你的 Firebase 專案 ID
