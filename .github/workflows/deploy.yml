@@ -33,5 +33,9 @@ jobs:
         run: npm install -g firebase-tools
         
       - name: Deploy to Firebase
-        run: |
-          firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --project tribe-restaurant-roulette
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIBE_RESTAURANT_ROULETTE }}'
+          channelId: live
+          projectId: tribe-restaurant-roulette
