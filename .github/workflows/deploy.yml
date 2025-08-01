@@ -20,4 +20,4 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
-          projectId: restaurant-roulette # 替換為你的 Firebase 專案 ID
+          projectId: tribe-restaurant-roulette
