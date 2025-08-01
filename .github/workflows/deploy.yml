@@ -1,41 +1,36 @@
-name: Deploy to Firebase
+name: Deploy to Firebase Hosting
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main # 或您的主要分支名稱
 
 jobs:
-  deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
       - name: Replace API Key
         run: |
           sed -i "s/%%GOOGLE_PLACES_API_KEY%%/${{ secrets.GOOGLE_PLACES_API_KEY }}/g" utils/locationUtils.js
           echo "API key replacement completed"
-          
-      - name: Verify API Key Replacement
-        run: |
-          if grep -q "%%GOOGLE_PLACES_API_KEY%%" utils/locationUtils.js; then
-            echo "ERROR: API key placeholder still exists!"
-            exit 1
-          else
-            echo "SUCCESS: API key has been replaced"
-          fi
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-        
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+
+      # 如果您的專案需要建構步驟 (例如 Next.js, React), 請在此處新增建構步驟
+      # 根據您提供的資訊，您的專案使用了 Next.js，所以您可能需要新增建構步驟
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build # 或者您的建構命令
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIBE_RESTAURANT_ROULETTE }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIBE_RESTAURANT_ROULETTE }}' # 引用您在 GitHub Secrets 中設定的服務帳戶金鑰 Secret
           channelId: live
-          projectId: tribe-restaurant-roulette
+          projectId: tribe-restaurant-roulette # 您的 Firebase 專項 ID
