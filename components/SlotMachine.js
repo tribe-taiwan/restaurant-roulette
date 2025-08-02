@@ -43,7 +43,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       if (isLeftSwipe && !isSpinning) {
         // 左滑：搜尋下一家餐廳
-        onSpin();
+        onSpin(false);
       }
     };
 
@@ -51,7 +51,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowLeft' && !isSpinning) {
         // 左箭頭：搜尋下一家餐廳
-        onSpin();
+        onSpin(false);
       }
       if (e.key === 'Enter' && finalRestaurant && !isSpinning && candidateList.length < 9) {
         // Enter：加入候選
@@ -122,7 +122,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               ) : (
                 <div className="text-xl font-bold text-white drop-shadow-lg py-8">
-                  🎰 {translations.spinButton}
+                  🍴 {translations.spinButton}
                 </div>
               )}
             </div>
@@ -141,7 +141,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           {/* Search Next Button */}
           <button
-            onClick={onSpin}
+            onClick={() => onSpin(false)}
             disabled={isSpinning}
             className={`btn-primary w-full text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
           >

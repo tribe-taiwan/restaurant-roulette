@@ -62,9 +62,9 @@ function App() {
     const translations = {
       en: {
         title: "Restaurant Roulette",
-        spinButton: "What shall we eat?",
+        spinButton: "What to eat?",
         addCandidate: "Add Option",
-        nextBatch: "Next Batch",
+        nextBatch: "What to eat?",
         spinning: "Searching...",
         locationError: "Please allow location access to find nearby restaurants.",
         locationLoading: "Getting your location...",
@@ -96,9 +96,9 @@ function App() {
       },
       zh: {
         title: "吃這家",
-        spinButton: "想吃什麼？",
+        spinButton: "吃什麼",
         addCandidate: "加入候選",
-        nextBatch: "換一批",
+        nextBatch: "吃什麼",
         spinning: "正在搜尋...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
@@ -130,7 +130,7 @@ function App() {
       },
       ja: {
         title: "レストランルーレット",
-        spinButton: "何を食べましょうか？",
+        spinButton: "何を食べる？",
         spinning: "レストランを探しています...",
         locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
         locationLoading: "位置情報を取得しています...",
@@ -162,7 +162,7 @@ function App() {
       },
       ko: {
         title: "레스토랑 룰렛",
-        spinButton: "무엇을 먹을까요?",
+        spinButton: "뭘 먹지?",
         spinning: "레스토랑을 찾고 있습니다...",
         locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
         locationLoading: "위치를 가져오는 중...",
@@ -194,7 +194,7 @@ function App() {
       },
       es: {
         title: "Ruleta de Restaurantes",
-        spinButton: "¿Qué comemos?",
+        spinButton: "¿Qué comer?",
         spinning: "Buscando tu restaurante...",
         locationError: "Por favor permite el acceso a la ubicación para encontrar restaurantes cercanos.",
         locationLoading: "Obteniendo tu ubicación...",
@@ -226,7 +226,7 @@ function App() {
       },
       fr: {
         title: "Roulette de Restaurants",
-        spinButton: "Que mangeons-nous ?",
+        spinButton: "Quoi manger ?",
         spinning: "Recherche de votre restaurant...",
         locationError: "Veuillez autoriser l'accès à la localisation pour trouver des restaurants à proximité.",
         locationLoading: "Obtention de votre position...",
@@ -308,6 +308,15 @@ function App() {
         window.clearRestaurantHistory();
       }
     }, [selectedMealTime, searchRadius]);
+
+    // Landing 時自動獲取第一家餐廳
+    React.useEffect(() => {
+      if (userLocation && locationStatus === 'success' && isInitialLoad && !currentRestaurant && !isSpinning) {
+        console.log('🎯 Landing 自動獲取第一家餐廳');
+        handleSpin(true); // 傳入 true 表示自動調用
+        setIsInitialLoad(false);
+      }
+    }, [userLocation, locationStatus, isInitialLoad, currentRestaurant, isSpinning]);
     
     // ===========================================
     // 工具函數區塊 (純函數，不依賴狀態)
@@ -576,17 +585,19 @@ function App() {
     // 核心業務邏輯函數區塊
     // ===========================================
     
-    const handleSpin = async () => {
+    const handleSpin = async (isAutoSpin = false) => {
       if (isSpinning) return;
-      
-      console.log('🎮 開始轉動輪盤...', { selectedMealTime });
+
+      console.log('🎮 開始轉動輪盤...', { selectedMealTime, isAutoSpin });
       setIsSpinning(true);
       setCurrentRestaurant(null);
       setSpinError(null);
 
       try {
-        // 先等待一段時間做視覺效果
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 只有手動點擊時才等待視覺效果
+        if (!isAutoSpin) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         
         console.log('🔍 開始搜索餐廳，用戶位置:', userLocation);
         
