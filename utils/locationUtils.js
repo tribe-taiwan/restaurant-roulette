@@ -211,9 +211,26 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       if (!today) return false; // 今天不營業
       
       const openTime = parseInt(today.open.time.substring(0, 2));
-      const closeTime = today.close ? parseInt(today.close.time.substring(0, 2)) : 24;
+      // 修復：正確解析關門時間，處理24小時制
+      let closeTime;
+      if (today.close) {
+        const closeTimeStr = today.close.time;
+        closeTime = parseInt(closeTimeStr.substring(0, 2));
+        // 如果關門時間是凌晨（如01:00），轉換為24+小時制
+        if (closeTime < openTime && closeTime < 12) {
+          closeTime += 24;
+        }
+      } else {
+        closeTime = 24; // 24小時營業
+      }
       
       // 檢查選擇的用餐時段是否與營業時間重疊
+      // 處理晚餐時段16-24的情況
+      if (selectedTime.end === 24) {
+        // 晚餐時段特殊處理：只要營業到16點以後就算符合
+        return closeTime > selectedTime.start;
+      }
+      
       return (selectedTime.start >= openTime && selectedTime.start < closeTime) ||
              (selectedTime.end > openTime && selectedTime.end <= closeTime) ||
              (selectedTime.start < openTime && selectedTime.end > closeTime);
