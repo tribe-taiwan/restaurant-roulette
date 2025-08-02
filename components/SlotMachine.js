@@ -85,7 +85,10 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, restau
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <div className="icon-shuffle text-xl"></div>
-                {translations.spinButton}
+                {restaurantList.length === 0 ? 
+                  translations.spinButton : 
+                  `${translations.addCandidate} ${restaurantList.length + 1}/5`
+                }
               </div>
             )}
           </button>

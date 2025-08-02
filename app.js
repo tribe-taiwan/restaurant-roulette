@@ -63,7 +63,8 @@ function App() {
       en: {
         title: "Restaurant Roulette",
         spinButton: "What shall we eat?",
-        spinning: "Finding your restaurant...",
+        addCandidate: "Add Option",
+        spinning: "Searching...",
         locationError: "Please allow location access to find nearby restaurants.",
         locationLoading: "Getting your location...",
         relocateButton: "Relocate",
@@ -95,7 +96,8 @@ function App() {
       zh: {
         title: "吃這家",
         spinButton: "想吃什麼？",
-        spinning: "正在尋找您的餐廳...",
+        addCandidate: "加入候選",
+        spinning: "正在搜尋...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
         relocateButton: "重新定位",
