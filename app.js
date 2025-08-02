@@ -648,6 +648,7 @@ function App() {
               <RestaurantCard
                 restaurant={currentRestaurant}
                 language={selectedLanguage}
+                userLocation={userLocation}
               />
             </div>
           )}
