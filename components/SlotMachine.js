@@ -1,6 +1,8 @@
 function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
+    const [touchStart, setTouchStart] = React.useState(null);
+    const [touchEnd, setTouchEnd] = React.useState(null);
     
     const restaurantNames = [
       "櫻町壽司",
@@ -23,6 +25,48 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       "皇族大食堂"
     ];
 
+    // 觸控事件處理（手機）
+    const handleTouchStart = (e) => {
+      setTouchEnd(null);
+      setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+      setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+      if (!touchStart || !touchEnd) return;
+      
+      const distance = touchStart - touchEnd;
+      const isLeftSwipe = distance > 50; // 左滑距離超過50px
+
+      if (isLeftSwipe && !isSpinning) {
+        // 左滑：搜尋下一家餐廳
+        onSpin();
+      }
+    };
+
+    // 鍵盤事件處理（電腦）
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft' && !isSpinning) {
+        // 左箭頭：搜尋下一家餐廳
+        onSpin();
+      }
+      if (e.key === 'Enter' && finalRestaurant && !isSpinning && candidateList.length < 9) {
+        // Enter：加入候選
+        onAddCandidate();
+      }
+    };
+
+    // 添加鍵盤事件監聽
+    React.useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [isSpinning, finalRestaurant, candidateList.length]);
+
     React.useEffect(() => {
       if (isSpinning) {
         // Generate more names for smooth scrolling
@@ -39,7 +83,20 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         <div className="text-center mb-6">
           
           {/* Restaurant Name Scroller */}
-          <div className="bg-white rounded-lg p-4 mb-6 h-32 overflow-hidden relative">
+          <div 
+            className="rounded-lg p-4 mb-6 h-32 overflow-hidden relative cursor-pointer select-none"
+            style={{
+              backgroundImage: finalRestaurant && finalRestaurant.image ? 
+                `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
+                'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            title="左滑或按←鍵搜尋下一家餐廳"
+          >
             <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out ${
               isSpinning ? 'animate-scroll-names' : ''
             }`}>
@@ -51,10 +108,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 ))
               ) : finalRestaurant ? (
                 <div className="text-center py-4">
-                  <div className="text-2xl font-bold text-[var(--primary-color)] mb-2">
+                  <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
                     🎉 {finalRestaurant.name}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-white drop-shadow">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
                         <span>📍</span>
@@ -64,7 +121,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                 </div>
               ) : (
-                <div className="text-xl font-bold text-gray-800 py-8">
+                <div className="text-xl font-bold text-white drop-shadow-lg py-8">
                   🎰 {translations.spinButton}
                 </div>
               )}
@@ -89,6 +146,18 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             )}
           </button>
+
+          {/* Search Next Button for Desktop */}
+          <div className="text-center mt-4">
+            <button
+              onClick={onSpin}
+              disabled={isSpinning}
+              className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="搜尋下一家餐廳 (或使用←鍵/左滑)"
+            >
+              🔍 搜尋下一家
+            </button>
+          </div>
 
           {/* Restaurant List */}
           {candidateList.length > 0 && (
