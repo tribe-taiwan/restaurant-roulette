@@ -518,7 +518,9 @@ async function formatRestaurantData(place) {
       website: (details && details.website) || null,
       googleMapsUrl: (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ', ' + (place.formatted_address || place.vicinity))}&query_place_id=${place.place_id}`,
       businessStatus: place.business_status || 'OPERATIONAL',
-      operatingStatus: businessStatusInfo
+      operatingStatus: businessStatusInfo,
+      // 保留營業時間數據供篩選使用
+      detailsCache: details
     };
 
     console.log('✅ 餐廳資料格式化完成:', formattedData.name);
