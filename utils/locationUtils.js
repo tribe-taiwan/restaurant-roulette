@@ -192,10 +192,22 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   
   // 保護性註解：'current'表示只顯示現在營業中的餐廳，基於Google API返回的營業時間
   if (selectedMealTime === 'current') {
-    // 使用Google Places API的open_now狀態或計算當前是否營業
-    if (openingHours.hasOwnProperty('open_now')) {
-      return openingHours.open_now;
+    // 使用 Google 推薦的 isOpen() 方法
+    if (openingHours && typeof openingHours.isOpen === 'function') {
+      try {
+        const isOpenNow = openingHours.isOpen();
+        console.log('🕐 使用 Google 推薦的 isOpen() 方法結果:', isOpenNow);
+        return isOpenNow;
+      } catch (error) {
+        console.warn('⚠️ isOpen() 方法調用失敗:', error);
+      }
     }
+
+    // 【註解日期：2025-01-02】open_now 字段已被 Google 棄用（2019年11月），不再可靠
+    // 【提醒：30天後可刪除】以下註解的代碼已無用，因為 open_now 字段已棄用
+    // if (openingHours.hasOwnProperty('open_now')) {
+    //   return openingHours.open_now;
+    // }
     
     // 如果沒有open_now，則根據periods計算當前是否營業
     if (openingHours.periods) {
@@ -409,7 +421,7 @@ async function getPlaceDetails(placeId) {
     
     const request = {
       placeId: placeId,
-      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url']
+      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url', 'utc_offset_minutes']
     };
     
     return new Promise((resolve) => {
@@ -562,12 +574,28 @@ function getBusinessStatus(openingHours, language = 'zh') {
   if (!openingHours) {
     return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours Unknown' };
   }
-  
+
+  // 使用 Google 推薦的 isOpen() 方法
+  if (typeof openingHours.isOpen === 'function') {
+    try {
+      const isOpenNow = openingHours.isOpen();
+      console.log('🕐 getBusinessStatus 使用 isOpen() 方法結果:', isOpenNow);
+      return {
+        status: isOpenNow ? 'open' : 'closed',
+        message: isOpenNow ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
+      };
+    } catch (error) {
+      console.warn('⚠️ getBusinessStatus isOpen() 方法調用失敗:', error);
+    }
+  }
+
   const now = new Date();
   const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
-  
+
   try {
+    // 【註解日期：2025-01-02】如果 isOpen() 方法不可用，則使用 periods 計算邏輯
+    // 【提醒：30天後可刪除】如果 isOpen() 方法穩定可用，以下 periods 計算邏輯可能不再需要
     if (openingHours.periods) {
       // 找到今天的營業時間
       const todayPeriods = openingHours.periods.filter(period => 
@@ -721,13 +749,18 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
  * @returns {boolean} 是否營業
  */
 function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
+  // 對於"現在營業中"篩選，必須有營業時間數據才能判斷
+  if (timeSlot === 'current') {
+    if (!restaurant.detailsCache?.opening_hours) {
+      console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，排除`);
+      return false; // 沒有營業時間數據時，排除該餐廳
+    }
+    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
+  }
+
+  // 其他時段篩選保持原有邏輯
   if (timeSlot === 'all' || !restaurant.detailsCache?.opening_hours) {
     return true; // 無法確定時預設可用
-  }
-  
-  // 支援 'current' 狀態 - 檢查當前是否營業
-  if (timeSlot === 'current') {
-    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
   }
 
   const timeSlots = {
@@ -772,6 +805,18 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
       const availableRestaurants = restaurants.filter(restaurant => {
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
+
+        // 添加調試日誌
+        console.log(`🔍 篩選餐廳: ${restaurant.name}`, {
+          selectedMealTime,
+          isOpen,
+          notShown,
+          hasOpeningHours: !!restaurant.detailsCache?.opening_hours,
+          hasIsOpenMethod: typeof restaurant.detailsCache?.opening_hours?.isOpen === 'function',
+          hasPeriods: !!restaurant.detailsCache?.opening_hours?.periods,
+          periodsCount: restaurant.detailsCache?.opening_hours?.periods?.length || 0
+        });
+
         return isOpen && notShown;
       });
 
