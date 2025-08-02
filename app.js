@@ -300,6 +300,14 @@ function App() {
         }
       }
     }, [selectedLanguage, currentRestaurant]);
+
+    // 搜索條件變化時清除餐廳歷史記錄
+    React.useEffect(() => {
+      if (window.clearRestaurantHistory && !isInitialLoad) {
+        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, searchRadius });
+        window.clearRestaurantHistory();
+      }
+    }, [selectedMealTime, searchRadius]);
     
     // ===========================================
     // 工具函數區塊 (純函數，不依賴狀態)

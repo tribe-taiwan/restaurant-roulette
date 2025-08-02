@@ -760,3 +760,11 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
 // 全局函數用於計算距離
 window.calculateDistance = calculateDistance;
 window.getBusinessStatus = getBusinessStatus;
+window.clearRestaurantHistory = function() {
+  try {
+    localStorage.removeItem('restaurant_history');
+    console.log('🗑️ 已清除餐廳歷史記錄（條件變化）');
+  } catch (error) {
+    console.warn('⚠️ 清除餐廳歷史記錄失敗:', error);
+  }
+};
