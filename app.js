@@ -305,20 +305,6 @@ function App() {
       localStorage.setItem('savedLocations', JSON.stringify(locations));
     };
 
-    // 簡化地址顯示（只到路為止）
-    const getSimplifiedAddress = (fullAddress) => {
-      if (!fullAddress) return '';
-      
-      // 使用正則表達式找到路名並截取到路為止
-      const roadMatch = fullAddress.match(/(.*?[路街道巷弄])/);
-      if (roadMatch) {
-        return roadMatch[1];
-      }
-      
-      // 如果沒有找到路名，返回前兩個逗號分隔的部分
-      const parts = fullAddress.split(',');
-      return parts.slice(0, 2).join('').replace(/\d+號?/g, '').trim();
-    };
 
     // ===========================================
     // UI 副作用區塊
@@ -374,12 +360,11 @@ function App() {
         
         // 根據語言獲取地址並立即更新顯示
         const address = await window.getAddressFromCoordinates(result.lat, result.lng, selectedLanguage);
-        const simplifiedAddress = getSimplifiedAddress(address);
-        setUserAddress(simplifiedAddress);
+        setUserAddress(address);
         setLocationStatus('success');
         setShowAddressInput(false);
         setAddressInput('');
-        console.log('✅ 地址校正成功:', result, '簡化地址:', simplifiedAddress);
+        console.log('✅ 地址校正成功:', result, '地址:', address);
       } catch (error) {
         console.error('❌ 地址校正失敗:', error);
         alert('無法找到該地址，請重新輸入');
@@ -428,13 +413,12 @@ function App() {
         
         // 立即更新當前定位到儲存的位置
         setUserLocation(coords);
-        const simplifiedAddress = getSimplifiedAddress(fullAddress);
-        setUserAddress(simplifiedAddress);
+        setUserAddress(fullAddress);
         setLocationStatus('success');
         setShowAddressInput(false);
         setAddressInput('');
         
-        console.log('✅ 位置已儲存並更新定位:', newLocation, '簡化地址:', simplifiedAddress);
+        console.log('✅ 位置已儲存並更新定位:', newLocation, '地址:', fullAddress);
       } catch (error) {
         console.error('❌ 儲存位置失敗:', error);
         alert('無法儲存該地址，請重新輸入');
@@ -448,12 +432,11 @@ function App() {
       setUserLocation(newCoords);
       console.log('📍 userLocation 已更新為:', newCoords);
       
-      // 使用簡化地址顯示
-      const simplifiedAddress = getSimplifiedAddress(location.address);
-      setUserAddress(simplifiedAddress);
+      // 使用完整地址顯示
+      setUserAddress(location.address);
       setLocationStatus('success');
       setShowAddressInput(false);
-      console.log('✅ 使用已儲存位置:', location, '簡化地址:', simplifiedAddress);
+      console.log('✅ 使用已儲存位置:', location, '地址:', location.address);
       
       // 添加小延遲確保狀態更新完成，然後檢查當前的userLocation
       setTimeout(() => {

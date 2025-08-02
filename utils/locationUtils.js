@@ -80,43 +80,8 @@ window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
             }
           });
           
-          // 組合地址：根據語言格式化
-          let address = '';
-          
-          if (language === 'zh') {
-            // 中文格式：市 + 區 + 路
-            if (admin_area_level_2 && admin_area_level_3 && route) {
-              address = `${admin_area_level_2}${admin_area_level_3}${route}`;
-            } else if (admin_area_level_2 && admin_area_level_3) {
-              address = `${admin_area_level_2}${admin_area_level_3}`;
-            } else if (admin_area_level_2 && route) {
-              address = `${admin_area_level_2}${route}`;
-            } else if (admin_area_level_2 && district) {
-              address = `${admin_area_level_2}${district}`;
-            } else if (admin_area_level_2) {
-              address = admin_area_level_2;
-            } else {
-              // 回退：使用格式化地址的前部分
-              const formatted = result.formatted_address;
-              const parts = formatted.split(',');
-              address = parts[0] || '位置已確認';
-            }
-          } else {
-            // 英文格式：Route, District, City
-            const addressParts = [];
-            if (route) addressParts.push(route);
-            if (admin_area_level_3) addressParts.push(admin_area_level_3);
-            if (admin_area_level_2) addressParts.push(admin_area_level_2);
-            
-            if (addressParts.length > 0) {
-              address = addressParts.join(', ');
-            } else {
-              // 回退：使用格式化地址的前部分
-              const formatted = result.formatted_address;
-              const parts = formatted.split(',');
-              address = parts.slice(0, 2).join(', ').trim() || 'Location confirmed';
-            }
-          }
+          // 直接使用 Google 提供的完整格式化地址
+          const address = result.formatted_address;
           
           logger.success('地址轉換成功:', { 
             language,
