@@ -296,15 +296,10 @@ function App() {
       }
     }, [selectedLanguage, currentRestaurant]);
     
-    // 更新滑桿填充顏色
-    React.useEffect(() => {
-      const percentage = ((searchRadius - 1) / (20 - 1)) * 100;
-      const sliders = document.querySelectorAll('.slider');
-      sliders.forEach(slider => {
-        slider.style.setProperty('--value', `${percentage}%`);
-      });
-    }, [searchRadius]);
-
+    // ===========================================
+    // 工具函數區塊 (純函數，不依賴狀態)
+    // ===========================================
+    
     // 儲存位置到localStorage
     const saveLocationToStorage = (locations) => {
       localStorage.setItem('savedLocations', JSON.stringify(locations));
@@ -325,6 +320,23 @@ function App() {
       return parts.slice(0, 2).join('').replace(/\d+號?/g, '').trim();
     };
 
+    // ===========================================
+    // UI 副作用區塊
+    // ===========================================
+    
+    // 更新滑桿填充顏色
+    React.useEffect(() => {
+      const percentage = ((searchRadius - 1) / (20 - 1)) * 100;
+      const sliders = document.querySelectorAll('.slider');
+      sliders.forEach(slider => {
+        slider.style.setProperty('--value', `${percentage}%`);
+      });
+    }, [searchRadius]);
+
+    // ===========================================
+    // 地址和定位服務函數區塊
+    // ===========================================
+    
     // 地址轉換為經緯度
     const geocodeAddress = async (address) => {
       setIsGeocodingAddress(true);
@@ -564,6 +576,10 @@ function App() {
       setLocationError(errorMessage);
     };
 
+    // ===========================================
+    // 核心業務邏輯函數區塊
+    // ===========================================
+    
     const handleSpin = async () => {
       if (isSpinning) return;
       
