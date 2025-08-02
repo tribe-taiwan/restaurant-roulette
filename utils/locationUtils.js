@@ -501,7 +501,7 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
  * @returns {Object} 營業狀態信息
  */
 function getBusinessStatus(openingHours, language = 'zh') {
-  // 翻譯系統已移至 utils/translations.js 統一管理
+  // 這裡有翻譯系統
 
   if (!openingHours) {
     return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours Unknown' };
