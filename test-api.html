@@ -156,7 +156,7 @@
                 log('🚀 開始測試 Google Places API 整合', 'info');
                 
                 // 測試地理位置
-                log('📍 檢查地理位置支援...', 'info');
+                log('🕔 檢查地理位置支援...', 'info');
                 if (!navigator.geolocation) {
                     throw new Error('瀏覽器不支援地理位置');
                 }
@@ -177,7 +177,7 @@
                     lng: position.coords.longitude
                 };
                 
-                log(`📍 位置獲取成功: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`, 'success');
+                log(`🕔 位置獲取成功: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`, 'success');
                 
                 // 確保 Google Maps API 已載入
                 log('🗺️ 檢查 Google Maps API...', 'info');

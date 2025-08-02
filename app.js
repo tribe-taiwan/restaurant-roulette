@@ -78,7 +78,7 @@ function App() {
         lunch: "Lunch",
         dinner: "Dinner",
         enterAddress: "Enter address to correct location",
-        locateHere: "📍 Locate here",
+        locateHere: "🕔 Locate here",
         home: "Home",
         office: "Office",
         saveText: "Save",
@@ -110,7 +110,7 @@ function App() {
         lunch: "午餐",
         dinner: "晚餐",
         enterAddress: "輸入地址來校正位置",
-        locateHere: "📍 定位到這裡",
+        locateHere: "🕔 定位到這裡",
         home: "住家",
         office: "公司",
         saveText: "儲存",
@@ -142,7 +142,7 @@ function App() {
         lunch: "昼食",
         dinner: "夕食",
         enterAddress: "住所を入力して位置を修正",
-        locateHere: "📍 ここに位置設定",
+        locateHere: "🕔 ここに位置設定",
         home: "自宅",
         office: "オフィス",
         saveText: "保存",
@@ -174,7 +174,7 @@ function App() {
         lunch: "점심식사",
         dinner: "저녁식사",
         enterAddress: "위치를 수정할 주소 입력",
-        locateHere: "📍 여기에 위치",
+        locateHere: "🕔 여기에 위치",
         home: "집",
         office: "사무실",
         saveText: "저장",
@@ -206,7 +206,7 @@ function App() {
         lunch: "Almuerzo",
         dinner: "Cena",
         enterAddress: "Ingresa dirección para corregir ubicación",
-        locateHere: "📍 Ubicar aquí",
+        locateHere: "🕔 Ubicar aquí",
         home: "Casa",
         office: "Oficina",
         saveText: "Guardar",
@@ -238,7 +238,7 @@ function App() {
         lunch: "Déjeuner",
         dinner: "Dîner",
         enterAddress: "Entrez l'adresse pour corriger la position",
-        locateHere: "📍 Localiser ici",
+        locateHere: "🕔 Localiser ici",
         home: "Maison",
         office: "Bureau",
         saveText: "Sauvegarder",
@@ -430,7 +430,7 @@ function App() {
       console.log('🏠 切換到已儲存位置:', location.type, location);
       const newCoords = { lat: location.lat, lng: location.lng };
       setUserLocation(newCoords);
-      console.log('📍 userLocation 已更新為:', newCoords);
+      console.log('🕔 userLocation 已更新為:', newCoords);
       
       // 使用完整地址顯示
       setUserAddress(location.address);

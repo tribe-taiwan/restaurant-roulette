@@ -58,7 +58,7 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant }) {
                   <div className="text-sm text-gray-600 space-y-1">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
-                        <span>📍</span>
+                        <span>🕔</span>
                         <span>{finalRestaurant.distance}km</span>
                       </div>
                     )}
@@ -71,8 +71,8 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant }) {
                             : 'text-gray-600'
                       }`}>
                         <span>
-                          {finalRestaurant.operatingStatus.status === 'open' ? '🟢' : 
-                           finalRestaurant.operatingStatus.status === 'closed' ? '🔴' : '⚪'}
+                          {finalRestaurant.operatingStatus.status === 'open' ? '✅' :
+                           finalRestaurant.operatingStatus.status === 'closed' ? '❌' : '⚪'}
                         </span>
                         <span>{finalRestaurant.operatingStatus.message}</span>
                       </div>

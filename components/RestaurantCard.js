@@ -274,7 +274,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 onClick={handleImageClick}
                 title={getTranslation('clickToViewPhotos')}
               >
-                <span>📍</span>
+                <span>🕔</span>
                 <span>{getTranslation('viewLocation')}</span>
               </div>
             </div>
