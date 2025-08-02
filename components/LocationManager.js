@@ -110,10 +110,17 @@ function LocationManager({
               <input
                 type="text"
                 value={addressInput}
-                onChange={(e) => setAddressInput(e.target.value)}
+                onChange={(e) => {
+                  const input = e.target.value;
+                  // 輸入驗證：限制長度和過濾危險字符
+                  if (input.length <= 200 && !/[<>\"'&]/.test(input)) {
+                    setAddressInput(input);
+                  }
+                }}
                 placeholder={t.enterAddress}
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-[var(--primary-color)] focus:outline-none"
                 onKeyPress={(e) => e.key === 'Enter' && onAddressConfirm()}
+                maxLength="200"
               />
             </div>
             

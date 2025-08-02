@@ -3,7 +3,7 @@
  * Restaurant Roulette - 多語言支援
  */
 
-export const TRANSLATIONS = {
+const TRANSLATIONS = {
   en: {
     // 主應用介面
     title: "Restaurant Roulette",
@@ -306,7 +306,7 @@ export const TRANSLATIONS = {
  * @param {string} key - 翻譯鍵值
  * @returns {string} 翻譯後的文字，如果找不到則返回英文版本
  */
-export function getTranslation(language, key) {
+function getTranslation(language, key) {
   return TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
 }
 
@@ -315,7 +315,7 @@ export function getTranslation(language, key) {
  * @param {string} language - 應用語言代碼
  * @returns {string} Google Maps API 支援的語言代碼
  */
-export function getGoogleMapsLanguage(language) {
+function getGoogleMapsLanguage(language) {
   const langMap = {
     'zh': 'zh-TW',
     'ja': 'ja',
@@ -333,6 +333,12 @@ export function getGoogleMapsLanguage(language) {
  * @param {string} enText - 英文文字
  * @returns {string} 對應語言的文字
  */
-export function getLocalizedText(language, zhText, enText) {
+function getLocalizedText(language, zhText, enText) {
   return language === 'zh' ? zhText : enText;
 }
+
+// 讓函數在全域可用
+window.TRANSLATIONS = TRANSLATIONS;
+window.getTranslation = getTranslation;
+window.getGoogleMapsLanguage = getGoogleMapsLanguage;
+window.getLocalizedText = getLocalizedText;

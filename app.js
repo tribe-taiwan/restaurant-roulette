@@ -1,4 +1,4 @@
-import { getTranslation } from './utils/translations.js';
+// 移除import，使用全域函數
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

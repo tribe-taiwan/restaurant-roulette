@@ -1,4 +1,13 @@
-import { getTranslation } from './translations.js';
+// 移除import，使用全域函數
+
+// 簡單的日誌管理系統
+const logger = {
+  info: (message, ...args) => console.log('ℹ️', message, ...args),
+  success: (message, ...args) => console.log('✅', message, ...args),
+  warning: (message, ...args) => console.warn('⚠️', message, ...args),
+  error: (message, ...args) => console.error('❌', message, ...args),
+  debug: (message, ...args) => console.log('🔍', message, ...args)
+};
 
 // Google Places JavaScript API 配置
 const GOOGLE_PLACES_CONFIG = {
@@ -12,7 +21,7 @@ const GOOGLE_PLACES_CONFIG = {
 // 全局函數用於更新搜索半徑
 window.updateSearchRadius = function(newRadius) {
   GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = newRadius;
-  console.log('🔄 搜索半徑已更新為:', newRadius, '公尺');
+  logger.info('搜索半徑已更新為:', newRadius, '公尺');
 };
 
 // 全局函數用於將經緯度轉換為地址（支援語言切換）
@@ -109,7 +118,7 @@ window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
             }
           }
           
-          console.log('✅ 地址轉換成功:', { 
+          logger.success('地址轉換成功:', { 
             language,
             admin_area_level_2, 
             admin_area_level_3, 
@@ -119,14 +128,14 @@ window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
           });
           resolve(address);
         } else {
-          console.warn('⚠️ 地址轉換失敗:', status);
+          logger.warning('地址轉換失敗:', status);
           resolve(language === 'zh' ? '位置已確認' : 'Location confirmed');
         }
       });
     });
     
   } catch (error) {
-    console.error('❌ 地址轉換出錯:', error);
+    logger.error('地址轉換出錯:', error);
     return language === 'zh' ? '位置已確認' : 'Location confirmed';
   }
 };
@@ -256,7 +265,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     return true; // 無法確定時預設顯示
     
   } catch (error) {
-    console.warn('⚠️ 解析營業時間時出錯:', error);
+    logger.warning('解析營業時間時出錯:', error);
     return true; // 出錯時預設顯示
   }
 }
@@ -361,7 +370,7 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
     return formattedRestaurants;
 
   } catch (error) {
-    console.error('❌ 搜索餐廳時發生錯誤:', error);
+    logger.error('搜索餐廳時發生錯誤:', error);
     throw error;
   }
 }
@@ -420,24 +429,22 @@ async function formatRestaurantData(place) {
     // 處理價格等級
     const priceLevel = place.price_level || (details && details.price_level) || 2;
     
-    // 處理營業時間 - 改善排版格式
+    // 處理營業時間 - 使用純文字格式，避免XSS風險
     let hours = '營業時間請洽餐廳';
     if (details && details.opening_hours && details.opening_hours.weekday_text) {
-      // 格式化營業時間，每個星期幾為一行，AM/PM字體小且顏色淺
+      // 格式化營業時間為純文字陣列，由組件負責渲染樣式
       hours = details.opening_hours.weekday_text
         .map(dayHours => {
-          // 將星期幾改為縮寫並使用等寬字體對齊，AM/PM字體更小且顏色更淺
+          // 將星期幾改為縮寫，保持純文字格式
           return dayHours
-            .replace(/Monday/g, '<span style="font-family: monospace; font-weight: bold;">Mon</span>')
-            .replace(/Tuesday/g, '<span style="font-family: monospace; font-weight: bold;">Tue</span>')
-            .replace(/Wednesday/g, '<span style="font-family: monospace; font-weight: bold;">Wed</span>')
-            .replace(/Thursday/g, '<span style="font-family: monospace; font-weight: bold;">Thu</span>')
-            .replace(/Friday/g, '<span style="font-family: monospace; font-weight: bold;">Fri</span>')
-            .replace(/Saturday/g, '<span style="font-family: monospace; font-weight: bold;">Sat</span>')
-            .replace(/Sunday/g, '<span style="font-family: monospace; font-weight: bold;">Sun</span>')
-            .replace(/AM|PM/g, match => `<small style="color: #ccc; font-size: 0.7em;">${match}</small>`);
-        })
-        .join('<br>'); // 使用<br>換行
+            .replace(/Monday/g, 'Mon')
+            .replace(/Tuesday/g, 'Tue')
+            .replace(/Wednesday/g, 'Wed')
+            .replace(/Thursday/g, 'Thu')
+            .replace(/Friday/g, 'Fri')
+            .replace(/Saturday/g, 'Sat')
+            .replace(/Sunday/g, 'Sun');
+        });
     }
 
     // 處理餐廳類型

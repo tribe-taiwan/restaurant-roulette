@@ -1,4 +1,4 @@
-import { getTranslation } from '../utils/translations.js';
+// 移除import，使用全域函數
 
 function RestaurantCard({ restaurant, language, userLocation }) {
   try {
@@ -18,10 +18,25 @@ function RestaurantCard({ restaurant, language, userLocation }) {
 
     const formatHours = (hours) => {
       if (!hours) return t('hoursNotAvailable');
-      // 如果包含HTML標籤，直接返回（已經格式化）
-      if (hours.includes('<br>')) {
-        return <span dangerouslySetInnerHTML={{ __html: hours }} />;
+      
+      // 安全處理營業時間：如果是陣列，逐行渲染；如果是字串，直接顯示
+      if (Array.isArray(hours)) {
+        return (
+          <div className="space-y-1">
+            {hours.map((dayHours, index) => (
+              <div key={index} className="text-sm">
+                <span className="font-mono font-bold mr-2">
+                  {dayHours.split(': ')[0]}:
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {dayHours.split(': ')[1] || ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
       }
+      
       return hours;
     };
 
