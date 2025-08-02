@@ -526,11 +526,26 @@ function getBusinessStatus(openingHours, language = 'zh') {
         const openTime = parseInt(period.open.time);
         const closeTime = period.close ? parseInt(period.close.time) : 2400;
         
-        if (currentTime >= openTime && currentTime < closeTime) {
+        // 處理跨夜營業時間（例如：18:00 - 01:00）
+        let isOpen = false;
+        if (closeTime > openTime) {
+          // 同日營業：開店到關店在同一天
+          isOpen = currentTime >= openTime && currentTime < closeTime;
+        } else {
+          // 跨夜營業：開店在今天，關店在明天
+          isOpen = currentTime >= openTime || currentTime < closeTime;
+        }
+        
+        if (isOpen) {
           // 目前營業中，計算還有多久關門
+          let closeDateTime = new Date(now);
           const closeHour = Math.floor(closeTime / 100);
           const closeMinute = closeTime % 100;
-          const closeDateTime = new Date(now);
+          
+          if (closeTime <= openTime) {
+            // 跨夜營業，關門時間在明天
+            closeDateTime.setDate(closeDateTime.getDate() + 1);
+          }
           closeDateTime.setHours(closeHour, closeMinute, 0, 0);
           
           const hoursUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60 * 60));
@@ -538,8 +553,8 @@ function getBusinessStatus(openingHours, language = 'zh') {
             status: 'open',
             message: hoursUntilClose > 0 ? `${hoursUntilClose} ${window.getTranslation ? window.getTranslation(language, 'hoursAfterClosing') : 'hours until closing'}` : (window.getTranslation ? window.getTranslation(language, 'closingSoon') : 'Closing soon')
           };
-        } else if (currentTime < openTime) {
-          // 今天還未營業
+        } else if (currentTime < openTime && closeTime > openTime) {
+          // 今天還未營業（非跨夜營業）
           const openHour = Math.floor(openTime / 100);
           const openMinute = openTime % 100;
           const openDateTime = new Date(now);

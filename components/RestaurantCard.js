@@ -361,8 +361,8 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                     restaurant.operatingStatus.status === 'open' ? 'text-green-600' : 
                     restaurant.operatingStatus.status === 'closed' ? 'text-red-600' : 'text-yellow-600'
                   }`}>
-                    {restaurant.operatingStatus.status === 'open' ? '🟢' : 
-                     restaurant.operatingStatus.status === 'closed' ? '🔴' : '🟡'}
+                    {restaurant.operatingStatus.status === 'open' ? '✅' : 
+                     restaurant.operatingStatus.status === 'closed' ? '❌' : '🟡'}
                   </div>
                   <div>
                     <div className={`font-semibold text-sm mb-1 ${
