@@ -54,7 +54,6 @@ function App() {
     const [locationError, setLocationError] = React.useState(null); // 儲存定位錯誤訊息
     
     // 地址校正相關狀態
-    const [showAddressInput, setShowAddressInput] = React.useState(false);
     const [addressInput, setAddressInput] = React.useState('');
     const [savedLocations, setSavedLocations] = React.useState([]);
     const [isGeocodingAddress, setIsGeocodingAddress] = React.useState(false);
@@ -67,7 +66,7 @@ function App() {
         spinning: "Searching...",
         locationError: "Please allow location access to find nearby restaurants.",
         locationLoading: "Getting your location...",
-        relocateButton: "Relocate",
+        relocateButton: "Auto Locate",
         spinErrorPrefix: "Error: ",
         apiSearching: "Searching nearby restaurants...",
         radiusLabel: "Search radius:",
@@ -79,8 +78,8 @@ function App() {
         breakfast: "Breakfast",
         lunch: "Lunch",
         dinner: "Dinner",
-        enterAddress: "Enter address to correct location",
-        locateHere: "🕔 Locate here",
+        enterAddress: "Enter address then click Specify Location",
+        locateHere: "🕔 Specify Location",
         home: "Home",
         office: "Office",
         saveText: "Save",
@@ -100,7 +99,7 @@ function App() {
         spinning: "正在搜尋...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
-        relocateButton: "重新定位",
+        relocateButton: "自動定位",
         spinErrorPrefix: "錯誤：",
         apiSearching: "正在搜索附近餐廳...",
         radiusLabel: "搜索範圍：",
@@ -112,8 +111,8 @@ function App() {
         breakfast: "早餐",
         lunch: "午餐",
         dinner: "晚餐",
-        enterAddress: "輸入地址來校正位置",
-        locateHere: "🕔 定位到這裡",
+        enterAddress: "輸入地址後點擊指定位置",
+        locateHere: "🕔 指定位置",
         home: "住家",
         office: "公司",
         saveText: "儲存",
@@ -386,7 +385,6 @@ function App() {
         const address = await window.getAddressFromCoordinates(result.lat, result.lng, selectedLanguage);
         setUserAddress(address);
         setLocationStatus('success');
-        setShowAddressInput(false);
         setAddressInput('');
         console.log('✅ 地址校正成功:', result, '地址:', address);
       } catch (error) {
@@ -439,7 +437,6 @@ function App() {
         setUserLocation(coords);
         setUserAddress(fullAddress);
         setLocationStatus('success');
-        setShowAddressInput(false);
         setAddressInput('');
         
         console.log('✅ 位置已儲存並更新定位:', newLocation, '地址:', fullAddress);
@@ -459,7 +456,6 @@ function App() {
       // 使用完整地址顯示
       setUserAddress(location.address);
       setLocationStatus('success');
-      setShowAddressInput(false);
       console.log('✅ 使用已儲存位置:', location, '地址:', location.address);
       
       // 添加小延遲確保狀態更新完成，然後檢查當前的userLocation
@@ -665,8 +661,6 @@ function App() {
             <LocationManager 
               locationStatus={locationStatus}
               userAddress={userAddress}
-              showAddressInput={showAddressInput}
-              setShowAddressInput={setShowAddressInput}
               savedLocations={savedLocations}
               addressInput={addressInput}
               setAddressInput={setAddressInput}

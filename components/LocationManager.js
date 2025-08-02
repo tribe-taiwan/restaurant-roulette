@@ -4,8 +4,6 @@
 function LocationManager({ 
   locationStatus, 
   userAddress, 
-  showAddressInput, 
-  setShowAddressInput,
   savedLocations,
   addressInput,
   setAddressInput,
@@ -43,18 +41,10 @@ function LocationManager({
               {isRelocating ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <div className={`icon-map-pin text-white text-lg ${
+                <span className={`text-white text-lg ${
                   locationStatus === 'success' ? 'animate-pulse' : ''
-                }`}></div>
+                }`}>📍</span>
               )}
-            </button>
-            
-            <button
-              onClick={() => setShowAddressInput(!showAddressInput)}
-              className="w-12 h-12 rounded-full bg-[var(--accent-color)] hover:bg-yellow-500 text-black flex items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-lg"
-              title="校正位置"
-            >
-              <div className="icon-edit-3 text-lg font-bold" style={{textShadow: '0 0 2px rgba(255,255,255,0.8)'}}>✏️</div>
             </button>
           </div>
         </div>
@@ -69,9 +59,8 @@ function LocationManager({
           </div>
         )}
         
-        {/* 地址校正輸入區域 */}
-        {showAddressInput && (
-          <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
+        {/* 地址輸入區域 - 始終顯示 */}
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
             {/* 住家公司按鈕 - 總是顯示 */}
             <div className="mb-4">
               <div className="flex gap-2">
@@ -139,7 +128,6 @@ function LocationManager({
               </button>
             </div>
           </div>
-        )}
       </div>
     );
   } catch (error) {
