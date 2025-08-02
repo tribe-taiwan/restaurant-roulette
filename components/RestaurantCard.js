@@ -13,11 +13,98 @@ function RestaurantCard({ restaurant, language, userLocation }) {
       fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
     };
 
-    // 翻譯系統已移至 utils/translations.js 統一管理
-    const t = (key) => getTranslation(language, key);
+    const getTranslation = (key) => {
+      const translations = {
+        en: {
+          hoursNotAvailable: 'Hours not available',
+          viewLocation: 'View location',
+          clickToViewPhotos: 'Click to view Google Maps photos',
+          viewRoute: 'View Route & Navigation',
+          viewWebsite: 'Visit Website',
+          address: 'Address',
+          phone: 'Phone',
+          businessHours: 'Business Hours',
+          openNow: 'Open Now',
+          closed: 'Closed',
+          hoursUnknown: 'Hours Unknown',
+          temporarilyClosed: '⚠️ This restaurant may be temporarily closed, please call to confirm'
+        },
+        zh: {
+          hoursNotAvailable: '營業時間不可用',
+          viewLocation: '查看位置',
+          clickToViewPhotos: '點擊查看Google地圖照片',
+          viewRoute: '查看路線與導航',
+          viewWebsite: '查看網站',
+          address: '地址',
+          phone: '電話',
+          businessHours: '營業時間',
+          openNow: '營業中',
+          closed: '已打烊',
+          hoursUnknown: '營業時間未知',
+          temporarilyClosed: '⚠️ 此餐廳可能暫時關閉，請致電確認'
+        },
+        ja: {
+          hoursNotAvailable: '営業時間が利用できません',
+          viewLocation: '場所を見る',
+          clickToViewPhotos: 'Google マップの写真を見る',
+          viewRoute: 'ルートとナビゲーション',
+          viewWebsite: 'ウェブサイトを見る',
+          address: '住所',
+          phone: '電話',
+          businessHours: '営業時間',
+          openNow: '営業中',
+          closed: '閉店',
+          hoursUnknown: '営業時間不明',
+          temporarilyClosed: '⚠️ このレストランは一時的に閉店している可能性があります。お電話でご確認ください'
+        },
+        ko: {
+          hoursNotAvailable: '영업시간 정보 없음',
+          viewLocation: '위치 보기',
+          clickToViewPhotos: 'Google 지도 사진 보기',
+          viewRoute: '경로 및 내비게이션 보기',
+          viewWebsite: '웹사이트 보기',
+          address: '주소',
+          phone: '전화',
+          businessHours: '영업시간',
+          openNow: '영업 중',
+          closed: '영업종료',
+          hoursUnknown: '영업시간 알 수 없음',
+          temporarilyClosed: '⚠️ 이 식당은 일시적으로 문을 닫았을 수 있습니다. 전화로 확인하세요'
+        },
+        es: {
+          hoursNotAvailable: 'Horario no disponible',
+          viewLocation: 'Ver ubicación',
+          clickToViewPhotos: 'Ver fotos de Google Maps',
+          viewRoute: 'Ver Ruta y Navegación',
+          viewWebsite: 'Ver Sitio Web',
+          address: 'Dirección',
+          phone: 'Teléfono',
+          businessHours: 'Horario de Atención',
+          openNow: 'Abierto Ahora',
+          closed: 'Cerrado',
+          hoursUnknown: 'Horario Desconocido',
+          temporarilyClosed: '⚠️ Este restaurante puede estar temporalmente cerrado, llame para confirmar'
+        },
+        fr: {
+          hoursNotAvailable: 'Horaires non disponibles',
+          viewLocation: 'Voir l\'emplacement',
+          clickToViewPhotos: 'Voir les photos Google Maps',
+          viewRoute: 'Voir Itinéraire et Navigation',
+          viewWebsite: 'Voir Site Web',
+          address: 'Adresse',
+          phone: 'Téléphone',
+          businessHours: 'Heures d\'Ouverture',
+          openNow: 'Ouvert Maintenant',
+          closed: 'Fermé',
+          hoursUnknown: 'Horaires Inconnus',
+          temporarilyClosed: '⚠️ Ce restaurant peut être temporairement fermé, appelez pour confirmer'
+        }
+      };
+      return translations[language]?.[key] || translations.en[key];
+    };
 
     const formatHours = (hours) => {
-      if (!hours) return t('hoursNotAvailable');
+      if (!hours) return getTranslation('hoursNotAvailable');
       
       // 安全處理營業時間：如果是陣列，逐行渲染；如果是字串，直接顯示
       if (Array.isArray(hours)) {

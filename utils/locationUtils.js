@@ -539,7 +539,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
   // 翻譯系統已移至 utils/translations.js 統一管理
 
   if (!openingHours) {
-    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
+    return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours Unknown' };
   }
   
   const now = new Date();
@@ -554,7 +554,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
       );
       
       if (todayPeriods.length === 0) {
-        return { status: 'closed', message: getTranslation(language, 'closedToday') };
+        return { status: 'closed', message: window.getTranslation ? window.getTranslation(language, 'closedToday') : 'Closed today' };
       }
       
       for (const period of todayPeriods) {
@@ -569,9 +569,9 @@ function getBusinessStatus(openingHours, language = 'zh') {
           closeDateTime.setHours(closeHour, closeMinute, 0, 0);
           
           const hoursUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60 * 60));
-          return { 
-            status: 'open', 
-            message: hoursUntilClose > 0 ? `${hoursUntilClose} ${getTranslation(language, 'hoursAfterClosing')}` : getTranslation(language, 'closingSoon')
+          return {
+            status: 'open',
+            message: hoursUntilClose > 0 ? `${hoursUntilClose} ${window.getTranslation ? window.getTranslation(language, 'hoursAfterClosing') : 'hours until closing'}` : (window.getTranslation ? window.getTranslation(language, 'closingSoon') : 'Closing soon')
           };
         } else if (currentTime < openTime) {
           // 今天還未營業
@@ -581,9 +581,9 @@ function getBusinessStatus(openingHours, language = 'zh') {
           openDateTime.setHours(openHour, openMinute, 0, 0);
           
           const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
-          return { 
-            status: 'closed', 
-            message: hoursUntilOpen > 0 ? `${hoursUntilOpen} ${getTranslation(language, 'hoursAfterOpening')}` : getTranslation(language, 'openingSoon')
+          return {
+            status: 'closed',
+            message: hoursUntilOpen > 0 ? `${hoursUntilOpen} ${window.getTranslation ? window.getTranslation(language, 'hoursAfterOpening') : 'hours until opening'}` : (window.getTranslation ? window.getTranslation(language, 'openingSoon') : 'Opening soon')
           };
         }
       }
@@ -603,9 +603,9 @@ function getBusinessStatus(openingHours, language = 'zh') {
         openDateTime.setHours(openHour, openMinute, 0, 0);
         
         const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
-        return { 
-          status: 'closed', 
-          message: `${hoursUntilOpen} ${getTranslation(language, 'hoursAfterOpening')}`
+        return {
+          status: 'closed',
+          message: `${hoursUntilOpen} ${window.getTranslation ? window.getTranslation(language, 'hoursAfterOpening') : 'hours until opening'}`
         };
       }
     }
@@ -614,15 +614,15 @@ function getBusinessStatus(openingHours, language = 'zh') {
     if (openingHours.hasOwnProperty('open_now')) {
       return {
         status: openingHours.open_now ? 'open' : 'closed',
-        message: openingHours.open_now ? getTranslation(language, 'openNow') : getTranslation(language, 'closed')
+        message: openingHours.open_now ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
       };
     }
     
-    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
-    
+    return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours unknown' };
+
   } catch (error) {
     console.warn('⚠️ 解析營業狀態時出錯:', error);
-    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
+    return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours unknown' };
   }
 }
 
