@@ -150,67 +150,35 @@ function RestaurantCard({ restaurant, language, userLocation }) {
       console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
       console.log('🗺️ 餐廳地址:', restaurant.address);
       
-      let navOrigin = null;
-      let originSource = '';
-
-      // 優先嘗試從app.js的userAddress獲取當前顯示的地址
-      const currentDisplayAddress = document.querySelector('[data-testid="user-address"]')?.textContent;
-      console.log('🏠 當前UI顯示的地址:', currentDisplayAddress);
-
-      // 檢查savedLocations中是否有與當前userLocation匹配的地址
-      let matchedSavedLocation = null;
-      if (userLocation) {
-        // 從localStorage獲取savedLocations
-        try {
-          const savedLocations = JSON.parse(localStorage.getItem('savedLocations') || '[]');
-          matchedSavedLocation = savedLocations.find(loc => 
-            Math.abs(loc.lat - userLocation.lat) < 0.0001 && 
-            Math.abs(loc.lng - userLocation.lng) < 0.0001
-          );
-          console.log('🔍 找到匹配的已儲存位置:', matchedSavedLocation);
-        } catch (error) {
-          console.warn('⚠️ 無法讀取savedLocations:', error);
-        }
+      // 簡化邏輯：直接使用座標作為起點，餐廳地址作為終點
+      if (userLocation && restaurant.address) {
+        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+        const destination = encodeURIComponent(restaurant.address);
+        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+        console.log('🎯 最終導航URL:', finalUrl);
+        console.log('🎯 導航起點座標:', userLocation);
+        console.log('🎯 導航終點地址:', restaurant.address);
+        return finalUrl;
       }
 
-      // 決定使用地址還是座標
-      if (matchedSavedLocation && matchedSavedLocation.address) {
-        // 使用已儲存位置的完整地址
-        navOrigin = matchedSavedLocation.address;
-        originSource = `savedLocation.address (${matchedSavedLocation.type})`;
-        console.log('✅ 使用已儲存位置地址作為導航起點:', navOrigin, '來源:', originSource);
-      } else if (userLocation) {
-        // 回退到座標
-        navOrigin = `${userLocation.lat},${userLocation.lng}`;
-        originSource = 'userLocation coordinates (app.js狀態)';
-        console.log('⚠️ 沒有匹配地址，使用座標作為導航起點:', navOrigin, '來源:', originSource);
-      } else {
-        // 如果沒有當前位置，嘗試使用最後一次定位點作為 nav_origin
+      // 如果沒有當前位置，使用最後一次定位點
+      if (!userLocation && restaurant.address) {
         try {
           const lastKnownLocation = localStorage.getItem('lastKnownLocation');
           if (lastKnownLocation) {
             const lastLocation = JSON.parse(lastKnownLocation);
-            navOrigin = `${lastLocation.lat},${lastLocation.lng}`;
-            originSource = 'lastKnownLocation coordinates (localStorage)';
-            console.log('⚠️ userLocation為空，使用lastKnownLocation:', navOrigin, '來源:', originSource);
+            const origin = encodeURIComponent(`${lastLocation.lat},${lastLocation.lng}`);
+            const destination = encodeURIComponent(restaurant.address);
+            const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+            console.log('🎯 使用lastKnownLocation的導航URL:', finalUrl);
+            return finalUrl;
           }
         } catch (error) {
           console.warn('⚠️ 無法讀取最後一次的定位點:', error);
         }
       }
 
-      // 如果有起點和餐廳地址，建立路線規劃連結
-      if (navOrigin && restaurant.address) {
-        const origin = encodeURIComponent(navOrigin);
-        const destination = encodeURIComponent(restaurant.address);
-        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-        console.log('🎯 最終導航URL:', finalUrl);
-        console.log('🎯 導航起點:', navOrigin, '(來源:', originSource + ')');
-        console.log('🎯 導航終點地址:', restaurant.address);
-        return finalUrl;
-      }
-
-      // 回退選項
+      // 回退選項：直接導航到餐廳位置
       return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
     };
 
