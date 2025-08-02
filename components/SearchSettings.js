@@ -40,8 +40,8 @@ function SearchSettings({
           <div className="flex gap-2 justify-center">
             {[
               { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
-              { id: 'lunch', label: t.lunch, icon: '☀️', time: '11-14' },
-              { id: 'dinner', label: t.dinner, icon: '🌃', time: '17-22' }
+              { id: 'lunch', label: t.lunch, icon: '☀️', time: '11-16' },
+              { id: 'dinner', label: t.dinner, icon: '🌃', time: '16-24' }
             ].map((mealTime) => (
               <button
                 key={mealTime.id}

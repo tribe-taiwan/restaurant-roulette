@@ -197,8 +197,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   // 定義用餐時段
   const mealTimes = {
     breakfast: { start: 6, end: 11 },
-    lunch: { start: 11, end: 14 },
-    dinner: { start: 17, end: 22 }
+    lunch: { start: 11, end: 16 },
+    dinner: { start: 16, end: 24 }
   };
   
   const selectedTime = mealTimes[selectedMealTime];
@@ -671,8 +671,8 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
 
   const timeSlots = {
     breakfast: { start: 6, end: 11 },
-    lunch: { start: 11, end: 14 },
-    dinner: { start: 17, end: 22 }
+    lunch: { start: 11, end: 16 },
+    dinner: { start: 16, end: 24 }
   };
 
   const slot = timeSlots[timeSlot];
