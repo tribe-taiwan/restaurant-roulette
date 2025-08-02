@@ -79,12 +79,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     }, [isSpinning]);
 
     return (
-      <div className="slot-machine max-w-md w-full" data-name="slot-machine" data-file="components/SlotMachine.js">
+      <div className="w-full max-w-2xl mx-auto" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center mb-6">
           
           {/* Restaurant Image Display */}
           <div 
-            className="rounded-lg mb-6 h-48 overflow-hidden relative cursor-pointer select-none"
+            className="rounded-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
             style={{
               backgroundImage: finalRestaurant && finalRestaurant.image ? 
                 `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
@@ -122,7 +122,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               ) : (
                 <div className="text-xl font-bold text-white drop-shadow-lg py-8 flex items-center justify-center gap-2">
-                  <i data-lucide="utensils" className="w-6 h-6"></i>
+                  😋
                   {translations.spinButton}
                 </div>
               )}
@@ -153,41 +153,56 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <div className="icon-shuffle text-xl"></div>
-{translations.nextBatch}
+                🔄
+                {translations.nextBatch}
               </div>
             )}
           </button>
 
           {/* Restaurant List */}
           {candidateList.length > 0 && (
-            <div className="mt-6">
+            <div className="mt-6 w-full">
               <div className="text-center text-sm text-gray-600 mb-4">
                 候選餐廳 ({candidateList.length}/9)
               </div>
-              <div className="space-y-2">
-                {candidateList.map((restaurant, index) => (
-                  <div key={index} className="bg-white rounded-lg p-3 flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-800">
-                        {index + 1}. {restaurant.name}
-                      </div>
-                      {restaurant.distance && (
-                        <div className="text-sm text-gray-600">
-                          🗺️ {restaurant.distance}km
-                        </div>
-                      )}
-                    </div>
+              <div className="space-y-2 w-full">
+                {candidateList.map((restaurant, index) => {
+                  const priceLabels = {
+                    1: '經濟實惠',
+                    2: '中等價位', 
+                    3: '高價位',
+                    4: '精緻餐飲'
+                  };
+                  const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
+                  const priceText = priceLabels[priceLevel] || '中等價位';
+                  
+                  return (
                     <a
+                      key={index}
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                      className="block bg-white hover:bg-gray-50 rounded-lg p-4 transition-colors duration-200 border border-gray-200 hover:border-gray-300"
                     >
-                      🗺️
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-800 text-lg">
+                            {index + 1}. {restaurant.name}
+                          </div>
+                          <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
+                            {restaurant.distance && (
+                              <span>🗺️ {restaurant.distance}km</span>
+                            )}
+                            <span>💰 {priceText}</span>
+                          </div>
+                        </div>
+                        <div className="text-gray-400 text-lg">
+                          ↗
+                        </div>
+                      </div>
                     </a>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {candidateList.length > 0 && (
                 <div className="text-center mt-4">

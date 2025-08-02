@@ -249,36 +249,32 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           <div>
             {/* 網站和導航 - 移到地址上面 */}
             <div className="flex flex-wrap gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <div className="icon-navigation text-[var(--primary-color)] text-lg"></div>
-                <a
-                  href={getDirectionsUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--primary-color)] hover:underline text-sm"
-                >
-                  {getTranslation('viewRoute')}
-                </a>
-              </div>
+              <a
+                href={getDirectionsUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                🧭
+                {getTranslation('viewRoute')}
+              </a>
 
               {restaurant.website && (
-                <div className="flex items-center gap-2">
-                  <div className="icon-globe text-[var(--accent-color)] text-lg"></div>
-                  <a
-                    href={restaurant.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[var(--accent-color)] hover:underline text-sm"
-                  >
-                    {getTranslation('viewWebsite')}
-                  </a>
-                </div>
+                <a
+                  href={restaurant.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                >
+                  🌐
+                  {getTranslation('viewWebsite')}
+                </a>
               )}
             </div>
 
             <div className="space-y-4 mb-6">
               <div className="flex items-start gap-3">
-                <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
+                <span className="text-[var(--primary-color)] text-lg mt-1">📍</span>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('address')}
@@ -288,7 +284,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="icon-phone text-[var(--success-color)] text-lg mt-1"></div>
+                <span className="text-[var(--success-color)] text-lg mt-1">📞</span>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('phone')}
@@ -300,7 +296,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="icon-clock text-[var(--secondary-color)] text-lg mt-1"></div>
+                <span className="text-[var(--secondary-color)] text-lg mt-1">🕐</span>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('businessHours')}
@@ -356,7 +352,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
               <div className="bg-[var(--warning-color)] bg-opacity-20 border border-[var(--warning-color)] rounded-lg p-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
+                  <span className="text-[var(--warning-color)] text-lg">⚠️</span>
                   <span className="text-[var(--warning-color)] font-medium text-sm">
                     {getTranslation('temporarilyClosed')}
                   </span>
@@ -387,7 +383,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                   {selectedImage === 'photos' && (language === 'zh' ? '菜品相簿' : 'Food Photos')}
                   {selectedImage === 'directions' && (language === 'zh' ? '導航路線' : 'Directions')}
                 </h3>
-                <button onClick={closeModal} className="icon-x text-xl text-gray-400 hover:text-white"></button>
+                <button onClick={closeModal} className="text-xl text-gray-400 hover:text-white">✕</button>
               </div>
               
               <div className="text-center">
@@ -397,7 +393,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                       {language === 'zh' ? '點擊下方按鈕查看完整菜單' : 'Click below to view the full menu'}
                     </p>
                     <button className="btn-primary">
-                      <div className="icon-external-link text-lg mr-2"></div>
+                      <span className="text-lg mr-2">🔗</span>
                       {language === 'zh' ? '查看菜單' : 'View Menu'}
                     </button>
                   </div>

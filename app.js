@@ -96,9 +96,9 @@ function App() {
       },
       zh: {
         title: "吃這家",
-        spinButton: "吃什麼",
+        spinButton: "甲崩喔",
         addCandidate: "加入候選",
-        nextBatch: "吃什麼",
+        nextBatch: "甲崩喔",
         spinning: "正在搜尋...",
         locationError: "請允許位置訪問以獲取附近餐廳。",
         locationLoading: "正在獲取您的位置...",
