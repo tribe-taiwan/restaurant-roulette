@@ -226,7 +226,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 alt={restaurant.name}
                 className="w-full aspect-video object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleImageClick}
-                title={t('clickToViewPhotos')}
+                title={getTranslation('clickToViewPhotos')}
               />
               <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                 {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
@@ -235,10 +235,10 @@ function RestaurantCard({ restaurant, language, userLocation }) {
               <div 
                 className="absolute bottom-4 right-4 bg-blue-600 bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-all"
                 onClick={handleImageClick}
-                title={t('clickToViewPhotos')}
+                title={getTranslation('clickToViewPhotos')}
               >
                 <span>📍</span>
-                <span>{t('viewLocation')}</span>
+                <span>{getTranslation('viewLocation')}</span>
               </div>
             </div>
           </div>
@@ -255,7 +255,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                   rel="noopener noreferrer"
                   className="text-[var(--primary-color)] hover:underline text-sm"
                 >
-                  {t('viewRoute')}
+                  {getTranslation('viewRoute')}
                 </a>
               </div>
 
@@ -268,7 +268,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                     rel="noopener noreferrer"
                     className="text-[var(--accent-color)] hover:underline text-sm"
                   >
-                    {t('viewWebsite')}
+                    {getTranslation('viewWebsite')}
                   </a>
                 </div>
               )}
@@ -279,7 +279,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {t('address')}
+                    {getTranslation('address')}
                   </div>
                   <span className="text-[var(--text-secondary)]">{restaurant.address}</span>
                 </div>
@@ -289,7 +289,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-phone text-[var(--success-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {t('phone')}
+                    {getTranslation('phone')}
                   </div>
                   <a href={`tel:${restaurant.phone}`} className="text-[var(--success-color)] hover:underline">
                     {restaurant.phone}
@@ -301,7 +301,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-clock text-[var(--secondary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {t('businessHours')}
+                    {getTranslation('businessHours')}
                   </div>
                   <span className="text-[var(--text-secondary)]">{formatHours(restaurant.hours)}</span>
                 </div>
@@ -332,11 +332,11 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                       restaurant.operatingStatus.status === 'open' ? 'text-green-800 dark:text-green-300' : 
                       restaurant.operatingStatus.status === 'closed' ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'
                     }`}>
-                      {restaurant.operatingStatus.status === 'open' 
-                        ? t('openNow')
+                      {restaurant.operatingStatus.status === 'open'
+                        ? getTranslation('openNow')
                         : restaurant.operatingStatus.status === 'closed'
-                          ? t('closed')
-                          : t('hoursUnknown')
+                          ? getTranslation('closed')
+                          : getTranslation('hoursUnknown')
                       }
                     </div>
                     <div className={`text-sm ${
@@ -356,7 +356,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="flex items-center gap-2">
                   <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
                   <span className="text-[var(--warning-color)] font-medium text-sm">
-                    {t('temporarilyClosed')}
+                    {getTranslation('temporarilyClosed')}
                   </span>
                 </div>
               </div>
