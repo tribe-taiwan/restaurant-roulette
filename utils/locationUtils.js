@@ -1,3 +1,5 @@
+import { getTranslation } from './translations.js';
+
 // Google Places JavaScript API 配置
 const GOOGLE_PLACES_CONFIG = {
   API_KEY: '%%GOOGLE_PLACES_API_KEY%%', // 將在部署時被 GitHub Actions 替換
@@ -527,81 +529,10 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
  * @returns {Object} 營業狀態信息
  */
 function getBusinessStatus(openingHours, language = 'zh') {
-  // 翻譯函數
-  const getTranslation = (key) => {
-    const translations = {
-      en: {
-        closedToday: 'Closed today',
-        closingSoon: 'Closing soon',
-        openingSoon: 'Opening soon', 
-        openNow: 'Open now',
-        closed: 'Closed',
-        hoursUnknown: 'Hours unknown',
-        hoursAfterOpening: 'Opening in',
-        hoursAfterClosing: 'Closing in',
-        hours: 'hours'
-      },
-      zh: {
-        closedToday: '今日不營業',
-        closingSoon: '即將打烊',
-        openingSoon: '即將營業',
-        openNow: '營業中',
-        closed: '已打烊', 
-        hoursUnknown: '營業時間未知',
-        hoursAfterOpening: '小時後開始營業',
-        hoursAfterClosing: '小時後打烊',
-        hours: '小時'
-      },
-      ja: {
-        closedToday: '本日休業',
-        closingSoon: 'まもなく閉店',
-        openingSoon: 'まもなく開店',
-        openNow: '営業中',
-        closed: '閉店',
-        hoursUnknown: '営業時間不明',
-        hoursAfterOpening: '時間後に開店',
-        hoursAfterClosing: '時間後に閉店',
-        hours: '時間'
-      },
-      ko: {
-        closedToday: '오늘 휴무',
-        closingSoon: '곧 영업종료',
-        openingSoon: '곧 영업시작',
-        openNow: '영업 중',
-        closed: '영업종료',
-        hoursUnknown: '영업시간 알 수 없음',
-        hoursAfterOpening: '시간 후 영업 시작',
-        hoursAfterClosing: '시간 후 영업 종료',
-        hours: '시간'
-      },
-      es: {
-        closedToday: 'Cerrado hoy',
-        closingSoon: 'Cerrando pronto',
-        openingSoon: 'Abriendo pronto',
-        openNow: 'Abierto ahora',
-        closed: 'Cerrado',
-        hoursUnknown: 'Horario desconocido',
-        hoursAfterOpening: 'Abre en',
-        hoursAfterClosing: 'Cierra en',
-        hours: 'horas'
-      },
-      fr: {
-        closedToday: 'Fermé aujourd\'hui',
-        closingSoon: 'Ferme bientôt',
-        openingSoon: 'Ouvre bientôt',
-        openNow: 'Ouvert maintenant',
-        closed: 'Fermé',
-        hoursUnknown: 'Horaires inconnus',
-        hoursAfterOpening: 'Ouvre dans',
-        hoursAfterClosing: 'Ferme dans',
-        hours: 'heures'
-      }
-    };
-    return translations[language]?.[key] || translations.zh[key];
-  };
+  // 翻譯系統已移至 utils/translations.js 統一管理
 
   if (!openingHours) {
-    return { status: 'unknown', message: getTranslation('hoursUnknown') };
+    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
   }
   
   const now = new Date();
@@ -616,7 +547,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
       );
       
       if (todayPeriods.length === 0) {
-        return { status: 'closed', message: getTranslation('closedToday') };
+        return { status: 'closed', message: getTranslation(language, 'closedToday') };
       }
       
       for (const period of todayPeriods) {
@@ -633,7 +564,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
           const hoursUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60 * 60));
           return { 
             status: 'open', 
-            message: hoursUntilClose > 0 ? `${hoursUntilClose} ${getTranslation('hoursAfterClosing')}}` : getTranslation('closingSoon')
+            message: hoursUntilClose > 0 ? `${hoursUntilClose} ${getTranslation(language, 'hoursAfterClosing')}` : getTranslation(language, 'closingSoon')
           };
         } else if (currentTime < openTime) {
           // 今天還未營業
@@ -645,7 +576,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
           const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
           return { 
             status: 'closed', 
-            message: hoursUntilOpen > 0 ? `${hoursUntilOpen} ${getTranslation('hoursAfterOpening')}` : getTranslation('openingSoon')
+            message: hoursUntilOpen > 0 ? `${hoursUntilOpen} ${getTranslation(language, 'hoursAfterOpening')}` : getTranslation(language, 'openingSoon')
           };
         }
       }
@@ -667,7 +598,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
         const hoursUntilOpen = Math.ceil((openDateTime - now) / (1000 * 60 * 60));
         return { 
           status: 'closed', 
-          message: `${hoursUntilOpen} ${getTranslation('hoursAfterOpening')}`
+          message: `${hoursUntilOpen} ${getTranslation(language, 'hoursAfterOpening')}`
         };
       }
     }
@@ -676,15 +607,15 @@ function getBusinessStatus(openingHours, language = 'zh') {
     if (openingHours.hasOwnProperty('open_now')) {
       return {
         status: openingHours.open_now ? 'open' : 'closed',
-        message: openingHours.open_now ? getTranslation('openNow') : getTranslation('closed')
+        message: openingHours.open_now ? getTranslation(language, 'openNow') : getTranslation(language, 'closed')
       };
     }
     
-    return { status: 'unknown', message: getTranslation('hoursUnknown') };
+    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
     
   } catch (error) {
     console.warn('⚠️ 解析營業狀態時出錯:', error);
-    return { status: 'unknown', message: getTranslation('hoursUnknown') };
+    return { status: 'unknown', message: getTranslation(language, 'hoursUnknown') };
   }
 }
 

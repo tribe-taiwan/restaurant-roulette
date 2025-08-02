@@ -1,3 +1,5 @@
+import { getTranslation } from './utils/translations.js';
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -56,202 +58,9 @@ function App() {
     const [savedLocations, setSavedLocations] = React.useState([]);
     const [isGeocodingAddress, setIsGeocodingAddress] = React.useState(false);
 
-    const translations = {
-      en: {
-        title: "Restaurant Roulette",
-        spinButton: "What shall we eat?",
-        spinning: "Finding your restaurant...",
-        locationError: "Please allow location access to find nearby restaurants.",
-        locationLoading: "Getting your location...",
-        relocateButton: "Relocate",
-        spinErrorPrefix: "Error: ",
-        apiSearching: "Searching nearby restaurants...",
-        radiusLabel: "Search radius:",
-        radiusKm: "km",
-        locationSuccess: "Location found",
-        locationDetected: "Located at",
-        addressLoading: "Getting address...",
-        addressError: "Address unavailable",
-        breakfast: "Breakfast",
-        lunch: "Lunch", 
-        dinner: "Dinner",
-        enterAddress: "Enter address to correct location",
-        locateHere: "📍 Locate here",
-        home: "Home",
-        office: "Office",
-        saveText: "Save",
-        // 新增詞彙
-        viewRoute: "View Route & Navigation",
-        viewWebsite: "View Website",
-        address: "Address",
-        phone: "Phone",
-        businessHours: "Business Hours",
-        openingIn: "Opening in",
-        hours: "hours"
-      },
-      zh: {
-        title: "吃這家",
-        spinButton: "想吃什麼？",
-        spinning: "正在尋找您的餐廳...",
-        locationError: "請允許位置訪問以獲取附近餐廳。",
-        locationLoading: "正在獲取您的位置...",
-        relocateButton: "重新定位",
-        spinErrorPrefix: "錯誤：",
-        apiSearching: "正在搜索附近餐廳...",
-        radiusLabel: "搜索範圍：",
-        radiusKm: "公里",
-        locationSuccess: "定位成功",
-        locationDetected: "當前位置",
-        addressLoading: "正在獲取地址...",
-        addressError: "地址無法取得",
-        breakfast: "早餐",
-        lunch: "午餐",
-        dinner: "晚餐",
-        enterAddress: "輸入地址來校正位置",
-        locateHere: "📍 定位到這裡",
-        home: "住家",
-        office: "公司",
-        saveText: "儲存",
-        // 新增詞彙
-        viewRoute: "查看路線與規劃",
-        viewWebsite: "查看官網",
-        address: "地址",
-        phone: "電話",
-        businessHours: "營業時間",
-        openingIn: "小時後開始營業",
-        hours: "小時"
-      },
-      ja: {
-        title: "レストランルーレット",
-        spinButton: "何を食べましょうか？",
-        spinning: "レストランを探しています...",
-        locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
-        locationLoading: "位置情報を取得しています...",
-        relocateButton: "再位置取得",
-        spinErrorPrefix: "エラー：",
-        apiSearching: "近くのレストランを検索しています...",
-        radiusLabel: "検索範囲：",
-        radiusKm: "km",
-        locationSuccess: "位置情報取得成功",
-        locationDetected: "現在地",
-        addressLoading: "住所を取得しています...",
-        addressError: "住所が取得できません",
-        breakfast: "朝食",
-        lunch: "昼食",
-        dinner: "夕食",
-        enterAddress: "住所を入力して位置を修正",
-        locateHere: "📍 ここに位置設定",
-        home: "自宅",
-        office: "オフィス",
-        saveText: "保存",
-        // 新增詞彙
-        viewRoute: "ルートと案内を見る",
-        viewWebsite: "ウェブサイトを見る",
-        address: "住所",
-        phone: "電話",
-        businessHours: "営業時間",
-        openingIn: "時間後に開店",
-        hours: "時間"
-      },
-      ko: {
-        title: "레스토랑 룰렛",
-        spinButton: "무엇을 먹을까요?",
-        spinning: "레스토랑을 찾고 있습니다...",
-        locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
-        locationLoading: "위치를 가져오는 중...",
-        relocateButton: "재위치",
-        spinErrorPrefix: "오류: ",
-        apiSearching: "근처 레스토랑을 검색 중...",
-        radiusLabel: "검색 범위:",
-        radiusKm: "km",
-        locationSuccess: "위치 찾기 성공",
-        locationDetected: "현재 위치",
-        addressLoading: "주소를 가져오는 중...",
-        addressError: "주소를 사용할 수 없음",
-        breakfast: "아침식사",
-        lunch: "점심식사",
-        dinner: "저녁식사",
-        enterAddress: "위치를 수정할 주소 입력",
-        locateHere: "📍 여기에 위치",
-        home: "집",
-        office: "사무실",
-        saveText: "저장",
-        // 新增詞彙
-        viewRoute: "경로 및 내비게이션 보기",
-        viewWebsite: "웹사이트 보기",
-        address: "주소",
-        phone: "전화",
-        businessHours: "영업시간",
-        openingIn: "시간 후 영업 시작",
-        hours: "시간"
-      },
-      es: {
-        title: "Ruleta de Restaurantes",
-        spinButton: "¿Qué comemos?",
-        spinning: "Buscando tu restaurante...",
-        locationError: "Por favor permite el acceso a la ubicación para encontrar restaurantes cercanos.",
-        locationLoading: "Obteniendo tu ubicación...",
-        relocateButton: "Relocalizar",
-        spinErrorPrefix: "Error: ",
-        apiSearching: "Buscando restaurantes cercanos...",
-        radiusLabel: "Radio de búsqueda:",
-        radiusKm: "km",
-        locationSuccess: "Ubicación encontrada",
-        locationDetected: "Ubicado en",
-        addressLoading: "Obteniendo dirección...",
-        addressError: "Dirección no disponible",
-        breakfast: "Desayuno",
-        lunch: "Almuerzo",
-        dinner: "Cena",
-        enterAddress: "Ingresa dirección para corregir ubicación",
-        locateHere: "📍 Ubicar aquí",
-        home: "Casa",
-        office: "Oficina",
-        saveText: "Guardar",
-        // 新增詞彙
-        viewRoute: "Ver Ruta y Navegación",
-        viewWebsite: "Ver Sitio Web",
-        address: "Dirección",
-        phone: "Teléfono",
-        businessHours: "Horario de Atención",
-        openingIn: "Abre en",
-        hours: "horas"
-      },
-      fr: {
-        title: "Roulette de Restaurants",
-        spinButton: "Que mangeons-nous ?",
-        spinning: "Recherche de votre restaurant...",
-        locationError: "Veuillez autoriser l'accès à la localisation pour trouver des restaurants à proximité.",
-        locationLoading: "Obtention de votre position...",
-        relocateButton: "Relocaliser",
-        spinErrorPrefix: "Erreur : ",
-        apiSearching: "Recherche de restaurants à proximité...",
-        radiusLabel: "Rayon de recherche :",
-        radiusKm: "km",
-        locationSuccess: "Position trouvée",
-        locationDetected: "Situé à",
-        addressLoading: "Obtention de l'adresse...",
-        addressError: "Adresse non disponible",
-        breakfast: "Petit-déjeuner",
-        lunch: "Déjeuner",
-        dinner: "Dîner",
-        enterAddress: "Entrez l'adresse pour corriger la position",
-        locateHere: "📍 Localiser ici",
-        home: "Maison",
-        office: "Bureau",
-        saveText: "Sauvegarder",
-        // 新增詞彙
-        viewRoute: "Voir Itinéraire et Navigation",
-        viewWebsite: "Voir Site Web",
-        address: "Adresse",
-        phone: "Téléphone",
-        businessHours: "Heures d'Ouverture",
-        openingIn: "Ouvre dans",
-        hours: "heures"
-      }
-    };
+    // 翻譯系統已移至 utils/translations.js 統一管理
 
-    const t = translations[selectedLanguage];
+    const t = (key) => getTranslation(selectedLanguage, key);
 
     // 載入已儲存的位置和上一次的定位
     React.useEffect(() => {
@@ -457,7 +266,7 @@ function App() {
         }
       } catch (error) {
         console.error('獲取地址失敗:', error);
-        setUserAddress(t.addressError);
+        setUserAddress(t('addressError'));
         // 即使地址獲取失敗，如果是初次載入也要嘗試搜索餐廳
         if (isInitialLoad && userLocation) {
           setIsInitialLoad(false);
@@ -502,7 +311,7 @@ function App() {
           console.log('Location detected:', coords.lat, coords.lng);
           
           // 獲取地址資訊
-          setUserAddress(t.addressLoading);
+          setUserAddress(t('addressLoading'));
           getAddressFromCoords(coords.lat, coords.lng);
         },
         (error) => {

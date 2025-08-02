@@ -1,3 +1,5 @@
+import { getTranslation } from '../utils/translations.js';
+
 function RestaurantCard({ restaurant, language, userLocation }) {
   try {
     const [selectedImage, setSelectedImage] = React.useState(null);
@@ -11,98 +13,11 @@ function RestaurantCard({ restaurant, language, userLocation }) {
       fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
     };
 
-    const getTranslation = (key) => {
-      const translations = {
-        en: {
-          hoursNotAvailable: 'Hours not available',
-          viewLocation: 'View location',
-          clickToViewPhotos: 'Click to view Google Maps photos',
-          viewRoute: 'View Route & Navigation',
-          viewWebsite: 'Visit Website',
-          address: 'Address',
-          phone: 'Phone',
-          businessHours: 'Business Hours',
-          openNow: 'Open Now',
-          closed: 'Closed',
-          hoursUnknown: 'Hours Unknown',
-          temporarilyClosed: '⚠️ This restaurant may be temporarily closed, please call to confirm'
-        },
-        zh: {
-          hoursNotAvailable: '營業時間未提供',
-          viewLocation: '查看位置',
-          clickToViewPhotos: '點擊查看Google地圖相片',
-          viewRoute: '查看路線規劃與導航',
-          viewWebsite: '查看官網',
-          address: '地址',
-          phone: '電話',
-          businessHours: '營業時間',
-          openNow: '營業中',
-          closed: '已打烊',
-          hoursUnknown: '營業狀況未明',
-          temporarilyClosed: '⚠️ 此餐廳可能暫停營業，建議致電確認'
-        },
-        ja: {
-          hoursNotAvailable: '営業時間の情報なし',
-          viewLocation: '場所を見る',
-          clickToViewPhotos: 'Google マップの写真を見る',
-          viewRoute: 'ルートと案内を見る',
-          viewWebsite: 'ウェブサイトを見る',
-          address: '住所',
-          phone: '電話',
-          businessHours: '営業時間',
-          openNow: '営業中',
-          closed: '閉店',
-          hoursUnknown: '営業時間不明',
-          temporarilyClosed: '⚠️ このレストランは一時閉店の可能性があります。電話で確認してください'
-        },
-        ko: {
-          hoursNotAvailable: '영업시간 정보 없음',
-          viewLocation: '위치 보기',
-          clickToViewPhotos: 'Google 지도 사진 보기',
-          viewRoute: '경로 및 내비게이션 보기',
-          viewWebsite: '웹사이트 보기',
-          address: '주소',
-          phone: '전화',
-          businessHours: '영업시간',
-          openNow: '영업 중',
-          closed: '영업종료',
-          hoursUnknown: '영업시간 알 수 없음',
-          temporarilyClosed: '⚠️ 이 식당은 임시 휴업일 수 있습니다. 전화로 확인하세요'
-        },
-        es: {
-          hoursNotAvailable: 'Horario no disponible',
-          viewLocation: 'Ver ubicación',
-          clickToViewPhotos: 'Ver fotos de Google Maps',
-          viewRoute: 'Ver Ruta y Navegación',
-          viewWebsite: 'Ver Sitio Web',
-          address: 'Dirección',
-          phone: 'Teléfono',
-          businessHours: 'Horario de Atención',
-          openNow: 'Abierto Ahora',
-          closed: 'Cerrado',
-          hoursUnknown: 'Horario Desconocido',
-          temporarilyClosed: '⚠️ Este restaurante puede estar temporalmente cerrado, llame para confirmar'
-        },
-        fr: {
-          hoursNotAvailable: 'Horaires non disponibles',
-          viewLocation: 'Voir l\'emplacement',
-          clickToViewPhotos: 'Voir les photos Google Maps',
-          viewRoute: 'Voir Itinéraire et Navigation',
-          viewWebsite: 'Voir Site Web',
-          address: 'Adresse',
-          phone: 'Téléphone',
-          businessHours: 'Heures d\'Ouverture',
-          openNow: 'Ouvert Maintenant',
-          closed: 'Fermé',
-          hoursUnknown: 'Horaires Inconnus',
-          temporarilyClosed: '⚠️ Ce restaurant peut être temporairement fermé, appelez pour confirmer'
-        }
-      };
-      return translations[language]?.[key] || translations.en[key];
-    };
+    // 翻譯系統已移至 utils/translations.js 統一管理
+    const t = (key) => getTranslation(language, key);
 
     const formatHours = (hours) => {
-      if (!hours) return getTranslation('hoursNotAvailable');
+      if (!hours) return t('hoursNotAvailable');
       // 如果包含HTML標籤，直接返回（已經格式化）
       if (hours.includes('<br>')) {
         return <span dangerouslySetInnerHTML={{ __html: hours }} />;
@@ -209,7 +124,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 alt={restaurant.name}
                 className="w-full aspect-video object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleImageClick}
-                title={getTranslation('clickToViewPhotos')}
+                title={t('clickToViewPhotos')}
               />
               <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                 {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
@@ -218,10 +133,10 @@ function RestaurantCard({ restaurant, language, userLocation }) {
               <div 
                 className="absolute bottom-4 right-4 bg-blue-600 bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-all"
                 onClick={handleImageClick}
-                title={getTranslation('clickToViewPhotos')}
+                title={t('clickToViewPhotos')}
               >
                 <span>📍</span>
-                <span>{getTranslation('viewLocation')}</span>
+                <span>{t('viewLocation')}</span>
               </div>
             </div>
           </div>
@@ -238,7 +153,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                   rel="noopener noreferrer"
                   className="text-[var(--primary-color)] hover:underline text-sm"
                 >
-                  {getTranslation('viewRoute')}
+                  {t('viewRoute')}
                 </a>
               </div>
 
@@ -251,7 +166,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                     rel="noopener noreferrer"
                     className="text-[var(--accent-color)] hover:underline text-sm"
                   >
-                    {getTranslation('viewWebsite')}
+                    {t('viewWebsite')}
                   </a>
                 </div>
               )}
@@ -262,7 +177,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('address')}
+                    {t('address')}
                   </div>
                   <span className="text-[var(--text-secondary)]">{restaurant.address}</span>
                 </div>
@@ -272,7 +187,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-phone text-[var(--success-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('phone')}
+                    {t('phone')}
                   </div>
                   <a href={`tel:${restaurant.phone}`} className="text-[var(--success-color)] hover:underline">
                     {restaurant.phone}
@@ -284,7 +199,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="icon-clock text-[var(--secondary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('businessHours')}
+                    {t('businessHours')}
                   </div>
                   <span className="text-[var(--text-secondary)]">{formatHours(restaurant.hours)}</span>
                 </div>
@@ -316,10 +231,10 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                       restaurant.operatingStatus.status === 'closed' ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'
                     }`}>
                       {restaurant.operatingStatus.status === 'open' 
-                        ? getTranslation('openNow')
+                        ? t('openNow')
                         : restaurant.operatingStatus.status === 'closed'
-                          ? getTranslation('closed')
-                          : getTranslation('hoursUnknown')
+                          ? t('closed')
+                          : t('hoursUnknown')
                       }
                     </div>
                     <div className={`text-sm ${
@@ -339,7 +254,7 @@ function RestaurantCard({ restaurant, language, userLocation }) {
                 <div className="flex items-center gap-2">
                   <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
                   <span className="text-[var(--warning-color)] font-medium text-sm">
-                    {getTranslation('temporarilyClosed')}
+                    {t('temporarilyClosed')}
                   </span>
                 </div>
               </div>
