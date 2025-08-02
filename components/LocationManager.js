@@ -41,9 +41,9 @@ function LocationManager({
               {isRelocating ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <span className={`text-white text-lg ${
+                <div className={`icon-map-pin text-white text-lg ${
                   locationStatus === 'success' ? 'animate-pulse' : ''
-                }`}>📍</span>
+                }`}></div>
               )}
             </button>
           </div>

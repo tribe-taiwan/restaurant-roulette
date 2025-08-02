@@ -274,7 +274,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
             <div className="space-y-4 mb-6">
               <div className="flex items-start gap-3">
-                <span className="text-[var(--primary-color)] text-lg mt-1">📍</span>
+                <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('address')}
@@ -284,7 +284,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <span className="text-[var(--success-color)] text-lg mt-1">📞</span>
+                <div className="icon-phone text-[var(--success-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('phone')}
@@ -296,7 +296,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <span className="text-[var(--secondary-color)] text-lg mt-1">🕐</span>
+                <div className="icon-clock text-[var(--secondary-color)] text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('businessHours')}
@@ -352,7 +352,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
               <div className="bg-[var(--warning-color)] bg-opacity-20 border border-[var(--warning-color)] rounded-lg p-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-[var(--warning-color)] text-lg">⚠️</span>
+                  <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
                   <span className="text-[var(--warning-color)] font-medium text-sm">
                     {getTranslation('temporarilyClosed')}
                   </span>
@@ -383,7 +383,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                   {selectedImage === 'photos' && (language === 'zh' ? '菜品相簿' : 'Food Photos')}
                   {selectedImage === 'directions' && (language === 'zh' ? '導航路線' : 'Directions')}
                 </h3>
-                <button onClick={closeModal} className="text-xl text-gray-400 hover:text-white">✕</button>
+                <button onClick={closeModal} className="icon-x text-xl text-gray-400 hover:text-white"></button>
               </div>
               
               <div className="text-center">
@@ -393,7 +393,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                       {language === 'zh' ? '點擊下方按鈕查看完整菜單' : 'Click below to view the full menu'}
                     </p>
                     <button className="btn-primary">
-                      <span className="text-lg mr-2">🔗</span>
+                      <div className="icon-external-link text-lg mr-2"></div>
                       {language === 'zh' ? '查看菜單' : 'View Menu'}
                     </button>
                   </div>
