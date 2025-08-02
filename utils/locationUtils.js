@@ -157,22 +157,38 @@ function initializeGoogleMaps() {
     
     // 設定全局回調函數
     window.onGoogleMapsLoaded = () => {
-      console.log('✅ Google Maps API 載入完成');
-      
-      // 建立隱藏地圖
-      const mapDiv = document.createElement('div');
-      mapDiv.style.display = 'none';
-      document.body.appendChild(mapDiv);
-      
-      const map = new google.maps.Map(mapDiv, {
-        center: { lat: 0, lng: 0 },
-        zoom: 1
-      });
-      
-      placesService = new google.maps.places.PlacesService(map);
-      geocoder = new google.maps.Geocoder();
-      
-      resolve();
+      try {
+        console.log('✅ Google Maps API 載入完成');
+
+        // 檢查 Google Maps API 是否正確載入
+        if (!window.google || !window.google.maps || !window.google.maps.places) {
+          throw new Error('Google Maps API 載入不完整');
+        }
+
+        // 建立隱藏地圖
+        const mapDiv = document.createElement('div');
+        mapDiv.style.display = 'none';
+        document.body.appendChild(mapDiv);
+
+        const map = new google.maps.Map(mapDiv, {
+          center: { lat: 0, lng: 0 },
+          zoom: 1
+        });
+
+        placesService = new google.maps.places.PlacesService(map);
+        geocoder = new google.maps.Geocoder();
+
+        // 驗證服務是否正確初始化
+        if (!placesService || !geocoder) {
+          throw new Error('Google Maps 服務初始化失敗');
+        }
+
+        console.log('✅ Google Maps 服務初始化成功');
+        resolve();
+      } catch (error) {
+        console.error('❌ Google Maps API 初始化失敗:', error);
+        reject(error);
+      }
     };
     
     script.onerror = (error) => {
@@ -186,7 +202,26 @@ function initializeGoogleMaps() {
       
       reject(new Error(`Google Maps API 載入失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
     };
-    
+
+    // 腳本載入錯誤處理
+    script.onerror = () => {
+      console.error('❌ Google Maps API 腳本載入失敗');
+      reject(new Error('Google Maps API 腳本載入失敗'));
+    };
+
+    // 設定超時處理
+    const timeout = setTimeout(() => {
+      console.error('❌ Google Maps API 載入超時');
+      reject(new Error('Google Maps API 載入超時'));
+    }, 10000); // 10秒超時
+
+    // 成功載入時清除超時
+    const originalCallback = window.onGoogleMapsLoaded;
+    window.onGoogleMapsLoaded = () => {
+      clearTimeout(timeout);
+      originalCallback();
+    };
+
     document.head.appendChild(script);
   });
 }
@@ -357,6 +392,11 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
     if (!placesService) {
       console.log('📡 初始化 Google Maps API...');
       await initializeGoogleMaps();
+    }
+
+    // 再次檢查服務是否可用
+    if (!placesService) {
+      throw new Error('Google Places Service 初始化失敗，請檢查網絡連接或 API Key');
     }
     
     // 建立搜索請求
