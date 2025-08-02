@@ -82,9 +82,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       <div className="slot-machine max-w-md w-full" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center mb-6">
           
-          {/* Restaurant Name Scroller */}
+          {/* Restaurant Image Display */}
           <div 
-            className="rounded-lg p-4 mb-6 h-32 overflow-hidden relative cursor-pointer select-none"
+            className="rounded-lg mb-6 h-48 overflow-hidden relative cursor-pointer select-none"
             style={{
               backgroundImage: finalRestaurant && finalRestaurant.image ? 
                 `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
@@ -114,7 +114,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   <div className="text-sm text-white drop-shadow">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
-                        <span>📍</span>
+                        <span>🗺️</span>
                         <span>{finalRestaurant.distance}km</span>
                       </div>
                     )}
@@ -126,13 +126,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               )}
             </div>
+            
+            {/* Add to Candidate Button - Small Circle in Bottom Right */}
+            {finalRestaurant && !isSpinning && candidateList.length < 9 && (
+              <button
+                onClick={onAddCandidate}
+                className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full text-sm font-bold shadow-lg transition-all"
+                title="加入候選"
+              >
+                {candidateList.length}/9
+              </button>
+            )}
           </div>
 
-          {/* Spin Button */}
+          {/* Search Next Button */}
           <button
-            onClick={onAddCandidate}
-            disabled={isSpinning || !finalRestaurant || candidateList.length >= 9}
-            className={`btn-primary w-full text-lg ${isSpinning || !finalRestaurant || candidateList.length >= 9 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={onSpin}
+            disabled={isSpinning}
+            className={`btn-primary w-full text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isSpinning ? (
               <div className="flex items-center justify-center gap-2">
@@ -142,22 +153,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <div className="icon-shuffle text-xl"></div>
-                `${translations.addCandidate} ${candidateList.length}/9`
+{translations.nextBatch}
               </div>
             )}
           </button>
-
-          {/* Search Next Button for Desktop */}
-          <div className="text-center mt-4">
-            <button
-              onClick={onSpin}
-              disabled={isSpinning}
-              className={`bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title="搜尋下一家餐廳 (或使用←鍵/左滑)"
-            >
-              🔍 搜尋下一家
-            </button>
-          </div>
 
           {/* Restaurant List */}
           {candidateList.length > 0 && (
@@ -174,7 +173,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       </div>
                       {restaurant.distance && (
                         <div className="text-sm text-gray-600">
-                          📍 {restaurant.distance}km
+                          🗺️ {restaurant.distance}km
                         </div>
                       )}
                     </div>
