@@ -153,8 +153,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                🔄
-                {translations.nextBatch}
+                😋
+                {translations.spinButton}
               </div>
             )}
           </button>
