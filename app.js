@@ -442,6 +442,15 @@ function App() {
       setLocationStatus('success');
       setShowAddressInput(false);
       console.log('✅ 使用已儲存位置:', location, '簡化地址:', simplifiedAddress);
+      
+      // 添加小延遲確保狀態更新完成，然後檢查當前的userLocation
+      setTimeout(() => {
+        console.log('🔍 延遲檢查：當前userLocation狀態:', newCoords);
+        console.log('🔍 React狀態是否已更新？比較原始座標:', {
+          設定的座標: newCoords,
+          實際狀態: userLocation
+        });
+      }, 100);
     };
 
     // 獲取地址資訊
