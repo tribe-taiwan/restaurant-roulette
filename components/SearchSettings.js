@@ -63,8 +63,8 @@ function SearchSettings({
           {/* 第二行：早午晚餐時段 */}
           <div className="flex gap-2 justify-center">
             {[
-              { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
-              { id: 'lunch', label: t.lunch, icon: '☀️', time: '11-16' },
+              { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '5-10' },  // 10:30就會跟很多午餐混淆
+              { id: 'lunch', label: t.lunch, icon: '☀️', time: '10-16' },
               { id: 'dinner', label: t.dinner, icon: '🌃', time: '16-24' }
             ].map((mealTime) => (
               <button

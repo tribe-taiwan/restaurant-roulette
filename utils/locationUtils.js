@@ -247,8 +247,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   
   // 定義用餐時段
   const mealTimes = {
-    breakfast: { start: 6, end: 11 },
-    lunch: { start: 11, end: 16 },
+    breakfast: { start: 5, end: 10 },
+    lunch: { start: 10, end: 16 },
     dinner: { start: 16, end: 24 }
   };
   
