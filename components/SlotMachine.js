@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, restaurantList = [], language, onClearList }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     
@@ -73,9 +73,9 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, restau
 
           {/* Spin Button */}
           <button
-            onClick={onSpin}
-            disabled={isSpinning}
-            className={`btn-primary w-full text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={onAddCandidate}
+            disabled={isSpinning || !finalRestaurant || candidateList.length >= 9}
+            className={`btn-primary w-full text-lg ${isSpinning || !finalRestaurant || candidateList.length >= 9 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isSpinning ? (
               <div className="flex items-center justify-center gap-2">
@@ -85,22 +85,19 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, restau
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <div className="icon-shuffle text-xl"></div>
-                {restaurantList.length === 0 ? 
-                  translations.spinButton : 
-                  `${translations.addCandidate} ${restaurantList.length + 1}/5`
-                }
+                `${translations.addCandidate} ${candidateList.length}/9`
               </div>
             )}
           </button>
 
           {/* Restaurant List */}
-          {restaurantList.length > 0 && (
+          {candidateList.length > 0 && (
             <div className="mt-6">
               <div className="text-center text-sm text-gray-600 mb-4">
-                餐廳選項 ({restaurantList.length}/5)
+                候選餐廳 ({candidateList.length}/9)
               </div>
               <div className="space-y-2">
-                {restaurantList.map((restaurant, index) => (
+                {candidateList.map((restaurant, index) => (
                   <div key={index} className="bg-white rounded-lg p-3 flex items-center justify-between">
                     <div className="flex-1">
                       <div className="font-semibold text-gray-800">
@@ -123,7 +120,7 @@ function SlotMachine({ isSpinning, onSpin, translations, finalRestaurant, restau
                   </div>
                 ))}
               </div>
-              {restaurantList.length > 0 && (
+              {candidateList.length > 0 && (
                 <div className="text-center mt-4">
                   <button
                     onClick={onClearList}

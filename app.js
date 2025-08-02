@@ -40,7 +40,7 @@ function App() {
   try {
     const [selectedLanguage, setSelectedLanguage] = React.useState('zh'); // 預設改為中文
     const [currentRestaurant, setCurrentRestaurant] = React.useState(null);
-    const [restaurantList, setRestaurantList] = React.useState([]); // 餐廳列表，最多5家
+    const [candidateList, setCandidateList] = React.useState([]); // 用戶候選餐廳列表，最多9家
     const [isSpinning, setIsSpinning] = React.useState(false);
     const [userLocation, setUserLocation] = React.useState(null);
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
@@ -602,12 +602,6 @@ function App() {
         console.log('✅ 成功獲取餐廳:', restaurant);
         setCurrentRestaurant(restaurant);
         
-        // 添加餐廳到列表，最多保存5家
-        setRestaurantList(prevList => {
-          const newList = [...prevList, restaurant];
-          return newList.slice(-5); // 保持最多5家餐廳
-        });
-        
       } catch (error) {
         console.error('❌ 轉動輪盤時發生錯誤:', error);
         setSpinError(error.message);
@@ -616,10 +610,23 @@ function App() {
       }
     };
 
-    // 清除餐廳列表函數
+    // 加入候選函數
+    const handleAddCandidate = () => {
+      if (currentRestaurant && candidateList.length < 9) {
+        // 檢查是否已經在候選列表中
+        const alreadyExists = candidateList.some(candidate => 
+          candidate.id === currentRestaurant.id || candidate.name === currentRestaurant.name
+        );
+        
+        if (!alreadyExists) {
+          setCandidateList(prevList => [...prevList, currentRestaurant]);
+        }
+      }
+    };
+
+    // 清除候選列表函數
     const handleClearList = () => {
-      setRestaurantList([]);
-      setCurrentRestaurant(null);
+      setCandidateList([]);
     };
 
     return (
@@ -662,9 +669,10 @@ function App() {
             <SlotMachine 
               isSpinning={isSpinning}
               onSpin={handleSpin}
+              onAddCandidate={handleAddCandidate}
               translations={t}
               finalRestaurant={currentRestaurant}
-              restaurantList={restaurantList}
+              candidateList={candidateList}
               language={selectedLanguage}
               onClearList={handleClearList}
             />
