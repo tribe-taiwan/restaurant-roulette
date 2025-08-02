@@ -309,12 +309,16 @@ function App() {
       }
     }, [selectedMealTime, searchRadius]);
 
-    // Landing 時自動獲取第一家餐廳
+    // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
       if (userLocation && locationStatus === 'success' && isInitialLoad && !currentRestaurant && !isSpinning) {
-        console.log('🎯 Landing 自動獲取第一家餐廳');
-        handleSpin(true); // 傳入 true 表示自動調用
-        setIsInitialLoad(false);
+        console.log('🎯 Landing 自動獲取第一家餐廳 - 延遲 2 秒確保 API 準備完成');
+        const timer = setTimeout(() => {
+          handleSpin(true); // 傳入 true 表示自動調用
+          setIsInitialLoad(false);
+        }, 2000); // 延遲 2 秒
+
+        return () => clearTimeout(timer);
       }
     }, [userLocation, locationStatus, isInitialLoad, currentRestaurant, isSpinning]);
     

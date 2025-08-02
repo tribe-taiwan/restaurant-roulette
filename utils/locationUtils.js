@@ -155,8 +155,39 @@ function initializeGoogleMaps() {
     script.async = true;
     script.defer = true;
     
-    // 設定全局回調函數
+    // 設定全局回調函數將在後面定義
+    
+    script.onerror = (error) => {
+      const errorDetails = {
+        errorType: 'GoogleMapsLoadError',
+        errorMessage: 'Google Maps JavaScript API 載入失敗',
+        timestamp: new Date().toISOString(),
+        scriptSrc: script.src,
+        apiKey: `${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}xxxxxxxxxxxxxxxxxxxxxxxx`
+      };
+      
+      reject(new Error(`Google Maps API 載入失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
+    };
+
+    // 腳本載入錯誤處理
+    script.onerror = () => {
+      console.error('❌ Google Maps API 腳本載入失敗');
+      reject(new Error('Google Maps API 腳本載入失敗'));
+    };
+
+    // 設定超時處理
+    const timeout = setTimeout(() => {
+      console.error('❌ Google Maps API 載入超時');
+      reject(new Error('Google Maps API 載入超時'));
+    }, 4000); // 4秒超時
+
+    // 成功載入時清除超時
+    const originalResolve = resolve;
+    const originalReject = reject;
+
+    // 重新定義回調函數，確保只執行一次
     window.onGoogleMapsLoaded = () => {
+      clearTimeout(timeout);
       try {
         console.log('✅ Google Maps API 載入完成');
 
@@ -184,42 +215,11 @@ function initializeGoogleMaps() {
         }
 
         console.log('✅ Google Maps 服務初始化成功');
-        resolve();
+        originalResolve();
       } catch (error) {
         console.error('❌ Google Maps API 初始化失敗:', error);
-        reject(error);
+        originalReject(error);
       }
-    };
-    
-    script.onerror = (error) => {
-      const errorDetails = {
-        errorType: 'GoogleMapsLoadError',
-        errorMessage: 'Google Maps JavaScript API 載入失敗',
-        timestamp: new Date().toISOString(),
-        scriptSrc: script.src,
-        apiKey: `${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}xxxxxxxxxxxxxxxxxxxxxxxx`
-      };
-      
-      reject(new Error(`Google Maps API 載入失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
-    };
-
-    // 腳本載入錯誤處理
-    script.onerror = () => {
-      console.error('❌ Google Maps API 腳本載入失敗');
-      reject(new Error('Google Maps API 腳本載入失敗'));
-    };
-
-    // 設定超時處理
-    const timeout = setTimeout(() => {
-      console.error('❌ Google Maps API 載入超時');
-      reject(new Error('Google Maps API 載入超時'));
-    }, 10000); // 10秒超時
-
-    // 成功載入時清除超時
-    const originalCallback = window.onGoogleMapsLoaded;
-    window.onGoogleMapsLoaded = () => {
-      clearTimeout(timeout);
-      originalCallback();
     };
 
     document.head.appendChild(script);
