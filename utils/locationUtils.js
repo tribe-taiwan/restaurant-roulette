@@ -18,6 +18,18 @@ const GOOGLE_PLACES_CONFIG = {
   }
 };
 
+// 統一的用餐時段配置
+const MEAL_TIME_CONFIG = {
+  breakfast: { start: 5, end: 10, displayTime: '5-10' },
+  lunch: { start: 10, end: 16, displayTime: '10-16' },
+  dinner: { start: 16, end: 24, displayTime: '16-24' }
+};
+
+// 全局函數供其他組件使用
+window.getMealTimeConfig = function() {
+  return MEAL_TIME_CONFIG;
+};
+
 // 全局函數用於更新搜索半徑
 window.updateSearchRadius = function(newRadius) {
   GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = newRadius;
@@ -245,12 +257,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   const currentHour = now.getHours();
   const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   
-  // 定義用餐時段
-  const mealTimes = {
-    breakfast: { start: 5, end: 10 },
-    lunch: { start: 10, end: 16 },
-    dinner: { start: 16, end: 24 }
-  };
+  // 使用統一的用餐時段配置
+  const mealTimes = MEAL_TIME_CONFIG;
   
   const selectedTime = mealTimes[selectedMealTime];
   if (!selectedTime) return true;
@@ -276,15 +284,36 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       }
       
       // 檢查選擇的用餐時段是否與營業時間重疊
+      console.log(`🕐 檢查用餐時段重疊:`, {
+        selectedMealTime,
+        selectedTime,
+        openTime,
+        closeTime,
+        currentHour
+      });
+
       // 處理晚餐時段16-24的情況
       if (selectedTime.end === 24) {
         // 晚餐時段特殊處理：只要營業到16點以後就算符合
-        return closeTime > selectedTime.start;
+        const result = closeTime > selectedTime.start;
+        console.log(`🌃 晚餐時段檢查結果:`, result);
+        return result;
       }
-      
-      return (selectedTime.start >= openTime && selectedTime.start < closeTime) ||
-             (selectedTime.end > openTime && selectedTime.end <= closeTime) ||
-             (selectedTime.start < openTime && selectedTime.end > closeTime);
+
+      // 檢查時段重疊邏輯
+      const overlap1 = selectedTime.start >= openTime && selectedTime.start < closeTime;
+      const overlap2 = selectedTime.end > openTime && selectedTime.end <= closeTime;
+      const overlap3 = selectedTime.start < openTime && selectedTime.end > closeTime;
+      const result = overlap1 || overlap2 || overlap3;
+
+      console.log(`🕐 時段重疊檢查:`, {
+        overlap1: `${selectedTime.start} >= ${openTime} && ${selectedTime.start} < ${closeTime} = ${overlap1}`,
+        overlap2: `${selectedTime.end} > ${openTime} && ${selectedTime.end} <= ${closeTime} = ${overlap2}`,
+        overlap3: `${selectedTime.start} < ${openTime} && ${selectedTime.end} > ${closeTime} = ${overlap3}`,
+        finalResult: result
+      });
+
+      return result;
     }
     
     // 如果只有 weekday_text 資訊，簡單檢查
@@ -765,11 +794,8 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
     return true; // 無法確定時預設可用
   }
 
-  const timeSlots = {
-    breakfast: { start: 6, end: 11 },
-    lunch: { start: 11, end: 16 },
-    dinner: { start: 16, end: 24 }
-  };
+  // 使用統一的用餐時段配置
+  const timeSlots = MEAL_TIME_CONFIG;
 
   const slot = timeSlots[timeSlot];
   if (!slot) return true;

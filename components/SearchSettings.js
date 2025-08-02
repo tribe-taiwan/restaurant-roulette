@@ -1,15 +1,22 @@
 // SearchSettings.js - 搜索設定相關組件
 
-function SearchSettings({ 
-  searchRadius, 
-  setSearchRadius, 
-  selectedMealTime, 
-  setSelectedMealTime, 
+function SearchSettings({
+  searchRadius,
+  setSearchRadius,
+  selectedMealTime,
+  setSelectedMealTime,
   translations,
-  selectedLanguage 
+  selectedLanguage
 }) {
   try {
     const t = translations;
+
+    // 使用統一的用餐時段配置
+    const mealTimeConfig = window.getMealTimeConfig ? window.getMealTimeConfig() : {
+      breakfast: { start: 5, end: 10, displayTime: '5-10', icon: '🌅' },
+      lunch: { start: 10, end: 16, displayTime: '10-16', icon: '☀️' },
+      dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
+    };
 
     return (
       <>
@@ -63,9 +70,9 @@ function SearchSettings({
           {/* 第二行：早午晚餐時段 */}
           <div className="flex gap-2 justify-center">
             {[
-              { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '5-10' },  // 10:30就會跟很多午餐混淆
-              { id: 'lunch', label: t.lunch, icon: '☀️', time: '10-16' },
-              { id: 'dinner', label: t.dinner, icon: '🌃', time: '16-24' }
+              { id: 'breakfast', label: t.breakfast, icon: mealTimeConfig.breakfast.icon, time: mealTimeConfig.breakfast.displayTime },
+              { id: 'lunch', label: t.lunch, icon: mealTimeConfig.lunch.icon, time: mealTimeConfig.lunch.displayTime },
+              { id: 'dinner', label: t.dinner, icon: mealTimeConfig.dinner.icon, time: mealTimeConfig.dinner.displayTime }
             ].map((mealTime) => (
               <button
                 key={mealTime.id}
