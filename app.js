@@ -48,7 +48,7 @@ function App() {
     const [spinError, setSpinError] = React.useState(null);
     const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里
     const [isRelocating, setIsRelocating] = React.useState(false);
-    const [selectedMealTime, setSelectedMealTime] = React.useState('all'); // 預設不過濾時段
+    const [selectedMealTime, setSelectedMealTime] = React.useState('current'); // 預設顯示當前營業中的餐廳
     const [isInitialLoad, setIsInitialLoad] = React.useState(true); // 追蹤是否為初次載入
     const [lastKnownLocation, setLastKnownLocation] = React.useState(null); // 儲存上一次成功的定位
     const [locationError, setLocationError] = React.useState(null); // 儲存定位錯誤訊息
@@ -671,6 +671,7 @@ function App() {
               selectedMealTime={selectedMealTime}
               setSelectedMealTime={setSelectedMealTime}
               translations={t}
+              selectedLanguage={selectedLanguage}
             />
           </div>
 

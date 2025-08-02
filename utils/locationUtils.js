@@ -190,6 +190,45 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     return true; // 如果沒有營業時間資訊或選擇全部時段，則顯示所有餐廳
   }
   
+  // 保護性註解：'current'表示只顯示現在營業中的餐廳，基於Google API返回的營業時間
+  if (selectedMealTime === 'current') {
+    // 使用Google Places API的open_now狀態或計算當前是否營業
+    if (openingHours.hasOwnProperty('open_now')) {
+      return openingHours.open_now;
+    }
+    
+    // 如果沒有open_now，則根據periods計算當前是否營業
+    if (openingHours.periods) {
+      const now = new Date();
+      const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+      
+      const todayPeriods = openingHours.periods.filter(period => 
+        period.open && period.open.day === currentDay
+      );
+      
+      for (const period of todayPeriods) {
+        const openTime = parseInt(period.open.time);
+        const closeTime = period.close ? parseInt(period.close.time) : 2400;
+        
+        // 處理跨夜營業
+        if (closeTime > openTime) {
+          // 同日營業
+          if (currentTime >= openTime && currentTime < closeTime) {
+            return true;
+          }
+        } else {
+          // 跨夜營業
+          if (currentTime >= openTime || currentTime < closeTime) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false; // 預設為不營業
+  }
+  
   const now = new Date();
   const currentHour = now.getHours();
   const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
@@ -634,8 +673,8 @@ function getRestaurantHistory() {
     const data = JSON.parse(history);
     const now = Date.now();
 
-    // 檢查是否超過24小時
-    if (now - data.timestamp > 24 * 60 * 60 * 1000) {
+    // 檢查是否超過5分鐘
+    if (now - data.timestamp > 5 * 60 * 1000) {
       localStorage.removeItem('restaurant_history');
       return null;
     }
@@ -684,6 +723,11 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
 function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
   if (timeSlot === 'all' || !restaurant.detailsCache?.opening_hours) {
     return true; // 無法確定時預設可用
+  }
+  
+  // 支援 'current' 狀態 - 檢查當前是否營業
+  if (timeSlot === 'current') {
+    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
   }
 
   const timeSlots = {

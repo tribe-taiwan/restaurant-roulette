@@ -5,7 +5,8 @@ function SearchSettings({
   setSearchRadius, 
   selectedMealTime, 
   setSelectedMealTime, 
-  translations 
+  translations,
+  selectedLanguage 
 }) {
   try {
     const t = translations;
@@ -37,6 +38,29 @@ function SearchSettings({
         
         {/* 用餐時段選擇 */}
         <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
+          {/* 第一行：現在營業中和不限時間 */}
+          <div className="flex gap-2 justify-center mb-2">
+            {[
+              { id: 'current', label: selectedLanguage === 'zh' ? '現在營業中' : 'Open Now', icon: '🕐', time: '' },
+              { id: 'all', label: selectedLanguage === 'zh' ? '不限時間' : 'Any Time', icon: '🌐', time: '' }
+            ].map((mealTime) => (
+              <button
+                key={mealTime.id}
+                onClick={() => setSelectedMealTime(mealTime.id)}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  selectedMealTime === mealTime.id
+                    ? 'bg-[var(--primary-color)] text-white'
+                    : 'bg-gray-700 text-[var(--text-secondary)] hover:bg-gray-600'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-lg">{mealTime.icon}</span>
+                  <span className="text-xs">{mealTime.label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+          {/* 第二行：早午晚餐時段 */}
           <div className="flex gap-2 justify-center">
             {[
               { id: 'breakfast', label: t.breakfast, icon: '🌅', time: '6-11' },
