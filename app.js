@@ -40,6 +40,7 @@ function App() {
   try {
     const [selectedLanguage, setSelectedLanguage] = React.useState('zh'); // 預設改為中文
     const [currentRestaurant, setCurrentRestaurant] = React.useState(null);
+    const [restaurantList, setRestaurantList] = React.useState([]); // 餐廳列表，最多5家
     const [isSpinning, setIsSpinning] = React.useState(false);
     const [userLocation, setUserLocation] = React.useState(null);
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
@@ -599,12 +600,24 @@ function App() {
         console.log('✅ 成功獲取餐廳:', restaurant);
         setCurrentRestaurant(restaurant);
         
+        // 添加餐廳到列表，最多保存5家
+        setRestaurantList(prevList => {
+          const newList = [...prevList, restaurant];
+          return newList.slice(-5); // 保持最多5家餐廳
+        });
+        
       } catch (error) {
         console.error('❌ 轉動輪盤時發生錯誤:', error);
         setSpinError(error.message);
       } finally {
         setIsSpinning(false);
       }
+    };
+
+    // 清除餐廳列表函數
+    const handleClearList = () => {
+      setRestaurantList([]);
+      setCurrentRestaurant(null);
     };
 
     return (
@@ -649,7 +662,9 @@ function App() {
               onSpin={handleSpin}
               translations={t}
               finalRestaurant={currentRestaurant}
+              restaurantList={restaurantList}
               language={selectedLanguage}
+              onClearList={handleClearList}
             />
           </div>
 
