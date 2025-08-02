@@ -37,4 +37,6 @@ yarn-error.log*
 _ignore
 _docs
 _test
+*.md
+*.zip
 
