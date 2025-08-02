@@ -121,8 +121,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                 </div>
               ) : (
-                <div className="text-xl font-bold text-white drop-shadow-lg py-8">
-                  🍴 {translations.spinButton}
+                <div className="text-xl font-bold text-white drop-shadow-lg py-8 flex items-center justify-center gap-2">
+                  <i data-lucide="utensils" className="w-6 h-6"></i>
+                  {translations.spinButton}
                 </div>
               )}
             </div>
