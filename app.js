@@ -504,7 +504,7 @@ function App() {
           console.log('Location detected:', coords.lat, coords.lng);
           
           // 獲取地址資訊
-          setUserAddress(t('addressLoading'));
+          setUserAddress(translations[selectedLanguage]['addressLoading']);
           getAddressFromCoords(coords.lat, coords.lng);
         },
         (error) => {
