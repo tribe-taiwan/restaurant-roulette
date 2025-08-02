@@ -1,6 +1,6 @@
 // 移除import，使用全域函數
 
-function RestaurantCard({ restaurant, language, userLocation }) {
+function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
   try {
     const [selectedImage, setSelectedImage] = React.useState(null);
 
@@ -148,34 +148,29 @@ function RestaurantCard({ restaurant, language, userLocation }) {
 
     const getDirectionsUrl = () => {
       console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
+      console.log('🗺️ 當前userAddress:', userAddress);
       console.log('🗺️ 餐廳地址:', restaurant.address);
       
-      // 簡化邏輯：直接使用座標作為起點，餐廳地址作為終點
-      if (userLocation && restaurant.address) {
-        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+      // 優先使用userAddress作為起點地址
+      if (userAddress && restaurant.address) {
+        const origin = encodeURIComponent(userAddress);
         const destination = encodeURIComponent(restaurant.address);
         const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
         console.log('🎯 最終導航URL:', finalUrl);
-        console.log('🎯 導航起點座標:', userLocation);
+        console.log('🎯 導航起點地址:', userAddress);
         console.log('🎯 導航終點地址:', restaurant.address);
         return finalUrl;
       }
 
-      // 如果沒有當前位置，使用最後一次定位點
-      if (!userLocation && restaurant.address) {
-        try {
-          const lastKnownLocation = localStorage.getItem('lastKnownLocation');
-          if (lastKnownLocation) {
-            const lastLocation = JSON.parse(lastKnownLocation);
-            const origin = encodeURIComponent(`${lastLocation.lat},${lastLocation.lng}`);
-            const destination = encodeURIComponent(restaurant.address);
-            const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-            console.log('🎯 使用lastKnownLocation的導航URL:', finalUrl);
-            return finalUrl;
-          }
-        } catch (error) {
-          console.warn('⚠️ 無法讀取最後一次的定位點:', error);
-        }
+      // 回退到座標（如果有userLocation但沒有userAddress）
+      if (userLocation && restaurant.address) {
+        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+        const destination = encodeURIComponent(restaurant.address);
+        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+        console.log('🎯 使用座標的導航URL:', finalUrl);
+        console.log('🎯 導航起點座標:', userLocation);
+        console.log('🎯 導航終點地址:', restaurant.address);
+        return finalUrl;
       }
 
       // 回退選項：直接導航到餐廳位置

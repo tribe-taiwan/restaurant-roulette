@@ -696,6 +696,7 @@ function App() {
                 restaurant={currentRestaurant}
                 language={selectedLanguage}
                 userLocation={userLocation}
+                userAddress={userAddress}
               />
             </div>
           )}
