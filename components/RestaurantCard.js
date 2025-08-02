@@ -145,12 +145,14 @@ function RestaurantCard({ restaurant, language, userLocation }) {
     };
 
     const getDirectionsUrl = () => {
+      console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
       // 參考 auto_publish 的邏輯：nav_origin = urllib.parse.quote(start_point if start_point else nav_origin)
       let navOrigin = null;
 
       // 優先使用當前用戶位置作為 start_point
       if (userLocation) {
         navOrigin = `${userLocation.lat},${userLocation.lng}`;
+        console.log('✅ 使用userLocation作為導航起點:', navOrigin);
       } else {
         // 如果沒有當前位置，嘗試使用最後一次定位點作為 nav_origin
         try {

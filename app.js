@@ -431,7 +431,10 @@ function App() {
 
     // 使用已儲存的位置
     const useSavedLocation = async (location) => {
-      setUserLocation({ lat: location.lat, lng: location.lng });
+      console.log('🏠 切換到已儲存位置:', location.type, location);
+      const newCoords = { lat: location.lat, lng: location.lng };
+      setUserLocation(newCoords);
+      console.log('📍 userLocation 已更新為:', newCoords);
       
       // 使用簡化地址顯示
       const simplifiedAddress = getSimplifiedAddress(location.address);
