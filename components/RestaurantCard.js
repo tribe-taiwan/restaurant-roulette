@@ -198,7 +198,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
     };
 
     return (
-      <div className="card max-w-5xl mx-auto" data-name="restaurant-card" data-file="components/RestaurantCard.js">
+      <div className="card w-full max-w-2xl mx-auto" data-name="restaurant-card" data-file="components/RestaurantCard.js">
         {/* Restaurant Header */}
         <div className="mb-6">
           <h2 className="text-3xl font-bold mb-3 text-[var(--text-primary)]">{restaurant.name}</h2>
