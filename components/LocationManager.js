@@ -27,15 +27,15 @@ function LocationManager({
           <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full">
             {/* 位置資訊與重新定位按鈕 */}
             {locationStatus === 'success' && userAddress && (
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
-                  <span className="text-sm text-[var(--text-secondary)]">{userAddress}</span>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="icon-map-pin text-[var(--success-color)] text-sm flex-shrink-0"></div>
+                  <span className="text-sm text-[var(--text-secondary)] truncate">{userAddress}</span>
                 </div>
                 <button
                   onClick={onRelocate}
                   disabled={isRelocating}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 transform ${
+                  className={`w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-full flex items-center justify-center transition-all duration-300 transform flex-shrink-0 ${
                     isRelocating 
                       ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
                       : locationStatus === 'success'
