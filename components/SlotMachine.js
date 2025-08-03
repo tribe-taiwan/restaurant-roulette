@@ -227,20 +227,23 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         backgroundPosition: 'center'
                       }}
                     >
-                      {/* Left Info Panel with Golden Ratio Width */}
+                      {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
                       <div 
                         className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 pointer-events-none"
                         style={{
                           width: '38.2%',
-                          background: 'linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent)'
+                          background: 'linear-gradient(to right, rgba(255,255,255,0.25), rgba(255,255,255,0.1), transparent)',
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)', // Safari support
+                          borderRight: '1px solid rgba(255,255,255,0.1)'
                         }}
                       >
                         <div className="text-left">
-                          <div className="font-semibold text-white text-base mb-1 drop-shadow-lg leading-tight">
+                          <div className="font-semibold text-white text-base mb-1 leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                             {index + 1}. {restaurant.name}
                           </div>
                           {restaurant.distance && (
-                            <div className="text-xs text-white drop-shadow flex items-center gap-1">
+                            <div className="text-xs text-white flex items-center gap-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                               <div className="icon-map text-xs"></div>
                               <span>{restaurant.distance} km</span>
                             </div>
