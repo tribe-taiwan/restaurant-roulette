@@ -199,10 +199,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   e.stopPropagation();
                   onAddCandidate();
                 }}
-                className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full text-sm font-bold shadow-lg transition-all"
+                className="absolute bottom-4 right-4 bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg transition-all duration-200 active:scale-95 active:bg-blue-500 flex items-center justify-center"
+                style={{
+                  touchAction: 'manipulation'
+                }}
                 title="加入候選"
               >
-                {candidateList.length}/9
+                <div className="icon-plus text-xl"></div>
               </button>
             )}
           </div>

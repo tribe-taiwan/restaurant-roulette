@@ -24,7 +24,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
               className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                 selectedLanguage === lang.code
                   ? 'bg-[var(--primary-color)] text-white'
-                  : 'text-[var(--text-secondary)] hover:bg-gray-700'
+                  : 'text-[var(--text-secondary)]'
               }`}
             >
               <span>{lang.name}</span>
@@ -36,7 +36,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
         <div className="md:hidden relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 bg-[var(--surface-color)] rounded-lg px-4 py-2 text-[var(--text-secondary)] hover:bg-gray-700 transition-all duration-200"
+            className="flex items-center gap-2 bg-[var(--surface-color)] rounded-lg px-4 py-2 text-[var(--text-secondary)] transition-all duration-200"
           >
             <span className="text-lg">☰</span>
             <span className="text-sm font-medium">{currentLang?.name}</span>
@@ -54,7 +54,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
                   className={`w-full px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
                     selectedLanguage === lang.code
                       ? 'bg-[var(--primary-color)] text-white'
-                      : 'text-[var(--text-secondary)] hover:bg-gray-700'
+                      : 'text-[var(--text-secondary)]'
                   }`}
                 >
                   <span>{lang.name}</span>
