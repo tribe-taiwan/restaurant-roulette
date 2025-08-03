@@ -686,8 +686,8 @@ function App() {
           </div>
           
           {/* Social Media Icons - Right Side */}
-          <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-            {/* Booking 圖標 */}
+          <div className="absolute bottom-4 right-4 z-20 flex gap-2">
+            {/* Booking 圖標 - 保持圖片，Lucide 沒有 */}
             <a
               href="https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"
               target="_blank"
@@ -707,14 +707,10 @@ function App() {
               href="https://www.instagram.com/tainanbnb_maizuru/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+              className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
               title="關注我們的 Instagram"
             >
-              <img
-                src="./assets/image/Instagram-Logo.png"
-                alt="Instagram"
-                className="w-full h-full object-contain"
-              />
+              <div className="icon-instagram text-white text-2xl"></div>
             </a>
 
             {/* Facebook 圖標 */}
@@ -722,14 +718,10 @@ function App() {
               href="https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+              className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
               title="關注我們的 Facebook"
             >
-              <img
-                src="./assets/image/Facebook-logo.png"
-                alt="Facebook"
-                className="w-full h-full object-contain"
-              />
+              <div className="icon-facebook text-white text-2xl"></div>
             </a>
           </div>
           
