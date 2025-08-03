@@ -126,7 +126,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           
           {/* Restaurant Image Display */}
           <div 
-            className="group rounded-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
+            className="group rounded-t-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
             style={{
               backgroundImage: finalRestaurant && finalRestaurant.image ? 
                 `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
@@ -233,7 +233,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* Restaurant List */}
           {candidateList.length > 0 && (
             <div className="mt-6 w-full">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 px-4">
                 <div className="text-sm text-gray-600">
                   候選餐廳 ({candidateList.length}/9)
                 </div>
@@ -254,7 +254,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
+                      className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
                       style={{
                         backgroundImage: restaurant.image ? 
                           `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${restaurant.image})` : 
