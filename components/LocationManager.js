@@ -24,7 +24,7 @@ function LocationManager({
         {/* 位置管理區塊 */}
         <div className="w-full max-w-2xl mx-auto mb-8">
           {/* 整合區塊 */}
-          <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full">
+          <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full glow-container">
             {/* 位置資訊與重新定位按鈕 */}
             {locationStatus === 'success' && userAddress && (
               <div className="flex items-center gap-2 mb-4">

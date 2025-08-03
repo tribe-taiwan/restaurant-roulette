@@ -124,7 +124,6 @@
     @layer components {
         .btn-primary {
             @apply bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white font-semibold py-3 px-8 rounded-[var(--border-radius)] transition-all duration-300 relative overflow-hidden;
-            box-shadow: var(--shadow-lg);
         }
         
         .btn-primary::before {
@@ -144,6 +143,10 @@
         
         .card {
             @apply bg-[var(--surface-color)] rounded-[var(--border-radius)] p-6 border border-gray-700;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .glow-container {
             box-shadow: var(--shadow-lg);
         }
         

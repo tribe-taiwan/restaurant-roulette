@@ -121,7 +121,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     }, [isSpinning]);
 
     return (
-      <div className="w-full max-w-2xl mx-auto" data-name="slot-machine" data-file="components/SlotMachine.js">
+      <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center mb-6">
           
           {/* Restaurant Image Display */}
