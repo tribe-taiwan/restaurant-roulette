@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台南餐廳營業時間數據完整性測試</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin: 20px 0; 
+        }
+        .stat-card { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border-left: 4px solid #007bff; 
+        }
+        .stat-number { 
+            font-size: 2em; 
+            font-weight: bold; 
+            color: #007bff; 
+        }
+        .progress-bar { 
+            width: 100%; 
+            height: 20px; 
+            background-color: #e9ecef; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin: 10px 0; 
+        }
+        .progress-fill { 
+            height: 100%; 
+            background-color: #28a745; 
+            transition: width 0.3s ease; 
+        }
+        .log { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 5px; 
+            padding: 15px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px; 
+            margin-top: 20px; 
+        }
+        .restaurant-item { 
+            padding: 8px; 
+            margin: 2px 0; 
+            border-radius: 3px; 
+        }
+        .has-hours { background-color: #d4edda; }
+        .no-hours { background-color: #f8d7da; }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin: 10px 5px; 
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        .alert { 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 5px; 
+            border-left: 4px solid; 
+        }
+        .alert-info { 
+            background-color: #d1ecf1; 
+            border-color: #17a2b8; 
+            color: #0c5460; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍴 台南餐廳營業時間數據完整性測試</h1>
+        
+        <div class="alert alert-info">
+            <strong>測試目的：</strong>分析台南地區餐廳在 Google Maps 上營業時間數據的完整性，了解有多少餐廳缺少詳細營業時間資訊。
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div>總測試餐廳數</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="withHours">0</div>
+                <div>有營業時間數據</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="withoutHours">0</div>
+                <div>缺少營業時間數據</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="coverage">0%</div>
+                <div>數據完整性</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <button onclick="startTest()" id="startBtn">開始測試 (100家餐廳)</button>
+        <button onclick="clearLog()" id="clearBtn">清除日誌</button>
+        <button onclick="exportResults()" id="exportBtn" disabled>匯出結果</button>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- 先載入主項目的 locationUtils.js 來獲取已處理的 API Key -->
+    <script src="./utils/locationUtils.js"></script>
+
+    <script>
+        // 從 locationUtils.js 中讀取已經被 GitHub Actions 處理過的 API Key
+        // 不需要重新定義 GOOGLE_PLACES_CONFIG，直接使用 locationUtils.js 中的
+
+        // 台南市中心座標
+        const TAINAN_CENTER = {
+            lat: 22.9997,
+            lng: 120.2270
+        };
+
+        let testPlacesService = null; // 重命名避免與 locationUtils.js 衝突
+        let testResults = [];
+        let isTestRunning = false;
+
+        // 初始化 Google Maps API
+        async function initializeGoogleMaps() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.maps) {
+                    console.log('✅ Google Maps API 已載入');
+                    
+                    const mapDiv = document.createElement('div');
+                    mapDiv.style.display = 'none';
+                    document.body.appendChild(mapDiv);
+                    
+                    const map = new google.maps.Map(mapDiv, {
+                        center: TAINAN_CENTER,
+                        zoom: 15
+                    });
+                    
+                    testPlacesService = new google.maps.places.PlacesService(map);
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=onGoogleMapsLoaded`;
+                script.async = true;
+                script.defer = true;
+                
+                window.onGoogleMapsLoaded = () => {
+                    try {
+                        const mapDiv = document.createElement('div');
+                        mapDiv.style.display = 'none';
+                        document.body.appendChild(mapDiv);
+
+                        const map = new google.maps.Map(mapDiv, {
+                            center: TAINAN_CENTER,
+                            zoom: 15
+                        });
+
+                        testPlacesService = new google.maps.places.PlacesService(map);
+                        log('✅ Google Maps API 初始化完成', 'success');
+                        resolve();
+                    } catch (error) {
+                        log('❌ Google Maps API 初始化失敗: ' + error.message, 'error');
+                        reject(error);
+                    }
+                };
+
+                script.onerror = () => reject(new Error('Google Maps API 載入失敗'));
+                document.head.appendChild(script);
+            });
+        }
+
+        // 搜索附近餐廳
+        async function searchRestaurants(location, radius = 5000) {
+            return new Promise((resolve, reject) => {
+                const request = {
+                    location: new google.maps.LatLng(location.lat, location.lng),
+                    radius: radius,
+                    type: 'restaurant'
+                };
+                
+                testPlacesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        resolve(results);
+                    } else {
+                        reject(new Error(`搜索失敗: ${status}`));
+                    }
+                });
+            });
+        }
+
+        // 獲取餐廳詳細資訊
+        async function getPlaceDetails(placeId) {
+            return new Promise((resolve) => {
+                const request = {
+                    placeId: placeId,
+                    fields: ['name', 'formatted_address', 'opening_hours', 'place_id', 'rating', 'user_ratings_total']
+                };
+                
+                testPlacesService.getDetails(request, (place, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        resolve(place);
+                    } else {
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        // 日誌函數
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            logElement.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // 更新統計數據
+        function updateStats() {
+            const total = testResults.length;
+            const withHours = testResults.filter(r => r.hasOpeningHours).length;
+            const withoutHours = total - withHours;
+            const coverage = total > 0 ? Math.round((withHours / total) * 100) : 0;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('withHours').textContent = withHours;
+            document.getElementById('withoutHours').textContent = withoutHours;
+            document.getElementById('coverage').textContent = coverage + '%';
+            document.getElementById('progressFill').style.width = (total / 100) * 100 + '%';
+        }
+
+        // 開始測試
+        async function startTest() {
+            if (isTestRunning) return;
+            isTestRunning = true;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('exportBtn').disabled = true;
+            testResults = [];
+            updateStats();
+            
+            log('🚀 開始測試台南餐廳營業時間數據完整性', 'success');
+            
+            try {
+                // 初始化 API
+                await initializeGoogleMaps();
+                
+                // 搜索餐廳
+                log('🔍 搜索台南地區餐廳...', 'info');
+                const restaurants = await searchRestaurants(TAINAN_CENTER, 8000);
+                log(`📍 找到 ${restaurants.length} 家餐廳，開始分析前 100 家...`, 'success');
+                
+                // 限制到 100 家
+                const testRestaurants = restaurants.slice(0, 100);
+                
+                // 批次處理，避免 API 限制
+                const batchSize = 5;
+                for (let i = 0; i < testRestaurants.length; i += batchSize) {
+                    const batch = testRestaurants.slice(i, Math.min(i + batchSize, testRestaurants.length));
+                    
+                    await Promise.all(batch.map(async (restaurant, batchIndex) => {
+                        const index = i + batchIndex + 1;
+                        try {
+                            log(`[${index}/100] 分析餐廳: ${restaurant.name}`, 'info');
+                            
+                            const details = await getPlaceDetails(restaurant.place_id);
+                            
+                            const hasOpeningHours = !!(details && details.opening_hours && 
+                                (details.opening_hours.periods || 
+                                 details.opening_hours.weekday_text || 
+                                 typeof details.opening_hours.isOpen === 'function'));
+                            
+                            const result = {
+                                name: restaurant.name,
+                                placeId: restaurant.place_id,
+                                address: details?.formatted_address || '地址未知',
+                                rating: details?.rating || 0,
+                                reviewCount: details?.user_ratings_total || 0,
+                                hasOpeningHours: hasOpeningHours,
+                                openingHoursData: details?.opening_hours || null
+                            };
+                            
+                            testResults.push(result);
+                            updateStats();
+                            
+                            const statusIcon = hasOpeningHours ? '✅' : '❌';
+                            const hoursInfo = hasOpeningHours ? '有營業時間' : '缺少營業時間';
+                            log(`${statusIcon} ${restaurant.name} - ${hoursInfo}`, hasOpeningHours ? 'success' : 'warning');
+                            
+                        } catch (error) {
+                            log(`❌ 分析餐廳 ${restaurant.name} 失敗: ${error.message}`, 'error');
+                        }
+                    }));
+                    
+                    // 批次間延遲，避免 API 限制
+                    if (i + batchSize < testRestaurants.length) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                // 測試完成
+                const finalStats = {
+                    total: testResults.length,
+                    withHours: testResults.filter(r => r.hasOpeningHours).length,
+                    withoutHours: testResults.filter(r => !r.hasOpeningHours).length,
+                    coverage: Math.round((testResults.filter(r => r.hasOpeningHours).length / testResults.length) * 100)
+                };
+                
+                log('🎉 測試完成！', 'success');
+                log(`📊 統計結果:`, 'info');
+                log(`   • 總測試餐廳: ${finalStats.total} 家`, 'info');
+                log(`   • 有營業時間數據: ${finalStats.withHours} 家 (${finalStats.coverage}%)`, 'success');
+                log(`   • 缺少營業時間數據: ${finalStats.withoutHours} 家 (${100 - finalStats.coverage}%)`, 'warning');
+                
+                if (finalStats.coverage < 70) {
+                    log(`⚠️  警告: 數據完整性僅 ${finalStats.coverage}%，大量餐廳缺少營業時間資訊！`, 'error');
+                } else if (finalStats.coverage < 85) {
+                    log(`⚠️  注意: 數據完整性 ${finalStats.coverage}%，仍有不少餐廳缺少營業時間資訊`, 'warning');
+                } else {
+                    log(`✅ 良好: 數據完整性 ${finalStats.coverage}%，大部分餐廳都有營業時間資訊`, 'success');
+                }
+                
+                document.getElementById('exportBtn').disabled = false;
+                
+            } catch (error) {
+                log(`❌ 測試過程中發生錯誤: ${error.message}`, 'error');
+            }
+            
+            isTestRunning = false;
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        // 清除日誌
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 匯出結果
+        function exportResults() {
+            if (testResults.length === 0) {
+                alert('沒有測試結果可以匯出');
+                return;
+            }
+
+            const csvContent = [
+                ['餐廳名稱', '地址', '評分', '評論數', '是否有營業時間', '營業時間數據類型'].join(','),
+                ...testResults.map(result => [
+                    `"${result.name}"`,
+                    `"${result.address}"`,
+                    result.rating,
+                    result.reviewCount,
+                    result.hasOpeningHours ? '是' : '否',
+                    result.hasOpeningHours ? 
+                        (result.openingHoursData?.periods ? 'periods' : 
+                         result.openingHoursData?.weekday_text ? 'weekday_text' : 
+                         typeof result.openingHoursData?.isOpen === 'function' ? 'isOpen方法' : '其他') : 
+                        '無'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `台南餐廳營業時間數據分析_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

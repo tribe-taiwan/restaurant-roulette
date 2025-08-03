@@ -237,7 +237,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     return true; // 如果沒有營業時間資訊或選擇全部時段，則顯示所有餐廳
   }
   
-  // 保護性註解：'current'表示只顯示現在營業中的餐廳，基於Google API返回的營業時間
+  // 'current'表示只顯示現在營業中的餐廳，優先使用Google API的isOpen()方法
   if (selectedMealTime === 'current') {
     // 使用 Google 推薦的 isOpen() 方法
     if (openingHours && typeof openingHours.isOpen === 'function') {
@@ -246,17 +246,14 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
         console.log('🕐 使用 Google 推薦的 isOpen() 方法結果:', isOpenNow);
         return isOpenNow;
       } catch (error) {
-        console.warn('⚠️ isOpen() 方法調用失敗:', error);
+        console.warn('⚠️ Google isOpen() API 調用失敗，回退到 periods 計算:', error);
+        // 當 Google isOpen() API 調用失敗時，回退到手動計算邏輯
       }
+    } else {
+      console.log('⚠️ 沒有 Google isOpen() 方法，使用 periods 手動計算');
     }
-
-    // 【註解日期：2025-01-02】open_now 字段已被 Google 棄用（2019年11月），不再可靠
-    // 【提醒：30天後可刪除】以下註解的代碼已無用，因為 open_now 字段已棄用
-    // if (openingHours.hasOwnProperty('open_now')) {
-    //   return openingHours.open_now;
-    // }
     
-    // 如果沒有open_now，則根據periods計算當前是否營業
+    // 回退邏輯：使用 periods 手動計算當前營業狀態
     if (openingHours.periods) {
       const now = new Date();
       const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
@@ -285,7 +282,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       }
     }
     
-    return false; // 預設為不營業
+    return false; // 無法確定時預設為不營業，保護用戶時間
   }
   
   const now = new Date();
@@ -665,8 +662,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
   const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
 
   try {
-    // 【註解日期：2025-01-02】如果 isOpen() 方法不可用，則使用 periods 計算邏輯
-    // 【提醒：30天後可刪除】如果 isOpen() 方法穩定可用，以下 periods 計算邏輯可能不再需要
+    // 如果 isOpen() 方法不可用，使用 periods 計算邏輯作為備用
     if (openingHours.periods) {
       // 找到今天的營業時間
       const todayPeriods = openingHours.periods.filter(period => 
@@ -745,13 +741,6 @@ function getBusinessStatus(openingHours, language = 'zh') {
       }
     }
     
-    // 如果有 open_now 資訊
-    if (openingHours.hasOwnProperty('open_now')) {
-      return {
-        status: openingHours.open_now ? 'open' : 'closed',
-        message: openingHours.open_now ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
-      };
-    }
     
     return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours unknown' };
 
@@ -820,11 +809,12 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
  * @returns {boolean} 是否營業
  */
 function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
-  // 對於"現在營業中"篩選，必須有營業時間數據才能判斷
+  // 【防護性註解：2025-01-02】遊客時間寶貴，沒有營業時間數據的餐廳必須排除，避免白跑一趟
+  // 【重要】不得將沒有營業時間數據的餐廳視為營業中，這會誤導用戶
   if (timeSlot === 'current') {
     if (!restaurant.detailsCache?.opening_hours) {
-      console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，排除`);
-      return false; // 沒有營業時間數據時，排除該餐廳
+      console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+      return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
     }
     return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
   }
@@ -855,8 +845,9 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   const history = getRestaurantHistory() || { shown_restaurants: [], expanded_radius: 0 };
   const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
 
-  // 最多嘗試3次，每次擴大1km
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // 最多嘗試20次，每次擴大1km，配合20km搜索限制
+  const maxAttempts = Math.min(20, (20000 - originalRadius) / 1000); // 確保不超過20km限制
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const currentExpandedRadius = history.expanded_radius + attempt;
     const searchRadius = originalRadius + (currentExpandedRadius * 1000); // 每次增加1000米
 
@@ -918,7 +909,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
       console.error(`❌ 第${attempt + 1}次搜索失敗:`, error);
 
       // 如果是最後一次嘗試，拋出錯誤
-      if (attempt === 2) {
+      if (attempt === maxAttempts - 1) {
         GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
         throw error;
       }
