@@ -83,6 +83,8 @@ function App() {
         home: "Home",
         office: "Office",
         saveText: "Save",
+        pleaseEnterHomeAddress: "Please enter your home address first",
+        pleaseEnterOfficeAddress: "Please enter your office address first",
         // 餐廳資訊
         viewRoute: "View Route & Navigation",
         viewWebsite: "View Website",
@@ -116,6 +118,8 @@ function App() {
         home: "住家",
         office: "公司",
         saveText: "儲存",
+        pleaseEnterHomeAddress: "請先輸入住家地址",
+        pleaseEnterOfficeAddress: "請先輸入公司地址",
         // 餐廳資訊
         viewRoute: "查看路線與導航",
         viewWebsite: "查看網站",
@@ -148,6 +152,8 @@ function App() {
         home: "自宅",
         office: "オフィス",
         saveText: "保存",
+        pleaseEnterHomeAddress: "まず自宅の住所を入力してください",
+        pleaseEnterOfficeAddress: "まず会社の住所を入力してください",
         // 餐廳資訊
         viewRoute: "ルートとナビゲーション",
         viewWebsite: "ウェブサイトを見る",
@@ -180,6 +186,8 @@ function App() {
         home: "집",
         office: "사무실",
         saveText: "저장",
+        pleaseEnterHomeAddress: "먼저 집 주소를 입력해주세요",
+        pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
         // 餐廳資訊
         viewRoute: "경로 및 내비게이션 보기",
         viewWebsite: "웹사이트 보기",
@@ -212,6 +220,8 @@ function App() {
         home: "Nhà",
         office: "Văn phòng",
         saveText: "Lưu",
+        pleaseEnterHomeAddress: "Vui lòng nhập địa chỉ nhà trước",
+        pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
         // 餐廳資訊
         viewRoute: "Xem Đường đi và Điều hướng",
         viewWebsite: "Xem Trang web",
@@ -244,6 +254,8 @@ function App() {
         home: "Rumah",
         office: "Pejabat",
         saveText: "Simpan",
+        pleaseEnterHomeAddress: "Sila masukkan alamat rumah terlebih dahulu",
+        pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
         // 餐廳資訊
         viewRoute: "Lihat Laluan dan Navigasi",
         viewWebsite: "Lihat Laman Web",
@@ -403,6 +415,10 @@ function App() {
         const savedLocation = savedLocations.find(loc => loc.type === type);
         if (savedLocation) {
           await useSavedLocation(savedLocation);
+        } else {
+          // 沒有保存過相應地址，顯示提示
+          const message = type === 'home' ? t.pleaseEnterHomeAddress : t.pleaseEnterOfficeAddress;
+          alert(message);
         }
       }
     };
