@@ -673,28 +673,6 @@ function App() {
               onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
             />
-            <LocationManager 
-              locationStatus={locationStatus}
-              userAddress={userAddress}
-              savedLocations={savedLocations}
-              addressInput={addressInput}
-              setAddressInput={setAddressInput}
-              isGeocodingAddress={isGeocodingAddress}
-              onRelocate={getUserLocation}
-              onAddressConfirm={handleAddressConfirm}
-              onLocationButton={handleLocationButton}
-              translations={t}
-              isRelocating={isRelocating}
-            />
-            
-            <SearchSettings 
-              searchRadius={searchRadius}
-              setSearchRadius={setSearchRadius}
-              selectedMealTime={selectedMealTime}
-              setSelectedMealTime={setSelectedMealTime}
-              translations={t}
-              selectedLanguage={selectedLanguage}
-            />
           </div>
 
           {/* Slot Machine */}
@@ -729,6 +707,32 @@ function App() {
             spinError={spinError}
             locationError={locationError}
             translations={t}
+          />
+        </div>
+        
+        {/* Location and Search Settings */}
+        <div className="max-w-6xl mx-auto mb-8">
+          <LocationManager 
+            locationStatus={locationStatus}
+            userAddress={userAddress}
+            savedLocations={savedLocations}
+            addressInput={addressInput}
+            setAddressInput={setAddressInput}
+            isGeocodingAddress={isGeocodingAddress}
+            onRelocate={getUserLocation}
+            onAddressConfirm={handleAddressConfirm}
+            onLocationButton={handleLocationButton}
+            translations={t}
+            isRelocating={isRelocating}
+          />
+          
+          <SearchSettings 
+            searchRadius={searchRadius}
+            setSearchRadius={setSearchRadius}
+            selectedMealTime={selectedMealTime}
+            setSelectedMealTime={setSelectedMealTime}
+            translations={t}
+            selectedLanguage={selectedLanguage}
           />
         </div>
         
