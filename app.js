@@ -676,8 +676,8 @@ function App() {
           {/* 半透明遮罩 */}
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           
-          {/* 語言選擇器 - 浮動在右上角 */}
-          <div className="absolute top-4 right-4 z-20">
+          {/* 語言選擇器 - 置中顯示 */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
             <LanguageSelector 
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
