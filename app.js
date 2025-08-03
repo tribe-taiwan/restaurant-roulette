@@ -102,7 +102,7 @@ function App() {
         relocateButton: "自動定位",
         spinErrorPrefix: "錯誤：",
         apiSearching: "正在搜索附近餐廳...",
-        radiusLabel: "搜索範圍：",
+        radiusLabel: "範圍：",
         radiusKm: "公里",
         locationSuccess: "定位成功",
         locationDetected: "當前位置",
@@ -111,8 +111,8 @@ function App() {
         breakfast: "早餐",
         lunch: "午餐",
         dinner: "晚餐",
-        enterAddress: "輸入地址 指定你的位置",
-        locateHere: "指定你的位置",
+        enterAddress: "輸入地址 指定您的位置",
+        locateHere: "指定您的位置",
         home: "住家",
         office: "公司",
         saveText: "儲存",
@@ -677,7 +677,7 @@ function App() {
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           
           {/* 語言選擇器 - 置中顯示 */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
             <LanguageSelector 
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
