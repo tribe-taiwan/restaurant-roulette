@@ -10,8 +10,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       zh: { 1: '經濟實惠', 2: '中等價位', 3: '高價位', 4: '精緻餐飲' },
       ja: { 1: 'リーズナブル', 2: '中価格帯', 3: '高価格帯', 4: '高級料理' },
       ko: { 1: '저렴한', 2: '중간 가격', 3: '비싼', 4: '고급 요리' },
-      es: { 1: 'Económico', 2: 'Moderado', 3: 'Caro', 4: 'Alta Cocina' },
-      fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
+      vi: { 1: 'Bình dân', 2: 'Trung bình', 3: 'Đắt tiền', 4: 'Sang trọng' },
+      ms: { 1: 'Bajet', 2: 'Sederhana', 3: 'Mahal', 4: 'Mewah' }
     };
     
     // 導航URL生成函數（複製自RestaurantCard）
