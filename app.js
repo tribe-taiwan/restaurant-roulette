@@ -309,11 +309,11 @@ function App() {
     // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
       if (userLocation && locationStatus === 'success' && isInitialLoad && !currentRestaurant && !isSpinning) {
-        console.log('🎯 Landing 自動獲取第一家餐廳 - 延遲 2 秒確保 API 準備完成');
+        console.log('🎯 Landing 自動獲取第一家餐廳 - 延遲 1 秒確保 API 準備完成');
         const timer = setTimeout(() => {
           handleSpin(true); // 傳入 true 表示自動調用
           setIsInitialLoad(false);
-        }, 2000); // 延遲 2 秒
+        }, 1000); // 延遲 1 秒
 
         return () => clearTimeout(timer);
       }
@@ -648,6 +648,21 @@ function App() {
       setCandidateList([]);
     };
 
+    // 處理圖片點擊跳轉到 Google Maps 相片功能
+    const handleImageClick = () => {
+      if (currentRestaurant) {
+        let url;
+        if (currentRestaurant.id) {
+          // 使用 place_id 直接跳轉到相片頁面
+          url = `https://www.google.com/maps/place/?q=place_id:${currentRestaurant.id}&hl=${selectedLanguage === 'zh' ? 'zh-TW' : 'en'}&tab=photos`;
+        } else {
+          // 回退到一般搜索
+          url = `https://www.google.com/maps/search/${encodeURIComponent(currentRestaurant.name + ', ' + currentRestaurant.address)}/photos`;
+        }
+        window.open(url, '_blank');
+      }
+    };
+
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)] p-4" data-name="app" data-file="app.js">
         <div className="max-w-6xl mx-auto">
@@ -693,6 +708,7 @@ function App() {
               candidateList={candidateList}
               language={selectedLanguage}
               onClearList={handleClearList}
+              onImageClick={handleImageClick}
             />
           </div>
 

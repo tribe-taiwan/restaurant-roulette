@@ -108,7 +108,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             onClick={() => finalRestaurant && !isSpinning && onImageClick && onImageClick()}
             title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
-            <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out ${
+            <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
               isSpinning ? 'animate-scroll-names' : ''
             }`}>
               {isSpinning ? (
@@ -126,7 +126,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
                         <div className="icon-map text-sm"></div>
-                        <span>{finalRestaurant.distance}km</span>
+                        <span>{finalRestaurant.distance} km</span>
                       </div>
                     )}
                   </div>
@@ -139,9 +139,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               )}
             </div>
             
-            {/* Price Label - Top Right */}
+            {/* Price Label - Bottom Left */}
             {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
-              <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
+              <div className="absolute bottom-4 left-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold pointer-events-none">
                 {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
               </div>
             )}
@@ -163,7 +163,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             {/* Add to Candidate Button - Small Circle in Bottom Right */}
             {finalRestaurant && !isSpinning && candidateList.length < 9 && (
               <button
-                onClick={onAddCandidate}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddCandidate();
+                }}
                 className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full text-sm font-bold shadow-lg transition-all"
                 title="加入候選"
               >
@@ -194,19 +197,20 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* Restaurant List */}
           {candidateList.length > 0 && (
             <div className="mt-6 w-full">
-              <div className="text-center text-sm text-gray-600 mb-4">
-                候選餐廳 ({candidateList.length}/9)
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-gray-600">
+                  候選餐廳 ({candidateList.length}/9)
+                </div>
+                <button
+                  onClick={onClearList}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+                >
+                  清除列表
+                </button>
               </div>
-              <div className="space-y-2 w-full">
+              <div className="space-y-3 w-full">
                 {candidateList.map((restaurant, index) => {
-                  const priceLabels = {
-                    1: '經濟實惠',
-                    2: '中等價位', 
-                    3: '高價位',
-                    4: '精緻餐飲'
-                  };
                   const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
-                  const priceText = priceLabels[priceLevel] || '中等價位';
                   
                   return (
                     <a
@@ -214,38 +218,28 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block bg-white hover:bg-gray-50 rounded-lg p-4 transition-colors duration-200 border border-gray-200 hover:border-gray-300"
+                      className="block bg-white hover:bg-gray-50 rounded-lg p-4 transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-sm relative"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-800 text-lg">
-                            {index + 1}. {restaurant.name}
-                          </div>
-                          <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
-                            {restaurant.distance && (
-                              <span><div className="icon-map inline text-sm mr-1"></div>{restaurant.distance}km</span>
-                            )}
-                            <span>💰 {priceText}</span>
-                          </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-gray-800 text-lg mb-2">
+                          {index + 1}. {restaurant.name}
                         </div>
-                        <div className="text-gray-400 text-lg">
-                          ↗
-                        </div>
+                        {restaurant.distance && (
+                          <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                            <div className="icon-map text-sm"></div>
+                            <span>{restaurant.distance} km</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Price Label - Bottom Left */}
+                      <div className="absolute bottom-3 left-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold">
+                        {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
                       </div>
                     </a>
                   );
                 })}
               </div>
-              {candidateList.length > 0 && (
-                <div className="text-center mt-4">
-                  <button
-                    onClick={onClearList}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm"
-                  >
-                    🗑️ 清除列表
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
