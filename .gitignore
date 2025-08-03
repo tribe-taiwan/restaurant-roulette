@@ -39,4 +39,5 @@ _docs
 _test
 *.md
 *.zip
-
+*.url
+*.lnk
