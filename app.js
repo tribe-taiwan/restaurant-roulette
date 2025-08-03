@@ -665,15 +665,35 @@ function App() {
 
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)] p-4" data-name="app" data-file="app.js">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
+        
+        {/* Hero 區塊 */}
+        <div 
+          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('./assets/image/banner.jpg')`
+          }}
+        >
+          {/* 半透明遮罩 */}
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          
+          {/* 語言選擇器 - 浮動在右上角 */}
+          <div className="absolute top-4 right-4 z-20">
             <LanguageSelector 
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
             />
           </div>
+          
+          {/* 標題內容 */}
+          <div className="relative z-10 text-center">
+            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-lg">
+              {t.title}
+            </h1>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto">
 
           {/* Slot Machine */}
           <div className="flex justify-center mb-8">
@@ -724,6 +744,8 @@ function App() {
             onLocationButton={handleLocationButton}
             translations={t}
             isRelocating={isRelocating}
+            selectedLanguage={selectedLanguage}
+            userLocation={userLocation}
           />
           
           <SearchSettings 

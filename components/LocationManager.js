@@ -12,31 +12,15 @@ function LocationManager({
   onAddressConfirm,
   onLocationButton,
   translations,
-  isRelocating
+  isRelocating,
+  selectedLanguage,
+  userLocation
 }) {
   try {
     const t = translations;
 
     return (
       <div className="w-full">
-        {/* Hero 區塊 */}
-        <div 
-          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('./assets/image/banner.jpg')`
-          }}
-        >
-          {/* 半透明遮罩 */}
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          
-          {/* 標題內容 */}
-          <div className="relative z-10 text-center">
-            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-lg">
-              {t.title}
-            </h1>
-          </div>
-        </div>
-
         {/* 位置管理區塊 */}
         <div className="w-full max-w-2xl mx-auto mb-8">
           {/* 整合區塊 */}
