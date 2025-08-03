@@ -707,6 +707,8 @@ function App() {
               language={selectedLanguage}
               onClearList={handleClearList}
               onImageClick={handleImageClick}
+              userLocation={userLocation}
+              userAddress={userAddress}
             />
           </div>
 
