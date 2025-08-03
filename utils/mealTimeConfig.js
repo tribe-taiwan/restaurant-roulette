@@ -6,19 +6,19 @@ export const MEAL_TIME_CONFIG = {
     start: 5, 
     end: 10, 
     displayTime: '5-10',
-    icon: '🌅'
+    icon: 'sunrise'
   },
   lunch: { 
     start: 10, 
     end: 16, 
     displayTime: '10-16',
-    icon: '☀️'
+    icon: 'sun'
   },
   dinner: { 
     start: 16, 
     end: 24, 
     displayTime: '16-24',
-    icon: '🌃'
+    icon: 'moon'
   }
 };
 

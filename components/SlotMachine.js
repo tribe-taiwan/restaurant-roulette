@@ -114,7 +114,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   <div className="text-sm text-white drop-shadow">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
-                        <span>🗺️</span>
+                        <div className="icon-map text-sm"></div>
                         <span>{finalRestaurant.distance}km</span>
                       </div>
                     )}
@@ -191,7 +191,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           </div>
                           <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
                             {restaurant.distance && (
-                              <span>🗺️ {restaurant.distance}km</span>
+                              <span><div className="icon-map inline text-sm mr-1"></div>{restaurant.distance}km</span>
                             )}
                             <span>💰 {priceText}</span>
                           </div>

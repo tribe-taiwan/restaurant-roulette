@@ -48,8 +48,8 @@ function SearchSettings({
           {/* 第一行：現在營業中和不限時間 */}
           <div className="flex gap-2 justify-center mb-2">
             {[
-              { id: 'current', label: selectedLanguage === 'zh' ? '現在營業中' : 'Open Now', icon: '🕐', time: '' },
-              { id: 'all', label: selectedLanguage === 'zh' ? '不限時間' : 'Any Time', icon: '🌐', time: '' }
+              { id: 'current', label: selectedLanguage === 'zh' ? '現在營業中' : 'Open Now', icon: 'clock', time: '' },
+              { id: 'all', label: selectedLanguage === 'zh' ? '不限時間' : 'Any Time', icon: 'globe', time: '' }
             ].map((mealTime) => (
               <button
                 key={mealTime.id}
@@ -61,7 +61,7 @@ function SearchSettings({
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-lg">{mealTime.icon}</span>
+                  <div className={`icon-${mealTime.icon} text-lg`}></div>
                   <span className="text-xs">{mealTime.label}</span>
                 </div>
               </button>
@@ -84,7 +84,7 @@ function SearchSettings({
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-lg">{mealTime.icon}</span>
+                  <div className={`icon-${mealTime.icon} text-lg`}></div>
                   <span className="text-xs">{mealTime.label}</span>
                 </div>
               </button>
