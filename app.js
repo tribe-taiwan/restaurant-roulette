@@ -664,9 +664,9 @@ function App() {
     };
 
     return (
-      <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)] p-4" data-name="app" data-file="app.js">
+      <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
         
-        {/* Hero 區塊 */}
+        {/* Hero 區塊 - 延伸到視窗邊緣 */}
         <div 
           className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
           style={{
@@ -733,7 +733,7 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4">
 
           {/* Slot Machine */}
           <div className="flex justify-center mb-8">
@@ -773,7 +773,7 @@ function App() {
         </div>
         
         {/* Location and Search Settings */}
-        <div className="max-w-6xl mx-auto mt-16 mb-8">
+        <div className="max-w-6xl mx-auto mt-16 mb-8 px-4">
           <LocationManager 
             locationStatus={locationStatus}
             userAddress={userAddress}

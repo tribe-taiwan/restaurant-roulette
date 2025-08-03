@@ -36,7 +36,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
         <div className="md:hidden relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 bg-[var(--surface-color)] bg-opacity-80 rounded-lg px-4 py-2 text-[var(--text-secondary)] transition-all duration-200"
+            className="flex items-center gap-2 bg-[var(--surface-color)] bg-opacity-65 rounded-lg px-4 py-2 text-[var(--text-secondary)] transition-all duration-200"
           >
             <span className="text-lg">☰</span>
             <span className="text-sm font-medium">{currentLang?.name}</span>
