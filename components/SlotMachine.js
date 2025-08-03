@@ -192,14 +192,34 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             )}
             
-            {/* Add to Candidate Button - Small Circle in Bottom Right */}
+          </div>
+
+          {/* Button Container */}
+          <div className="flex items-center gap-3">
+            {/* Search Next Button */}
+            <button
+              onClick={() => onSpin(false)}
+              disabled={isSpinning}
+              className={`btn-primary flex-1 text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isSpinning ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {translations.spinning}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  😋
+                  {translations.spinButton}
+                </div>
+              )}
+            </button>
+
+            {/* Add to Candidate Button - Outside of image area */}
             {finalRestaurant && !isSpinning && candidateList.length < 9 && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddCandidate();
-                }}
-                className="absolute bottom-4 right-4 bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg transition-all duration-200 active:scale-95 active:bg-blue-500 flex items-center justify-center"
+                onClick={onAddCandidate}
+                className="bg-blue-600 text-white w-12 h-12 min-w-[3rem] rounded-full shadow-lg transition-all duration-200 active:scale-95 active:bg-blue-500 flex items-center justify-center flex-shrink-0"
                 style={{
                   touchAction: 'manipulation'
                 }}
@@ -209,25 +229,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </button>
             )}
           </div>
-
-          {/* Search Next Button */}
-          <button
-            onClick={() => onSpin(false)}
-            disabled={isSpinning}
-            className={`btn-primary w-full text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isSpinning ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                {translations.spinning}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2">
-                😋
-                {translations.spinButton}
-              </div>
-            )}
-          </button>
 
           {/* Restaurant List */}
           {candidateList.length > 0 && (
