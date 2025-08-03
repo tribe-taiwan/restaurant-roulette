@@ -43,7 +43,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
           </button>
           
           {isOpen && (
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 z-30">
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 z-30 min-w-[160px]">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
@@ -51,7 +51,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
                     onLanguageChange(lang.code);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
+                  className={`w-full px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg whitespace-nowrap ${
                     selectedLanguage === lang.code
                       ? 'bg-[var(--primary-color)] text-white'
                       : 'text-[var(--text-secondary)]'
