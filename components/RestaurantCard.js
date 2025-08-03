@@ -229,7 +229,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
-                🧭
+                <div className="icon-navigation text-sm"></div>
                 {getTranslation('viewRoute')}
               </a>
 
