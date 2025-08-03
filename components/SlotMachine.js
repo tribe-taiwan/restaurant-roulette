@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [touchStart, setTouchStart] = React.useState(null);
@@ -14,6 +14,38 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
     };
     
+    // 導航URL生成函數（複製自RestaurantCard）
+    const getDirectionsUrl = (restaurant) => {
+      console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
+      console.log('🗺️ 當前userAddress:', userAddress);
+      console.log('🗺️ 餐廳地址:', restaurant.address);
+      
+      // 優先使用userAddress作為起點地址
+      if (userAddress && restaurant.address) {
+        const origin = encodeURIComponent(userAddress);
+        const destination = encodeURIComponent(restaurant.address);
+        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+        console.log('🎯 最終導航URL:', finalUrl);
+        console.log('🎯 導航起點地址:', userAddress);
+        console.log('🎯 導航終點地址:', restaurant.address);
+        return finalUrl;
+      }
+
+      // 回退到座標（如果有userLocation但沒有userAddress）
+      if (userLocation && restaurant.address) {
+        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
+        const destination = encodeURIComponent(restaurant.address);
+        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+        console.log('🎯 使用座標的導航URL:', finalUrl);
+        console.log('🎯 導航起點座標:', userLocation);
+        console.log('🎯 導航終點地址:', restaurant.address);
+        return finalUrl;
+      }
+
+      // 回退選項：直接導航到餐廳位置
+      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
+    };
+
     const restaurantNames = [
       "櫻町壽司",
       "阿母義麵屋",
@@ -229,7 +261,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     >
                       {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
                       <div 
-                        className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 pointer-events-none"
+                        className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
                         style={{
                           width: '38.2%',
                           background: 'linear-gradient(to right, rgba(255,255,255,0.25), rgba(255,255,255,0.1), transparent)',
@@ -237,8 +269,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           WebkitBackdropFilter: 'blur(12px)', // Safari support
                           borderRight: '1px solid rgba(255,255,255,0.1)'
                         }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(getDirectionsUrl(restaurant), '_blank');
+                        }}
+                        title="點擊導航到此餐廳"
                       >
-                        <div className="text-left">
+                        <div className="text-left pointer-events-none">
                           <div className="font-semibold text-white text-base mb-1 leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                             {index + 1}. {restaurant.name}
                           </div>
