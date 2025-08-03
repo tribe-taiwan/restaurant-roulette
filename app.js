@@ -60,7 +60,7 @@ function App() {
 
     const translations = {
       en: {
-        title: "Restaurant Roulette",
+        title: "Maizuru Tainan B&B",
         spinButton: "What to eat?",
         addCandidate: "Add Option",
         spinning: "Searching...",
@@ -93,7 +93,7 @@ function App() {
         hours: "hours"
       },
       zh: {
-        title: "甲崩喔",
+        title: "舞鶴台南民宿",
         spinButton: "甲崩喔",
         addCandidate: "加入候選",
         spinning: "正在搜尋...",
@@ -126,7 +126,7 @@ function App() {
         hours: "小時"
       },
       ja: {
-        title: "レストランルーレット",
+        title: "まいづる台南民宿",
         spinButton: "何を食べる？",
         spinning: "レストランを探しています...",
         locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
@@ -158,7 +158,7 @@ function App() {
         hours: "時間"
       },
       ko: {
-        title: "레스토랑 룰렛",
+        title: "우허 타이난 민박",
         spinButton: "뭘 먹지?",
         spinning: "레스토랑을 찾고 있습니다...",
         locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
@@ -190,7 +190,7 @@ function App() {
         hours: "시간"
       },
       es: {
-        title: "Ruleta de Restaurantes",
+        title: "Pensión Wuhe Tainan",
         spinButton: "¿Qué comer?",
         spinning: "Buscando tu restaurante...",
         locationError: "Por favor permite el acceso a la ubicación para encontrar restaurantes cercanos.",
@@ -222,7 +222,7 @@ function App() {
         hours: "horas"
       },
       fr: {
-        title: "Roulette de Restaurants",
+        title: "Pension Wuhe Tainan",
         spinButton: "Quoi manger ?",
         spinning: "Recherche de votre restaurant...",
         locationError: "Veuillez autoriser l'accès à la localisation pour trouver des restaurants à proximité.",
