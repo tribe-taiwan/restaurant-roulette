@@ -18,49 +18,60 @@ function LocationManager({
     const t = translations;
 
     return (
-      <div className="w-full max-w-2xl mx-auto mb-8">
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
-            {t.title}
-          </h1>
-          <div className="flex gap-2">
-            <button
-              onClick={onRelocate}
-              disabled={isRelocating}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform ${
-                isRelocating 
-                  ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
-                  : locationStatus === 'success'
-                    ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
-                    : locationStatus === 'error'
-                      ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
-                      : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
-              }`}
-              title={t.relocateButton}
-            >
-              {isRelocating ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <div className={`icon-map-pin text-white text-lg ${
-                  locationStatus === 'success' ? 'animate-pulse' : ''
-                }`}></div>
-              )}
-            </button>
+      <div className="w-full">
+        {/* Hero 區塊 */}
+        <div 
+          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('./assets/image/banner.jpg')`
+          }}
+        >
+          {/* 半透明遮罩 */}
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          
+          {/* 標題內容 */}
+          <div className="relative z-10 text-center">
+            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-lg">
+              {t.title}
+            </h1>
           </div>
         </div>
-        
-        {/* 位置資訊顯示 */}
-        {locationStatus === 'success' && userAddress && (
-          <div className="bg-[var(--surface-color)] rounded-lg px-4 py-2 text-sm text-[var(--text-secondary)] mb-4">
-            <div className="flex items-center justify-center gap-2">
-              <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
-              <span>{userAddress}</span>
-            </div>
-          </div>
-        )}
-        
-        {/* 地址輸入區域 - 始終顯示 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full">
+
+        {/* 位置管理區塊 */}
+        <div className="w-full max-w-2xl mx-auto mb-8">
+          {/* 整合區塊 */}
+          <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full">
+            {/* 位置資訊與重新定位按鈕 */}
+            {locationStatus === 'success' && userAddress && (
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
+                  <span className="text-sm text-[var(--text-secondary)]">{userAddress}</span>
+                </div>
+                <button
+                  onClick={onRelocate}
+                  disabled={isRelocating}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 transform ${
+                    isRelocating 
+                      ? 'bg-[var(--secondary-color)] cursor-not-allowed' 
+                      : locationStatus === 'success'
+                        ? 'bg-[var(--success-color)] hover:bg-green-600 hover:scale-105'
+                        : locationStatus === 'error'
+                          ? 'bg-[var(--warning-color)] hover:bg-orange-600 hover:scale-105'
+                          : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] hover:scale-105'
+                  }`}
+                  title={t.relocateButton}
+                >
+                  {isRelocating ? (
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <div className={`icon-map-pin text-white text-sm ${
+                      locationStatus === 'success' ? 'animate-pulse' : ''
+                    }`}></div>
+                  )}
+                </button>
+              </div>
+            )}
             {/* 住家公司按鈕 - 總是顯示 */}
             <div className="mb-4">
               <div className="flex gap-2">
@@ -107,7 +118,7 @@ function LocationManager({
                   }
                 }}
                 placeholder={t.enterAddress}
-                className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-[var(--primary-color)] focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none"
                 onKeyPress={(e) => e.key === 'Enter' && onAddressConfirm()}
                 maxLength="200"
               />
@@ -131,6 +142,7 @@ function LocationManager({
               </button>
             </div>
           </div>
+        </div>
       </div>
     );
   } catch (error) {
