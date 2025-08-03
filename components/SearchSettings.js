@@ -20,31 +20,33 @@ function SearchSettings({
 
     return (
       <div className="w-full max-w-2xl mx-auto">
-        {/* 搜索範圍設定 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between gap-4">
-            <label className="text-[var(--text-secondary)] font-medium">
-              {t.radiusLabel}
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min="1"
-                max="20"
-                value={searchRadius}
-                onChange={(e) => setSearchRadius(Number(e.target.value))}
-                className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                style={{'--value': `${((searchRadius - 1) / (20 - 1)) * 100}%`}}
-              />
-              <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
-                {searchRadius} {t.radiusKm}
-              </span>
+        {/* 整合區塊 */}
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8">
+          {/* 搜索範圍設定 */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between gap-4">
+              <label className="text-[var(--text-secondary)] font-medium">
+                {t.radiusLabel}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={searchRadius}
+                  onChange={(e) => setSearchRadius(Number(e.target.value))}
+                  className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                  style={{'--value': `${((searchRadius - 1) / (20 - 1)) * 100}%`}}
+                />
+                <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
+                  {searchRadius} {t.radiusKm}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* 用餐時段選擇 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8">
+          
+          {/* 用餐時段選擇 */}
+          <div>
           {/* 第一行：現在營業中和不限時間 */}
           <div className="flex gap-2 justify-center mb-2">
             {[
@@ -89,6 +91,7 @@ function SearchSettings({
                 </div>
               </button>
             ))}
+          </div>
           </div>
         </div>
       </div>
