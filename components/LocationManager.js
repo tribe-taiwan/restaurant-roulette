@@ -18,8 +18,8 @@ function LocationManager({
     const t = translations;
 
     return (
-      <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="flex items-center justify-center gap-4">
+      <div className="w-full max-w-2xl mx-auto mb-8">
+        <div className="flex items-center justify-center gap-4 mb-4">
           <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
             {t.title}
           </h1>
@@ -51,7 +51,7 @@ function LocationManager({
         
         {/* 位置資訊顯示 */}
         {locationStatus === 'success' && userAddress && (
-          <div className="bg-[var(--surface-color)] rounded-lg px-4 py-2 text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
+          <div className="bg-[var(--surface-color)] rounded-lg px-4 py-2 text-sm text-[var(--text-secondary)] mb-4">
             <div className="flex items-center justify-center gap-2">
               <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
               <span>{userAddress}</span>
@@ -60,7 +60,7 @@ function LocationManager({
         )}
         
         {/* 地址輸入區域 - 始終顯示 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto w-full">
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 w-full">
             {/* 住家公司按鈕 - 總是顯示 */}
             <div className="mb-4">
               <div className="flex gap-2">
@@ -74,7 +74,7 @@ function LocationManager({
                   }`}
                   title={savedLocations.some(loc => loc.type === 'home') ? '使用已儲存的住家位置' : '將當前輸入儲存為住家位置'}
                 >
-                  <span>🏠</span>
+                  <div className="icon-home text-sm"></div>
                   <span>{t.home}</span>
                 </button>
                 
@@ -88,7 +88,7 @@ function LocationManager({
                   }`}
                   title={savedLocations.some(loc => loc.type === 'office') ? '使用已儲存的公司位置' : '將當前輸入儲存為公司位置'}
                 >
-                  <span>🏢</span>
+                  <div className="icon-building text-sm"></div>
                   <span>{t.office}</span>
                 </button>
               </div>

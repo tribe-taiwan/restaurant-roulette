@@ -10,8 +10,8 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
     ];
 
     return (
-      <div className="flex justify-center mb-6" data-name="language-selector" data-file="components/LanguageSelector.js">
-        <div className="flex flex-wrap gap-2 bg-[var(--surface-color)] rounded-lg p-2">
+      <div className="w-full max-w-2xl mx-auto mb-6" data-name="language-selector" data-file="components/LanguageSelector.js">
+        <div className="flex flex-wrap gap-2 bg-[var(--surface-color)] rounded-lg p-2 justify-center">
           {languages.map((lang) => (
             <button
               key={lang.code}

@@ -19,9 +19,9 @@ function SearchSettings({
     };
 
     return (
-      <>
+      <div className="w-full max-w-2xl mx-auto">
         {/* 搜索範圍設定 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-4">
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between gap-4">
             <label className="text-[var(--text-secondary)] font-medium">
               {t.radiusLabel}
@@ -44,7 +44,7 @@ function SearchSettings({
         </div>
         
         {/* 用餐時段選擇 */}
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 max-w-md mx-auto mb-8">
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8">
           {/* 第一行：現在營業中和不限時間 */}
           <div className="flex gap-2 justify-center mb-2">
             {[
@@ -91,7 +91,7 @@ function SearchSettings({
             ))}
           </div>
         </div>
-      </>
+      </div>
     );
   } catch (error) {
     console.error('SearchSettings component error:', error);
