@@ -218,22 +218,31 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block bg-white hover:bg-gray-50 rounded-lg p-4 transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-sm relative"
+                      className="block rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
+                      style={{
+                        backgroundImage: restaurant.image ? 
+                          `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${restaurant.image})` : 
+                          'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
                     >
-                      <div className="text-center">
-                        <div className="font-semibold text-gray-800 text-lg mb-2">
-                          {index + 1}. {restaurant.name}
-                        </div>
-                        {restaurant.distance && (
-                          <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
-                            <div className="icon-map text-sm"></div>
-                            <span>{restaurant.distance} km</span>
+                      <div className="flex items-center justify-center h-full text-center p-4 pointer-events-none">
+                        <div>
+                          <div className="font-semibold text-white text-lg mb-1 drop-shadow-lg">
+                            {index + 1}. {restaurant.name}
                           </div>
-                        )}
+                          {restaurant.distance && (
+                            <div className="text-sm text-white drop-shadow flex items-center justify-center gap-1">
+                              <div className="icon-map text-sm"></div>
+                              <span>{restaurant.distance} km</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       {/* Price Label - Bottom Left */}
-                      <div className="absolute bottom-3 left-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold">
+                      <div className="absolute bottom-3 left-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
                         {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
                       </div>
                     </a>
