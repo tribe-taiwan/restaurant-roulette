@@ -195,7 +195,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           </div>
 
           {/* Button Container */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-4">
             {/* Search Next Button */}
             <button
               onClick={() => onSpin(false)}
