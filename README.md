@@ -1,4 +1,4 @@
-# 🍽️ Restaurant Roulette - 吃這家
+# 🍽️ Restaurant Roulette - 甲崩喔
 
 智能餐廳推薦應用程式，使用 Google Places API 搜索附近真實餐廳，支援多國語言與智能路線規劃。
 
