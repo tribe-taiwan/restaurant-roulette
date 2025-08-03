@@ -219,34 +219,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Restaurant Main Image */}
-          <div className="lg:col-span-2">
-            <div className="relative mb-4">
-              <img 
-                src={restaurant.image} 
-                alt={restaurant.name}
-                className="w-full aspect-video object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={handleImageClick}
-                title={getTranslation('clickToViewPhotos')}
-              />
-              <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
-                {priceLabels[language]?.[restaurant.priceLevel] || priceLabels.en[restaurant.priceLevel]}
-              </div>
-              {/* 點擊查看位置按鈕 - 與點擊照片功能相同 */}
-              <div 
-                className="absolute bottom-4 right-4 bg-blue-600 bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-all"
-                onClick={handleImageClick}
-                title={getTranslation('clickToViewPhotos')}
-              >
-                <span>🕔</span>
-                <span>{getTranslation('viewLocation')}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Restaurant Info */}
-          <div>
+        {/* Restaurant Info */}
+        <div>
             {/* 網站和導航 - 移到地址上面 */}
             <div className="flex flex-wrap gap-4 mb-6">
               <a
@@ -359,9 +333,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                 </div>
               </div>
             )}
-
-
-          </div>
         </div>
 
         {/* TODO: Google菜單功能 - 需要額外的Places Details API呼叫 */}

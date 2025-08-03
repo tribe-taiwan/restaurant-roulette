@@ -1,8 +1,18 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
+    
+    // 價位標籤資料
+    const priceLabels = {
+      en: { 1: 'Budget', 2: 'Moderate', 3: 'Expensive', 4: 'Fine Dining' },
+      zh: { 1: '經濟實惠', 2: '中等價位', 3: '高價位', 4: '精緻餐飲' },
+      ja: { 1: 'リーズナブル', 2: '中価格帯', 3: '高価格帯', 4: '高級料理' },
+      ko: { 1: '저렴한', 2: '중간 가격', 3: '비싼', 4: '고급 요리' },
+      es: { 1: 'Económico', 2: 'Moderado', 3: 'Caro', 4: 'Alta Cocina' },
+      fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
+    };
     
     const restaurantNames = [
       "櫻町壽司",
@@ -84,7 +94,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           
           {/* Restaurant Image Display */}
           <div 
-            className="rounded-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
+            className="group rounded-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
             style={{
               backgroundImage: finalRestaurant && finalRestaurant.image ? 
                 `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
@@ -95,7 +105,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            title="左滑或按←鍵搜尋下一家餐廳"
+            onClick={() => finalRestaurant && !isSpinning && onImageClick && onImageClick()}
+            title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
             <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out ${
               isSpinning ? 'animate-scroll-names' : ''
@@ -109,7 +120,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               ) : finalRestaurant ? (
                 <div className="text-center py-4">
                   <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
-                    🎉 {finalRestaurant.name}
+                    {finalRestaurant.name}
                   </div>
                   <div className="text-sm text-white drop-shadow">
                     {finalRestaurant.distance && (
@@ -127,6 +138,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               )}
             </div>
+            
+            {/* Price Label - Top Right */}
+            {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
+              <div className="absolute top-4 right-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
+                {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
+              </div>
+            )}
+            
+            {/* Hover Arrow - Right Side */}
+            {finalRestaurant && !isSpinning && (
+              <div 
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSpin(false);
+                }}
+                title="搜尋下一家餐廳"
+              >
+                <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
+              </div>
+            )}
             
             {/* Add to Candidate Button - Small Circle in Bottom Right */}
             {finalRestaurant && !isSpinning && candidateList.length < 9 && (
