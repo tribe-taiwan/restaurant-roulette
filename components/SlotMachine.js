@@ -227,22 +227,29 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         backgroundPosition: 'center'
                       }}
                     >
-                      <div className="flex items-center justify-center h-full text-center p-4 pointer-events-none">
-                        <div>
-                          <div className="font-semibold text-white text-lg mb-1 drop-shadow-lg">
+                      {/* Left Info Panel with Golden Ratio Width */}
+                      <div 
+                        className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 pointer-events-none"
+                        style={{
+                          width: '38.2%',
+                          background: 'linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent)'
+                        }}
+                      >
+                        <div className="text-left">
+                          <div className="font-semibold text-white text-base mb-1 drop-shadow-lg leading-tight">
                             {index + 1}. {restaurant.name}
                           </div>
                           {restaurant.distance && (
-                            <div className="text-sm text-white drop-shadow flex items-center justify-center gap-1">
-                              <div className="icon-map text-sm"></div>
+                            <div className="text-xs text-white drop-shadow flex items-center gap-1">
+                              <div className="icon-map text-xs"></div>
                               <span>{restaurant.distance} km</span>
                             </div>
                           )}
                         </div>
                       </div>
                       
-                      {/* Price Label - Bottom Left */}
-                      <div className="absolute bottom-3 left-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
+                      {/* Price Label - Bottom Right */}
+                      <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
                         {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
                       </div>
                     </a>
