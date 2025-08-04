@@ -340,6 +340,18 @@ function App() {
     React.useEffect(() => {
       getUserLocation();
     }, []);
+
+    // 監聽老虎機動畫結束事件
+    React.useEffect(() => {
+      const handleAnimationEnd = () => {
+        setIsSpinning(false);
+      };
+
+      window.addEventListener('slotAnimationEnd', handleAnimationEnd);
+      return () => {
+        window.removeEventListener('slotAnimationEnd', handleAnimationEnd);
+      };
+    }, []);
     
     // 語言切換時重新獲取地址
     React.useEffect(() => {
@@ -692,11 +704,7 @@ function App() {
         
         console.log('✅ 成功獲取餐廳:', restaurant);
         setCurrentRestaurant(restaurant);
-
-        // 延遲停止轉動，等待慢速動畫完成
-        setTimeout(() => {
-          setIsSpinning(false);
-        }, 2500); // 等待慢速動畫完成
+        // API 返回後，讓慢速動畫自然結束，不需要人為延遲
 
       } catch (error) {
         console.error('❌ 轉動輪盤時發生錯誤:', error);

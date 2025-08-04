@@ -121,6 +121,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             if (container) {
               container.classList.remove('animate-scroll-names');
               container.classList.add('animate-scroll-slow-stop');
+
+              // 監聽動畫結束事件
+              container.addEventListener('animationend', () => {
+                // 通知父組件停止轉動
+                if (onSpin) {
+                  // 使用一個特殊的方式通知父組件動畫結束
+                  window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
+                }
+              }, { once: true });
             }
           }, 100);
 
