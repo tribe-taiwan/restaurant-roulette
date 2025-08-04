@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新 Places API 測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 20px 0; padding: 15px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 10px; }
+        .restaurant-count { font-weight: bold; color: #d9534f; }
+        .restaurant-list { max-height: 300px; overflow-y: auto; font-size: 12px; line-height: 1.4; }
+        .restaurant-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>新 Places API 測試 (google.maps.places.Place)</h1>
+    
+    <div class="test-section">
+        <h2>測試: 使用新 Places API 搜索餐廳</h2>
+        <button onclick="testNewPlacesAPI()">執行新 API 測試</button>
+        <div id="newApiResult" class="result"></div>
+    </div>
+
+    <!-- 載入主配置檔案以獲取 API KEY -->
+    <script src="../utils/locationUtils.js"></script>
+    <script>
+        // 測試用的台南位置
+        const testLocation = { lat: 22.9908, lng: 120.2133 };
+        
+        let map;
+        let placesLibrary;
+
+        // 初始化新的 Places API
+        async function initNewPlacesAPI() {
+            if (window.google && window.google.maps) {
+                console.log('✅ Google Maps API 已載入，初始化 Places Library');
+                
+                // 創建地圖（新 API 需要）
+                const mapDiv = document.createElement('div');
+                mapDiv.style.display = 'none';
+                document.body.appendChild(mapDiv);
+                
+                map = new google.maps.Map(mapDiv, {
+                    center: testLocation,
+                    zoom: 15,
+                    mapId: 'DEMO_MAP_ID' // 新 API 建議使用 Map ID
+                });
+                
+                // 載入 Places Library
+                const { Place } = await google.maps.importLibrary("places");
+                placesLibrary = { Place };
+                
+                console.log('✅ 新 Places API 初始化完成');
+                return true;
+            }
+            
+            // 動態載入 Google Maps API
+            console.log('📡 載入 Google Maps API...');
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&loading=async&callback=onNewGoogleMapsLoaded`;
+            script.async = true;
+            document.head.appendChild(script);
+            
+            return false;
+        }
+
+        // Google Maps API 載入完成回調
+        window.onNewGoogleMapsLoaded = async function() {
+            console.log('✅ Google Maps API 載入完成');
+            await initNewPlacesAPI();
+        };
+
+        // 測試新 Places API
+        async function testNewPlacesAPI() {
+            const resultDiv = document.getElementById('newApiResult');
+            resultDiv.innerHTML = '<p>🔍 執行新 Places API 測試...</p>';
+            
+            try {
+                // 確保 API 已初始化
+                if (!placesLibrary) {
+                    const initialized = await initNewPlacesAPI();
+                    if (!initialized) {
+                        resultDiv.innerHTML = '<p>⏳ 正在載入 Google Maps API，請稍後再試...</p>';
+                        return;
+                    }
+                }
+
+                console.log('🔍 開始使用新 Places API 搜索餐廳...');
+                
+                const allRestaurants = new Set();
+                const searchResults = [];
+                
+                // 定義多個搜索區域
+                const searchAreas = [
+                    { name: '中心點', lat: testLocation.lat, lng: testLocation.lng },
+                    { name: '北方 0.5km', lat: testLocation.lat + 0.005, lng: testLocation.lng },
+                    { name: '南方 0.5km', lat: testLocation.lat - 0.005, lng: testLocation.lng },
+                    { name: '東方 0.5km', lat: testLocation.lat, lng: testLocation.lng + 0.005 },
+                    { name: '西方 0.5km', lat: testLocation.lat, lng: testLocation.lng - 0.005 }
+                ];
+
+                for (let i = 0; i < searchAreas.length; i++) {
+                    const area = searchAreas[i];
+                    console.log(`🎯 搜索區域 ${i+1}: ${area.name}`);
+                    
+                    try {
+                        // 使用新 Places API 的 searchNearby 方法
+                        const request = {
+                            fields: ['displayName', 'location', 'rating', 'userRatingCount', 'priceLevel', 'types', 'id'],
+                            locationRestriction: {
+                                center: { lat: area.lat, lng: area.lng },
+                                radius: 1000 // 1km 範圍
+                            },
+                            includedTypes: ['restaurant', 'meal_takeaway', 'cafe'],
+                            maxResultCount: 20
+                            // 移除 languageCode - 新 API 不支援此參數
+                        };
+
+                        console.log('📡 發送新 API 搜索請求...', request);
+                        
+                        // 使用新的 searchNearby 方法
+                        const { places } = await placesLibrary.Place.searchNearby(request);
+                        
+                        console.log(`📊 區域 ${area.name} 找到 ${places.length} 家餐廳`);
+                        
+                        const areaRestaurants = [];
+                        places.forEach(place => {
+                            if (!allRestaurants.has(place.id)) {
+                                allRestaurants.add(place.id);
+                                areaRestaurants.push({
+                                    id: place.id,
+                                    name: place.displayName,
+                                    rating: place.rating || 0,
+                                    userRatingCount: place.userRatingCount || 0,
+                                    types: place.types || []
+                                });
+                            }
+                        });
+                        
+                        searchResults.push({
+                            area: area.name,
+                            count: places.length,
+                            newRestaurants: areaRestaurants.length,
+                            restaurants: areaRestaurants
+                        });
+                        
+                    } catch (error) {
+                        console.error(`❌ 區域 ${area.name} 搜索失敗:`, error);
+                        searchResults.push({
+                            area: area.name,
+                            count: 0,
+                            newRestaurants: 0,
+                            restaurants: [],
+                            error: error.message
+                        });
+                    }
+                }
+
+                // 顯示結果
+                let html = `<h3>🆕 新 Places API 搜索結果</h3>`;
+                html += `<p class="restaurant-count">總計找到 ${allRestaurants.size} 家不重複餐廳</p>`;
+                
+                searchResults.forEach((result, index) => {
+                    const statusColor = result.error ? '#dc3545' : '#28a745';
+                    html += `<div style="border-left: 3px solid ${statusColor}; padding-left: 10px; margin: 10px 0;">`;
+                    html += `<strong>${result.area}:</strong> 找到 ${result.count} 家餐廳 (新增 ${result.newRestaurants} 家)<br>`;
+                    
+                    if (result.error) {
+                        html += `<small style="color: #dc3545;">錯誤: ${result.error}</small><br>`;
+                    }
+                    
+                    if (result.restaurants.length > 0) {
+                        html += `<div class="restaurant-list">`;
+                        result.restaurants.forEach(restaurant => {
+                            html += `<div class="restaurant-item">`;
+                            html += `<strong>${restaurant.name}</strong> `;
+                            html += `(評分: ${restaurant.rating.toFixed(1)}, `;
+                            html += `${restaurant.userRatingCount} 則評論)`;
+                            html += `</div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                resultDiv.innerHTML = html;
+                
+                console.log('🎉 新 Places API 測試完成，總計:', allRestaurants.size, '家餐廳');
+
+            } catch (error) {
+                console.error('❌ 新 Places API 測試失敗:', error);
+                resultDiv.innerHTML = `<p style="color: #dc3545;">❌ 測試失敗: ${error.message}</p>`;
+            }
+        }
+
+        // 頁面載入後初始化
+        window.onload = function() {
+            console.log('🚀 新 Places API 測試頁面已載入');
+            console.log('📍 測試位置: 台南車站附近', testLocation);
+        };
+    </script>
+</body>
+</html>

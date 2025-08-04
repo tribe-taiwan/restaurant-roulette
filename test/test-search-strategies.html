@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐廳搜索策略測試 (新 API)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 20px 0; padding: 15px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 10px; }
+        .restaurant-count { font-weight: bold; color: #d9534f; }
+        .restaurant-list { max-height: 200px; overflow-y: auto; font-size: 12px; }
+        .api-version { background: #e7f3ff; border: 1px solid #bee5eb; padding: 8px; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>餐廳搜索策略測試 (使用新 Places API)</h1>
+    
+    <div class="api-version">
+        <strong>🆕 API 版本:</strong> 使用 Google Places API (New) - google.maps.places.Place
+    </div>
+    
+    <div class="test-section">
+        <h2>測試 1: 隨機偏移搜索中心點</h2>
+        <p><em>說明：在中心點周圍隨機偏移進行多次搜索，檢查重複率問題</em></p>
+        <button onclick="testRandomOffset()">執行隨機偏移測試</button>
+        <div id="randomOffsetResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 2: 按路名搜索</h2>
+        <p><em>說明：基於地理位置獲取附近道路，在每條路上搜索餐廳</em></p>
+        <button onclick="testStreetSearch()">執行路名搜索測試</button>
+        <div id="streetSearchResult" class="result"></div>
+    </div>
+
+    <!-- 載入主配置檔案以獲取 API KEY (非硬編碼) -->
+    <script src="../utils/locationUtils.js"></script>
+    <script>
+        // 測試用的台南位置
+        const testLocation = { lat: 22.9908, lng: 120.2133 }; // 台南車站附近
+        
+        let map;
+        let placesLibrary;
+
+        // 初始化新的 Places API
+        async function initNewPlacesAPI() {
+            if (window.google && window.google.maps) {
+                console.log('✅ Google Maps API 已載入，初始化 Places Library');
+                
+                // 創建地圖（新 API 需要）
+                const mapDiv = document.createElement('div');
+                mapDiv.style.display = 'none';
+                document.body.appendChild(mapDiv);
+                
+                map = new google.maps.Map(mapDiv, {
+                    center: testLocation,
+                    zoom: 15,
+                    mapId: 'DEMO_MAP_ID'
+                });
+                
+                // 載入 Places Library
+                const { Place } = await google.maps.importLibrary("places");
+                placesLibrary = { Place };
+                
+                console.log('✅ 新 Places API 初始化完成');
+                return true;
+            }
+            
+            // 動態載入 Google Maps API (從 locationUtils.js 獲取 API 金鑰)
+            console.log('📡 載入 Google Maps API...');
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&loading=async&callback=onGoogleMapsLoaded`;
+            script.async = true;
+            document.head.appendChild(script);
+            
+            return false;
+        }
+
+        // Google Maps API 載入完成回調
+        window.onGoogleMapsLoaded = async function() {
+            console.log('✅ Google Maps API 載入完成');
+            await initNewPlacesAPI();
+        };
+
+        // 使用新 Places API 進行搜索
+        async function searchWithNewAPI(location, radius = 1000) {
+            if (!placesLibrary) {
+                throw new Error('Places Library 尚未初始化');
+            }
+
+            const request = {
+                fields: ['displayName', 'id', 'location', 'rating', 'userRatingCount', 'priceLevel', 'types'],
+                locationRestriction: {
+                    center: location,
+                    radius: radius,
+                },
+                includedTypes: ['restaurant', 'meal_takeaway', 'food'],
+                maxResultCount: 20,
+            };
+
+            console.log('📡 發送新 API 搜索請求...', request);
+
+            try {
+                const { places } = await placesLibrary.Place.searchNearby(request);
+                console.log(`📊 找到 ${places.length} 家餐廳`);
+                
+                return places.map(place => ({
+                    place_id: place.id,
+                    name: place.displayName,
+                    rating: place.rating,
+                    user_ratings_total: place.userRatingCount,
+                    price_level: place.priceLevel,
+                    types: place.types,
+                    geometry: {
+                        location: {
+                            lat: () => place.location.lat,
+                            lng: () => place.location.lng
+                        }
+                    }
+                }));
+            } catch (error) {
+                console.error('❌ 新 API 搜索失敗:', error);
+                throw error;
+            }
+        }
+
+        // 測試 1: 隨機偏移搜索
+        async function testRandomOffset() {
+            const resultDiv = document.getElementById('randomOffsetResult');
+            resultDiv.innerHTML = '<p>🔍 執行隨機偏移搜索測試...</p>';
+            
+            try {
+                // 確保 API 已初始化
+                if (!placesLibrary) {
+                    const initialized = await initNewPlacesAPI();
+                    if (!initialized) {
+                        resultDiv.innerHTML = '<p>⏳ 正在載入 Google Maps API，請稍後再試...</p>';
+                        return;
+                    }
+                }
+
+                const allRestaurants = new Map(); // 使用 Map 追蹤重複率
+                const searchResults = [];
+                
+                // 執行 5 次隨機偏移搜索
+                for (let i = 0; i < 5; i++) {
+                    // 隨機偏移 500 米
+                    const randomOffset = 0.005;
+                    const offsetLat = testLocation.lat + (Math.random() - 0.5) * randomOffset;
+                    const offsetLng = testLocation.lng + (Math.random() - 0.5) * randomOffset;
+                    const searchLocation = { lat: offsetLat, lng: offsetLng };
+                    
+                    console.log(`🎲 第${i+1}次隨機偏移搜索:`, searchLocation);
+                    
+                    try {
+                        const restaurants = await searchWithNewAPI(searchLocation);
+                        
+                        let newCount = 0;
+                        restaurants.forEach(r => {
+                            if (!allRestaurants.has(r.place_id)) {
+                                allRestaurants.set(r.place_id, r);
+                                newCount++;
+                            }
+                        });
+                        
+                        searchResults.push({
+                            attempt: i + 1,
+                            location: searchLocation,
+                            count: restaurants.length,
+                            newCount: newCount,
+                            duplicateRate: restaurants.length > 0 ? ((restaurants.length - newCount) / restaurants.length * 100).toFixed(1) : 0,
+                            restaurants: restaurants.map(r => r.name)
+                        });
+                        
+                    } catch (error) {
+                        console.error(`❌ 第${i+1}次搜索失敗:`, error);
+                        searchResults.push({
+                            attempt: i + 1,
+                            location: searchLocation,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                // 計算整體重複率
+                const totalSearched = searchResults.reduce((sum, result) => sum + (result.count || 0), 0);
+                const overallDuplicateRate = totalSearched > 0 ? ((totalSearched - allRestaurants.size) / totalSearched * 100).toFixed(1) : 0;
+                
+                // 顯示結果
+                let html = `<h3>🎲 隨機偏移搜索結果 (新 API)</h3>`;
+                html += `<p class="restaurant-count">總計找到 ${allRestaurants.size} 家不重複餐廳</p>`;
+                html += `<p><strong>整體重複率:</strong> ${overallDuplicateRate}% (${totalSearched} 次結果中有 ${totalSearched - allRestaurants.size} 個重複)</p>`;
+                
+                searchResults.forEach(result => {
+                    html += `<div style="border-left: 3px solid #007bff; padding-left: 10px; margin: 10px 0;">`;
+                    if (result.error) {
+                        html += `<strong>第${result.attempt}次:</strong> <span style="color: red;">失敗 - ${result.error}</span><br>`;
+                    } else {
+                        html += `<strong>第${result.attempt}次:</strong> 找到 ${result.count} 家餐廳 (新增 ${result.newCount} 家，重複率 ${result.duplicateRate}%)<br>`;
+                        html += `<small>位置: ${result.location.lat.toFixed(4)}, ${result.location.lng.toFixed(4)}</small><br>`;
+                        html += `<div class="restaurant-list">${result.restaurants.join(', ')}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                resultDiv.innerHTML = html;
+                
+                console.log('🎲 隨機偏移搜索完成，總計:', allRestaurants.size, '家餐廳，整體重複率:', overallDuplicateRate + '%');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ 測試失敗: ${error.message}</p>`;
+            }
+        }
+
+        // 測試 2: 按路名搜索
+        async function testStreetSearch() {
+            const resultDiv = document.getElementById('streetSearchResult');
+            resultDiv.innerHTML = '<p>🛣️ 執行路名搜索測試...</p>';
+            
+            try {
+                // 確保 API 已初始化
+                if (!placesLibrary) {
+                    const initialized = await initNewPlacesAPI();
+                    if (!initialized) {
+                        resultDiv.innerHTML = '<p>⏳ 正在載入 Google Maps API，請稍後再試...</p>';
+                        return;
+                    }
+                }
+
+                const allRestaurants = new Map();
+                const searchResults = [];
+                
+                // 基於距離偏移的搜索區域 (模擬不同路段)
+                const searchAreas = [
+                    { name: '中心區域', lat: testLocation.lat, lng: testLocation.lng },
+                    { name: '北區 (中山路一帶)', lat: testLocation.lat + 0.008, lng: testLocation.lng },
+                    { name: '南區 (成功路一帶)', lat: testLocation.lat - 0.008, lng: testLocation.lng },
+                    { name: '東區 (東門路一帶)', lat: testLocation.lat, lng: testLocation.lng + 0.010 },
+                    { name: '西區 (西門路一帶)', lat: testLocation.lat, lng: testLocation.lng - 0.010 },
+                    { name: '東北區 (育樂街一帶)', lat: testLocation.lat + 0.006, lng: testLocation.lng + 0.008 },
+                    { name: '西南區 (健康路一帶)', lat: testLocation.lat - 0.006, lng: testLocation.lng - 0.008 }
+                ];
+
+                for (let i = 0; i < searchAreas.length; i++) {
+                    const area = searchAreas[i];
+                    console.log(`🛣️ 第${i+1}個區域搜索: ${area.name}`);
+                    
+                    try {
+                        const restaurants = await searchWithNewAPI(area, 800); // 較小的搜索半徑
+                        
+                        let newCount = 0;
+                        restaurants.forEach(r => {
+                            if (!allRestaurants.has(r.place_id)) {
+                                allRestaurants.set(r.place_id, r);
+                                newCount++;
+                            }
+                        });
+                        
+                        searchResults.push({
+                            area: area.name,
+                            location: area,
+                            count: restaurants.length,
+                            newCount: newCount,
+                            duplicateRate: restaurants.length > 0 ? ((restaurants.length - newCount) / restaurants.length * 100).toFixed(1) : 0,
+                            restaurants: restaurants.map(r => r.name)
+                        });
+                        
+                    } catch (error) {
+                        console.error(`❌ ${area.name} 搜索失敗:`, error);
+                        searchResults.push({
+                            area: area.name,
+                            location: area,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                // 計算整體重複率
+                const totalSearched = searchResults.reduce((sum, result) => sum + (result.count || 0), 0);
+                const overallDuplicateRate = totalSearched > 0 ? ((totalSearched - allRestaurants.size) / totalSearched * 100).toFixed(1) : 0;
+                
+                // 顯示結果
+                let html = `<h3>🛣️ 路名搜索結果 (新 API)</h3>`;
+                html += `<p class="restaurant-count">總計找到 ${allRestaurants.size} 家不重複餐廳</p>`;
+                html += `<p><strong>整體重複率:</strong> ${overallDuplicateRate}% (${totalSearched} 次結果中有 ${totalSearched - allRestaurants.size} 個重複)</p>`;
+                
+                searchResults.forEach(result => {
+                    html += `<div style="border-left: 3px solid #28a745; padding-left: 10px; margin: 10px 0;">`;
+                    if (result.error) {
+                        html += `<strong>${result.area}:</strong> <span style="color: red;">失敗 - ${result.error}</span><br>`;
+                    } else {
+                        html += `<strong>${result.area}:</strong> 找到 ${result.count} 家餐廳 (新增 ${result.newCount} 家，重複率 ${result.duplicateRate}%)<br>`;
+                        html += `<small>位置: ${result.location.lat.toFixed(4)}, ${result.location.lng.toFixed(4)}</small><br>`;
+                        html += `<div class="restaurant-list">${result.restaurants.join(', ')}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                resultDiv.innerHTML = html;
+                
+                console.log('🛣️ 路名搜索完成，總計:', allRestaurants.size, '家餐廳，整體重複率:', overallDuplicateRate + '%');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ 測試失敗: ${error.message}</p>`;
+            }
+        }
+
+        // 頁面載入後初始化
+        window.onload = function() {
+            console.log('🚀 餐廳搜索策略測試頁面已載入 (新 API)');
+            console.log('📍 測試位置: 台南車站附近', testLocation);
+            
+            // 檢查 API 金鑰是否可用
+            if (typeof GOOGLE_PLACES_CONFIG === 'undefined' || !GOOGLE_PLACES_CONFIG.API_KEY) {
+                console.error('❌ Google Places API 金鑰未找到，請檢查 locationUtils.js');
+                document.body.innerHTML += '<div style="background: #ffebee; border: 1px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 4px;"><strong>錯誤:</strong> Google Places API 金鑰未找到，請檢查 locationUtils.js 配置</div>';
+            } else {
+                console.log('✅ API 金鑰已載入:', GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 10) + '...');
+            }
+        };
+    </script>
+</body>
+</html>

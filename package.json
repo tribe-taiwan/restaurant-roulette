@@ -6,11 +6,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "@upstash/context7-mcp": "^1.0.14",
     "next": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@types/node": "20.10.8",
     "@types/react": "18.2.47",
     "@types/react-dom": "18.2.18",
