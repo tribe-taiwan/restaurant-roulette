@@ -1,8 +1,6 @@
 // SearchSettings.js - 搜索設定相關組件
 
 function SearchSettings({
-  searchRadius,
-  setSearchRadius,
   selectedMealTime,
   setSelectedMealTime,
   translations,

@@ -46,7 +46,7 @@ function App() {
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
     const [spinError, setSpinError] = React.useState(null);
-    const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里 (保留向後相容)
+
     const [baseUnit, setBaseUnit] = React.useState(200); // 預設200公尺
     const [unitMultiplier, setUnitMultiplier] = React.useState(1); // 預設倍數1
     const [isRelocating, setIsRelocating] = React.useState(false);
@@ -874,16 +874,14 @@ function App() {
             userLocation={userLocation}
           />
           
-          <SearchSettings 
-            searchRadius={searchRadius}
-            setSearchRadius={setSearchRadius}
+          <SearchSettings
             selectedMealTime={selectedMealTime}
             setSelectedMealTime={setSelectedMealTime}
             translations={t}
             selectedLanguage={selectedLanguage}
             baseUnit={baseUnit}
             setBaseUnit={setBaseUnit}
-            unitMultiplier={unitMultiplier}  
+            unitMultiplier={unitMultiplier}
             setUnitMultiplier={setUnitMultiplier}
           />
         </div>
