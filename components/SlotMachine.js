@@ -99,15 +99,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     React.useEffect(() => {
       if (isSpinning) {
-        // Generate more images for smooth scrolling
         const extendedImages = [];
-        for (let i = 0; i < 15; i++) {
-          extendedImages.push(...slotImages);
-        }
-        // Add final restaurant image at the end if available
+
         if (finalRestaurant && finalRestaurant.image) {
+          // API 已返回，構建最終序列：大量 slot 圖片 + 2-3 張過渡 + 餐廳圖片
+          for (let i = 0; i < 12; i++) {
+            extendedImages.push(...slotImages);
+          }
+          // 添加 2-3 張過渡圖片，讓餐廳圖片有時間自然出現
+          extendedImages.push(slotImages[0], slotImages[1], slotImages[2]);
+          // 最後是餐廳圖片
           extendedImages.push(finalRestaurant.image);
+        } else {
+          // API 未返回，持續顯示 slot 圖片
+          for (let i = 0; i < 20; i++) {
+            extendedImages.push(...slotImages);
+          }
         }
+
         setScrollingNames(extendedImages);
       }
     }, [isSpinning, finalRestaurant]);
@@ -137,8 +146,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             }`}>
               {isSpinning ? (
                 scrollingNames.map((imageSrc, index) => {
-                  // Check if this is the last image (restaurant image)
-                  const isLastImage = index === scrollingNames.length - 1;
                   const isRestaurantImage = finalRestaurant && finalRestaurant.image && imageSrc === finalRestaurant.image;
 
                   return (
@@ -151,6 +158,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           filter: isRestaurantImage ? 'brightness(1) contrast(1)' : 'brightness(0.8) contrast(1.1)'
                         }}
                       />
+                      {/* 如果是餐廳圖片，添加資訊覆蓋層 */}
+                      {isRestaurantImage && (
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center">
+                          <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
+                            {finalRestaurant.name}
+                          </div>
+                          <div className="text-sm text-white drop-shadow">
+                            {finalRestaurant.distance && (
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="icon-map text-sm"></div>
+                                <span>{finalRestaurant.distance} km</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })
