@@ -910,27 +910,32 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
  * @param {string} selectedMealTime - 選擇的用餐時段
  * @returns {Promise<Object>} 隨機餐廳
  */
-window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all') {
-  console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime });
+window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
+  console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime, distanceConfig });
 
   const history = getRestaurantHistory() || { shown_restaurants: [], expanded_radius: 0 };
   const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
-
-  // 最多嘗試25次：前5次使用多樣化搜索，後20次擴大範圍 (配合滑軌最大20km)
+  
+  // 從新距離系統獲取參數
+  const { baseUnit = 1000, unitMultiplier = 2 } = distanceConfig;
+  const baseRadius = baseUnit * unitMultiplier;
+  
+  // 最多嘗試25次：前5次使用多樣化搜索，後20次使用baseUnit智能擴展
   const maxAttempts = 25;
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     let searchRadius = originalRadius;
     let searchOptions = { attempt: attempt };
     
-    // 前5次嘗試：在原始範圍內使用不同搜索策略
+    // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
-      console.log(`🎲 第${attempt + 1}次多樣化搜索 (半徑: ${searchRadius/1000}km)`);
+      searchRadius = baseRadius;
+      console.log(`🎲 第${attempt + 1}次多樣化搜索 (基礎距離: ${searchRadius}m = ${baseUnit}m × ${unitMultiplier})`);
     } else {
-      // 後續嘗試：擴大搜索範圍
-      const radiusIncrease = (attempt - 4) * 1000; // 每次增加1000米
-      searchRadius = originalRadius + radiusIncrease;
-      console.log(`🔍 第${attempt + 1}次擴大範圍搜索 (半徑: ${searchRadius/1000}km)`);
+      // 後續嘗試：使用baseUnit智能擴展範圍
+      const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
+      searchRadius = baseRadius + (baseUnit * expansionMultiplier);
+      console.log(`🔍 第${attempt + 1}次智能擴展搜索 (擴展距離: ${searchRadius}m = 基礎${baseRadius}m + ${baseUnit}m × ${expansionMultiplier})`);
     }
 
     // 臨時更新搜索半徑

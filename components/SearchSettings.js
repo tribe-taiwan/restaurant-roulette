@@ -6,7 +6,11 @@ function SearchSettings({
   selectedMealTime,
   setSelectedMealTime,
   translations,
-  selectedLanguage
+  selectedLanguage,
+  baseUnit,
+  setBaseUnit,
+  unitMultiplier,
+  setUnitMultiplier
 }) {
   try {
     const t = translations;
@@ -18,6 +22,36 @@ function SearchSettings({
       dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
     };
 
+    // 距離配置
+    const DISTANCE_CONFIG = {
+      baseUnits: {
+        200: { label: '200m', fullLabel: '200公尺模式' },
+        1000: { label: '1km', fullLabel: '1公里模式' }
+      }
+    };
+
+    // 計算實際搜索距離顯示
+    const getActualRadius = () => baseUnit * unitMultiplier;
+    const getDisplayText = () => {
+      const actualMeters = getActualRadius();
+      if (actualMeters >= 1000) {
+        return `${actualMeters / 1000}km`;
+      } else {
+        return `${actualMeters}m`;
+      }
+    };
+
+    // 單位切換處理
+    const handleUnitSwitch = (newBaseUnit) => {
+      const currentActualDistance = getActualRadius();
+      setBaseUnit(newBaseUnit);
+      
+      // 調整倍數以保持相近距離
+      const newMultiplier = Math.round(currentActualDistance / newBaseUnit);
+      const adjustedMultiplier = Math.max(1, Math.min(10, newMultiplier));
+      setUnitMultiplier(adjustedMultiplier);
+    };
+
     return (
       <div className="w-full max-w-2xl mx-auto">
         {/* 整合區塊 */}
@@ -25,21 +59,36 @@ function SearchSettings({
           {/* 搜索範圍設定 */}
           <div className="mb-6">
             <div className="flex items-center justify-between gap-4">
-              <label className="text-[var(--text-secondary)] font-medium">
-                {t.radiusLabel}
-              </label>
+              {/* 單位切換器 */}
+              <div className="flex bg-gray-700 rounded-lg overflow-hidden">
+                {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config]) => (
+                  <button
+                    key={value}
+                    onClick={() => handleUnitSwitch(Number(value))}
+                    className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                      baseUnit === Number(value)
+                        ? 'bg-[var(--primary-color)] text-white'
+                        : 'text-[var(--text-secondary)] hover:bg-gray-600'
+                    }`}
+                  >
+                    {config.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 滑軌和距離顯示 */}
               <div className="flex items-center gap-2">
                 <input
                   type="range"
                   min="1"
-                  max="20"
-                  value={searchRadius}
-                  onChange={(e) => setSearchRadius(Number(e.target.value))}
+                  max="10"
+                  value={unitMultiplier}
+                  onChange={(e) => setUnitMultiplier(Number(e.target.value))}
                   className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                  style={{'--value': `${((searchRadius - 1) / (20 - 1)) * 100}%`}}
+                  style={{'--value': `${((unitMultiplier - 1) / (10 - 1)) * 100}%`}}
                 />
                 <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
-                  {searchRadius} {t.radiusKm}
+                  {getDisplayText()}
                 </span>
               </div>
             </div>

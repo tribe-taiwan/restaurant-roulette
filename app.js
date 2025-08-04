@@ -46,7 +46,9 @@ function App() {
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
     const [spinError, setSpinError] = React.useState(null);
-    const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里
+    const [searchRadius, setSearchRadius] = React.useState(2); // 預設2公里 (保留向後相容)
+    const [baseUnit, setBaseUnit] = React.useState(200); // 預設200公尺
+    const [unitMultiplier, setUnitMultiplier] = React.useState(1); // 預設倍數1
     const [isRelocating, setIsRelocating] = React.useState(false);
     const [selectedMealTime, setSelectedMealTime] = React.useState('current'); // 預設顯示當前營業中的餐廳
     const [isInitialLoad, setIsInitialLoad] = React.useState(true); // 追蹤是否為初次載入
@@ -313,10 +315,11 @@ function App() {
     // 搜索條件變化時清除餐廳歷史記錄
     React.useEffect(() => {
       if (window.clearRestaurantHistory && !isInitialLoad) {
-        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, searchRadius });
+        const actualRadius = baseUnit * unitMultiplier;
+        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius });
         window.clearRestaurantHistory();
       }
-    }, [selectedMealTime, searchRadius]);
+    }, [selectedMealTime, baseUnit, unitMultiplier]);
 
     // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
@@ -345,14 +348,14 @@ function App() {
     // UI 副作用區塊
     // ===========================================
     
-    // 更新滑桿填充顏色
+    // 更新滑桿填充顏色（新距離系統）
     React.useEffect(() => {
-      const percentage = ((searchRadius - 1) / (20 - 1)) * 100;
+      const percentage = ((unitMultiplier - 1) / (10 - 1)) * 100;
       const sliders = document.querySelectorAll('.slider');
       sliders.forEach(slider => {
         slider.style.setProperty('--value', `${percentage}%`);
       });
-    }, [searchRadius]);
+    }, [unitMultiplier]);
 
     // ===========================================
     // 地址和定位服務函數區塊
@@ -615,13 +618,14 @@ function App() {
         
         console.log('🔍 開始搜索餐廳，用戶位置:', userLocation);
         
-        // 更新搜索半徑
+        // 計算實際搜索半徑並更新搜索設定
+        const actualRadius = baseUnit * unitMultiplier;
         if (window.updateSearchRadius) {
-          window.updateSearchRadius(searchRadius * 1000); // 轉換為公尺
+          window.updateSearchRadius(actualRadius);
         }
         
-        // 調用更新後的 getRandomRestaurant 函數（現在支援營業時間篩選）
-        const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime);
+        // 調用更新後的 getRandomRestaurant 函數（現在支援營業時間篩選和新距離系統）
+        const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
         
         // 重新計算營業狀態以支援多國語言
         if (restaurant.operatingStatus && window.getBusinessStatus) {
@@ -813,6 +817,10 @@ function App() {
             setSelectedMealTime={setSelectedMealTime}
             translations={t}
             selectedLanguage={selectedLanguage}
+            baseUnit={baseUnit}
+            setBaseUnit={setBaseUnit}
+            unitMultiplier={unitMultiplier}  
+            setUnitMultiplier={setUnitMultiplier}
           />
         </div>
         
