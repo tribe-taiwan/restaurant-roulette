@@ -18,17 +18,9 @@ const GOOGLE_PLACES_CONFIG = {
   }
 };
 
-// 統一的用餐時段配置
-const MEAL_TIME_CONFIG = {
-  breakfast: { start: 5, end: 10, displayTime: '5-10' },
-  lunch: { start: 10, end: 16, displayTime: '10-16' },
-  dinner: { start: 16, end: 24, displayTime: '16-24' }
-};
-
-// 全局函數供其他組件使用
-window.getMealTimeConfig = function() {
-  return MEAL_TIME_CONFIG;
-};
+// 引用統一的用餐時段配置（避免重複定義）
+// 由於專案使用全域腳本載入，直接從 mealTimeConfig.js 獲取
+// 注意：mealTimeConfig.js 已經提供了 window.getMealTimeConfig 函數
 
 // 全局函數用於更新搜索半徑
 window.updateSearchRadius = function(newRadius) {
@@ -316,7 +308,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   
   // 使用統一的用餐時段配置
-  const mealTimes = MEAL_TIME_CONFIG;
+  const mealTimes = window.getMealTimeConfig();
   
   const selectedTime = mealTimes[selectedMealTime];
   if (!selectedTime) return true;
@@ -896,7 +888,7 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
   }
 
   // 使用統一的用餐時段配置
-  const timeSlots = MEAL_TIME_CONFIG;
+  const timeSlots = window.getMealTimeConfig();
 
   const slot = timeSlots[timeSlot];
   if (!slot) return true;
