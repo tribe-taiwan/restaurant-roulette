@@ -17,21 +17,23 @@ function LocationManager({
   userLocation
 }) {
   const [manualLocationState, setManualLocationState] = React.useState('idle'); // idle, success
-  
+  const [isInputFocused, setIsInputFocused] = React.useState(false); // 追蹤輸入框聚焦狀態
+
   try {
     const t = translations;
-    
+
     // 判斷住家和公司的按鈕狀態
     const hasHomeLocation = savedLocations.some(loc => loc.type === 'home');
     const hasOfficeLocation = savedLocations.some(loc => loc.type === 'office');
     const hasAddressInput = addressInput.trim().length > 0;
+    const shouldShowActiveState = hasAddressInput || isInputFocused; // 有輸入內容或聚焦時都顯示活躍狀態
     
     // 獲取按鈕樣式和文字
     const getLocationButtonStyle = (locationType) => {
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
 
-      if (hasAddressInput) {
-        // 橘色狀態 - 有輸入就顯示可儲存狀態
+      if (shouldShowActiveState) {
+        // 橘色狀態 - 有輸入或聚焦就顯示可儲存狀態
         return 'bg-orange-500 hover:bg-orange-600';
       } else if (hasLocation) {
         // 綠色狀態 - 已儲存
@@ -46,7 +48,7 @@ function LocationManager({
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
       const isHome = locationType === 'home';
 
-      if (hasAddressInput) {
+      if (shouldShowActiveState) {
         return isHome ? t.saveHomeTip : t.saveOfficeTip;
       } else if (hasLocation) {
         return isHome ? t.useHomeTip : t.useOfficeTip;
@@ -59,8 +61,8 @@ function LocationManager({
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
       const isHome = locationType === 'home';
 
-      if (hasAddressInput) {
-        // 有輸入就顯示儲存選項
+      if (shouldShowActiveState) {
+        // 有輸入或聚焦就顯示儲存選項
         return isHome ? t.saveHome : t.saveOffice;
       } else if (hasLocation) {
         return isHome ? t.home : t.office;
@@ -72,7 +74,7 @@ function LocationManager({
     const getManualLocationButtonStyle = () => {
       if (manualLocationState === 'success') {
         return 'bg-[var(--success-color)] hover:bg-green-600';
-      } else if (hasAddressInput) {
+      } else if (shouldShowActiveState) {
         return 'bg-orange-500 hover:bg-orange-600';
       } else {
         return 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]';
@@ -90,10 +92,6 @@ function LocationManager({
     const handleManualLocation = () => {
       onAddressConfirm();
       setManualLocationState('success');
-      // 3秒後恢復原狀
-      setTimeout(() => {
-        setManualLocationState('idle');
-      }, 3000);
     };
 
     return (
@@ -146,6 +144,8 @@ function LocationManager({
                     setAddressInput(input);
                   }
                 }}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
                 placeholder={t.enterAddress}
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-green-500 focus:outline-none"
                 onKeyPress={(e) => e.key === 'Enter' && onAddressConfirm()}
@@ -184,7 +184,7 @@ function LocationManager({
               <button
                 onClick={handleManualLocation}
                 disabled={!addressInput.trim() || isGeocodingAddress}
-                className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${getManualLocationButtonStyle()} disabled:bg-gray-600 disabled:hover:bg-gray-600`}
+                className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${getManualLocationButtonStyle()} ${(!addressInput.trim() && !isInputFocused) ? 'disabled:bg-gray-600 disabled:hover:bg-gray-600' : ''}`}
                 title={t.manualLocationTip}
               >
                 {isGeocodingAddress ? (

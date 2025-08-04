@@ -129,7 +129,7 @@ function App() {
         breakfast: "早餐",
         lunch: "午餐",
         dinner: "晚餐",
-        enterAddress: "輸入地址 指定您的位置",
+        enterAddress: "輸入地點名稱或地址",
         locateHere: "手動定位",
         autoLocation: "自動定位",
         home: "住家",
