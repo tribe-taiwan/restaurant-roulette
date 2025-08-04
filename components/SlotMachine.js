@@ -99,25 +99,39 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     React.useEffect(() => {
       if (isSpinning) {
-        const extendedImages = [];
-
         if (finalRestaurant && finalRestaurant.image) {
-          // API 已返回，構建最終序列：大量 slot 圖片 + 2-3 張過渡 + 餐廳圖片
-          for (let i = 0; i < 12; i++) {
-            extendedImages.push(...slotImages);
-          }
-          // 添加 2-3 張過渡圖片，讓餐廳圖片有時間自然出現
-          extendedImages.push(slotImages[0], slotImages[1], slotImages[2]);
-          // 最後是餐廳圖片
-          extendedImages.push(finalRestaurant.image);
-        } else {
-          // API 未返回，持續顯示 slot 圖片
-          for (let i = 0; i < 20; i++) {
-            extendedImages.push(...slotImages);
-          }
-        }
+          // API 已返回，構建最終序列並觸發慢速停止動畫
+          const extendedImages = [];
 
-        setScrollingNames(extendedImages);
+          // 添加一些 slot 圖片
+          for (let i = 0; i < 8; i++) {
+            extendedImages.push(...slotImages);
+          }
+          // 最後幾張 slot 圖片
+          extendedImages.push(slotImages[0], slotImages[1]);
+          // 餐廳圖片作為最後一張
+          extendedImages.push(finalRestaurant.image);
+
+          setScrollingNames(extendedImages);
+
+          // 觸發慢速停止動畫
+          setTimeout(() => {
+            // 切換到慢速動畫
+            const container = document.querySelector('.animate-scroll-names');
+            if (container) {
+              container.classList.remove('animate-scroll-names');
+              container.classList.add('animate-scroll-slow-stop');
+            }
+          }, 100);
+
+        } else {
+          // API 未返回，持續快速循環 slot 圖片
+          const extendedImages = [];
+          for (let i = 0; i < 50; i++) {
+            extendedImages.push(...slotImages);
+          }
+          setScrollingNames(extendedImages);
+        }
       }
     }, [isSpinning, finalRestaurant]);
 

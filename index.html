@@ -93,20 +93,33 @@
         }
         
         .animate-scroll-names {
-            animation: scrollNames 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: scrollNames 0.5s linear infinite;
         }
-        
+
+        .animate-scroll-slow-stop {
+            animation: scrollSlowStop 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
         @keyframes scrollNames {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-1536px); /* 6張圖片 * 256px */
+            }
+        }
+
+        @keyframes scrollSlowStop {
             0% {
                 transform: translateY(0);
                 animation-timing-function: ease-out;
             }
             70% {
-                transform: translateY(-19200px);
+                transform: translateY(-2000px);
                 animation-timing-function: ease-in;
             }
             100% {
-                transform: translateY(-19456px);
+                transform: translateY(-2304px); /* 停在餐廳圖片 */
             }
         }
 

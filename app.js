@@ -693,10 +693,10 @@ function App() {
         console.log('✅ 成功獲取餐廳:', restaurant);
         setCurrentRestaurant(restaurant);
 
-        // 延遲停止轉動，讓最後幾張圖片有時間轉完，實現無縫銜接
+        // 延遲停止轉動，等待慢速動畫完成
         setTimeout(() => {
           setIsSpinning(false);
-        }, 2500); // 延遲 2.5 秒，配合動畫時間
+        }, 2500); // 等待慢速動畫完成
 
       } catch (error) {
         console.error('❌ 轉動輪盤時發生錯誤:', error);
