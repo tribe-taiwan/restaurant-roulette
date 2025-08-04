@@ -101,12 +101,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       if (isSpinning) {
         // Generate more images for smooth scrolling
         const extendedImages = [];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) {
           extendedImages.push(...slotImages);
+        }
+        // Add final restaurant image at the end if available
+        if (finalRestaurant && finalRestaurant.image) {
+          extendedImages.push(finalRestaurant.image);
         }
         setScrollingNames(extendedImages);
       }
-    }, [isSpinning]);
+    }, [isSpinning, finalRestaurant]);
 
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
@@ -132,19 +136,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               isSpinning ? 'animate-scroll-names' : ''
             }`}>
               {isSpinning ? (
-                scrollingNames.map((imageSrc, index) => (
-                  <div key={index} className="py-3 flex justify-center">
-                    <img
-                      src={imageSrc}
-                      alt={`slot-${index}`}
-                      className="w-20 h-20 object-cover rounded-xl shadow-lg border-2 border-white/20"
-                      style={{
-                        filter: 'brightness(0.9) contrast(1.1)',
-                        transition: 'transform 0.1s ease'
-                      }}
-                    />
-                  </div>
-                ))
+                scrollingNames.map((imageSrc, index) => {
+                  // Check if this is the last image (restaurant image)
+                  const isLastImage = index === scrollingNames.length - 1;
+                  const isRestaurantImage = finalRestaurant && finalRestaurant.image && imageSrc === finalRestaurant.image;
+
+                  return (
+                    <div key={index} className="w-full h-64 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src={imageSrc}
+                        alt={isRestaurantImage ? `restaurant-${finalRestaurant.name}` : `slot-${index}`}
+                        className="w-full h-full object-cover"
+                        style={{
+                          filter: isRestaurantImage ? 'brightness(1) contrast(1)' : 'brightness(0.8) contrast(1.1)'
+                        }}
+                      />
+                    </div>
+                  );
+                })
               ) : finalRestaurant ? (
                 <div className="text-center py-4">
                   <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
