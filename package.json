@@ -1,21 +1,18 @@
 {
+  "name": "restaurant-roulette",
+  "version": "1.0.0",
+  "description": "台南美食輪盤 - 隨機發現附近的美食餐廳",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start"
+    "dev": "npx http-server . -p 3000 -c-1",
+    "start": "npx http-server . -p 8080 -c-1",
+    "test": "playwright test"
   },
   "dependencies": {
-    "@upstash/context7-mcp": "^1.0.14",
-    "next": "latest",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@upstash/context7-mcp": "^1.0.14"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
-    "@types/node": "20.10.8",
-    "@types/react": "18.2.47",
-    "@types/react-dom": "18.2.18",
-    "typescript": "^5.3.3"
+    "http-server": "^14.1.1"
   }
 }
