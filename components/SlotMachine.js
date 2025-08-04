@@ -46,25 +46,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
     };
 
-    const restaurantNames = [
-      "櫻町壽司",
-      "阿母義麵屋",
-      "香料事務所",
-      "堡來了漢堡店",
-      "小巴黎餐酒館",
-      "塔可炸翻天",
-      "金龍食堂",
-      "披薩殿",
-      "咖哩日常",
-      "牛排俱樂部",
-      "海景鮮味屋",
-      "山上燒肉鋪",
-      "城市角落咖啡",
-      "花園日子",
-      "火烤食研所",
-      "甜在心",
-      "巷口熟食店",
-      "皇族大食堂"
+    const slotImages = [
+      "./assets/image/slot-machine/slot (1).jpg",
+      "./assets/image/slot-machine/slot (2).jpg",
+      "./assets/image/slot-machine/slot (3).jpg",
+      "./assets/image/slot-machine/slot (4).jpg",
+      "./assets/image/slot-machine/slot (5).jpg",
+      "./assets/image/slot-machine/slot (6).jpg"
     ];
 
     // 觸控事件處理（手機）
@@ -111,12 +99,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     React.useEffect(() => {
       if (isSpinning) {
-        // Generate more names for smooth scrolling
-        const extendedNames = [];
+        // Generate more images for smooth scrolling
+        const extendedImages = [];
         for (let i = 0; i < 20; i++) {
-          extendedNames.push(...restaurantNames);
+          extendedImages.push(...slotImages);
         }
-        setScrollingNames(extendedNames);
+        setScrollingNames(extendedImages);
       }
     }, [isSpinning]);
 
@@ -144,9 +132,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               isSpinning ? 'animate-scroll-names' : ''
             }`}>
               {isSpinning ? (
-                scrollingNames.map((name, index) => (
-                  <div key={index} className="text-lg font-semibold text-gray-800 py-2 whitespace-nowrap">
-                    {name}
+                scrollingNames.map((imageSrc, index) => (
+                  <div key={index} className="py-3 flex justify-center">
+                    <img
+                      src={imageSrc}
+                      alt={`slot-${index}`}
+                      className="w-20 h-20 object-cover rounded-xl shadow-lg border-2 border-white/20"
+                      style={{
+                        filter: 'brightness(0.9) contrast(1.1)',
+                        transition: 'transform 0.1s ease'
+                      }}
+                    />
                   </div>
                 ))
               ) : finalRestaurant ? (
