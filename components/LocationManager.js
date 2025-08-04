@@ -29,7 +29,7 @@ function LocationManager({
     // 獲取按鈕樣式和文字
     const getLocationButtonStyle = (locationType) => {
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
-      
+
       if (hasAddressInput) {
         // 橘色狀態 - 有輸入就顯示可儲存狀態
         return 'bg-orange-500 hover:bg-orange-600';
@@ -41,18 +41,31 @@ function LocationManager({
         return 'bg-gray-500 hover:bg-gray-600';
       }
     };
+
+    const getLocationButtonTip = (locationType) => {
+      const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
+      const isHome = locationType === 'home';
+
+      if (hasAddressInput) {
+        return isHome ? t.saveHomeTip : t.saveOfficeTip;
+      } else if (hasLocation) {
+        return isHome ? t.useHomeTip : t.useOfficeTip;
+      } else {
+        return t.enterAddressTip;
+      }
+    };
     
     const getLocationButtonText = (locationType) => {
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
       const isHome = locationType === 'home';
-      
+
       if (hasAddressInput) {
         // 有輸入就顯示儲存選項
-        return isHome ? '儲存住家' : '儲存公司';
+        return isHome ? t.saveHome : t.saveOffice;
       } else if (hasLocation) {
-        return isHome ? '住家' : '公司';  
+        return isHome ? t.home : t.office;
       } else {
-        return isHome ? '住家未設定' : '公司未設定';
+        return isHome ? t.homeNotSet : t.officeNotSet;
       }
     };
     
@@ -68,9 +81,9 @@ function LocationManager({
     
     const getManualLocationButtonText = () => {
       if (manualLocationState === 'success') {
-        return '已定位';
+        return t.located;
       } else {
-        return '手動定位';
+        return t.locateHere;
       }
     };
     
@@ -94,7 +107,7 @@ function LocationManager({
               <div className="text-center mb-4">
                 <div className="flex items-center justify-center gap-2">
                   <div className="icon-map-pin text-[var(--success-color)] text-sm"></div>
-                  <span className="text-sm text-[var(--text-secondary)]">當前定位：{userAddress}</span>
+                  <span className="text-sm text-[var(--text-secondary)]">{t.locationDetected}：{userAddress}</span>
                 </div>
               </div>
             )}
@@ -105,7 +118,7 @@ function LocationManager({
                 <button
                   onClick={() => onLocationButton('home')}
                   className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors ${getLocationButtonStyle('home')}`}
-                  title={hasHomeLocation ? '使用已儲存的住家位置' : hasAddressInput ? '將當前輸入儲存為住家位置' : '請先輸入地址'}
+                  title={getLocationButtonTip('home')}
                 >
                   <span>{getLocationButtonText('home')}</span>
                 </button>
@@ -114,7 +127,7 @@ function LocationManager({
                 <button
                   onClick={() => onLocationButton('office')}
                   className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors ${getLocationButtonStyle('office')}`}
-                  title={hasOfficeLocation ? '使用已儲存的公司位置' : hasAddressInput ? '將當前輸入儲存為公司位置' : '請先輸入地址'}
+                  title={getLocationButtonTip('office')}
                 >
                   <span>{getLocationButtonText('office')}</span>
                 </button>
@@ -155,14 +168,14 @@ function LocationManager({
                         ? 'bg-[var(--warning-color)] hover:bg-orange-600'
                         : 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]'
                 }`}
-                title="使用GPS自動定位"
+                title={t.autoLocationTip}
               >
                 {isRelocating ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
                     <div className="icon-map-pin text-sm"></div>
-                    <span>自動定位</span>
+                    <span>{t.autoLocation}</span>
                   </>
                 )}
               </button>
@@ -172,7 +185,7 @@ function LocationManager({
                 onClick={handleManualLocation}
                 disabled={!addressInput.trim() || isGeocodingAddress}
                 className={`flex-1 text-white px-3 py-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${getManualLocationButtonStyle()} disabled:bg-gray-600 disabled:hover:bg-gray-600`}
-                title="根據輸入地址進行定位"
+                title={t.manualLocationTip}
               >
                 {isGeocodingAddress ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
