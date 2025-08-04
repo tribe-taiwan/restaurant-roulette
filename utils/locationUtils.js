@@ -391,12 +391,13 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 }
 
 /**
- * 使用 Google Places JavaScript API 搜索附近餐廳
+ * 使用 Google Places JavaScript API 搜索附近餐廳 - 改進版本支援多次搜索
  * @param {Object} userLocation - 用戶位置 {lat, lng}
  * @param {string} selectedMealTime - 選擇的用餐時段（保留參數以保持兼容性）
+ * @param {Object} options - 搜索選項
  * @returns {Promise<Array>} 餐廳列表
  */
-async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
+async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', options = {}) {
   if (!userLocation) {
     const errorDetails = {
       errorType: 'LocationError',
@@ -409,7 +410,7 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
   }
 
   try {
-    console.log('🔍 開始搜索附近餐廳...', userLocation, '用餐時段:', selectedMealTime);
+    console.log('🔍 開始搜索附近餐廳...', userLocation, '用餐時段:', selectedMealTime, '選項:', options);
     
     // 確保 Google Maps API 已載入
     if (!placesService) {
@@ -422,60 +423,88 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all') {
       throw new Error('Google Places Service 初始化失敗，請檢查網絡連接或 API Key');
     }
     
-    // 建立搜索請求
-    const request = {
-      location: new google.maps.LatLng(userLocation.lat, userLocation.lng),
-      radius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
-      type: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.type
-    };
+    // 使用多種搜索策略來獲取更多樣化的結果
+    const allRestaurants = [];
+    const searchStrategies = [
+      // 策略1：基本餐廳搜索
+      { type: 'restaurant' },
+      // 策略2：外帶餐廳搜索
+      { type: 'meal_takeaway' }
+    ];
     
-    console.log(`📡 發送 PlacesService.nearbySearch 請求... (半徑: ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km)`, request);
+    // 如果是重複搜索，使用隨機化策略
+    if (options.attempt > 0) {
+      // 隨機調整搜索中心點，在原點周圍500米內隨機偏移
+      const randomOffset = 0.005; // 約500米
+      const randomLat = userLocation.lat + (Math.random() - 0.5) * randomOffset;
+      const randomLng = userLocation.lng + (Math.random() - 0.5) * randomOffset;
+      userLocation = { lat: randomLat, lng: randomLng };
+      console.log(`🎲 第${options.attempt}次搜索，隨機化搜索中心:`, userLocation);
+    }
     
-    // 使用 Promise 包裝 PlacesService 回調
-    const results = await new Promise((resolve, reject) => {
-      placesService.nearbySearch(request, (results, status) => {
-        console.log('📨 PlacesService 響應:', { status, resultsCount: results ? results.length : 0 });
-        
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          resolve(results);
-        } else {
-          const errorDetails = {
-            errorType: 'PlacesServiceError',
-            errorMessage: `PlacesService 錯誤: ${status}`,
-            placesStatus: status,
-            timestamp: new Date().toISOString(),
-            userLocation: userLocation,
-            requestParams: {
-              location: `${userLocation.lat},${userLocation.lng}`,
-              radius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
-              type: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.type
+    for (const strategy of searchStrategies) {
+      // 建立搜索請求
+      const request = {
+        location: new google.maps.LatLng(userLocation.lat, userLocation.lng),
+        radius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
+        type: strategy.type
+      };
+      
+      console.log(`📡 發送 ${strategy.type} 搜索請求... (半徑: ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km)`);
+      
+      try {
+        // 使用 Promise 包裝 PlacesService 回調
+        const results = await new Promise((resolve, reject) => {
+          placesService.nearbySearch(request, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+              resolve(results || []);
+            } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+              resolve([]);
+            } else {
+              console.warn(`⚠️ ${strategy.type} 搜索失敗:`, status);
+              resolve([]);
             }
-          };
-          
-          reject(new Error(`Google Places 搜索失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
-        }
-      });
-    });
+          });
+        });
+        
+        // 將結果加入總列表，避免重複
+        results.forEach(restaurant => {
+          if (!allRestaurants.find(r => r.place_id === restaurant.place_id)) {
+            allRestaurants.push(restaurant);
+          }
+        });
+        
+        console.log(`📊 ${strategy.type} 搜索找到 ${results.length} 家餐廳，總計 ${allRestaurants.length} 家不重複餐廳`);
+        
+      } catch (error) {
+        console.warn(`⚠️ ${strategy.type} 搜索出錯:`, error);
+        continue;
+      }
+    }
     
-    if (!results || results.length === 0) {
+    if (allRestaurants.length === 0) {
       const errorDetails = {
         errorType: 'NoRestaurantsFound',
         errorMessage: '搜索範圍內無餐廳',
         searchRadius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
         userLocation: userLocation,
         timestamp: new Date().toISOString(),
-        totalResults: 0
+        totalResults: 0,
+        attempt: options.attempt || 0
       };
       
       throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
-    console.log(`✅ 找到 ${results.length} 家餐廳`);
+    console.log(`✅ 總共找到 ${allRestaurants.length} 家不重複餐廳`);
+
+    // 隨機打亂餐廳列表順序，增加多樣性
+    const shuffledRestaurants = allRestaurants.sort(() => Math.random() - 0.5);
 
     // 獲取所有餐廳的詳細營業時間資訊
     console.log('🕐 獲取餐廳詳細資訊...');
     const restaurantsWithDetails = await Promise.all(
-      results.map(async (restaurant) => {
+      shuffledRestaurants.map(async (restaurant) => {
         try {
           const details = await getPlaceDetails(restaurant.place_id);
           return { ...restaurant, detailsCache: details };
@@ -860,7 +889,7 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
 }
 
 /**
- * 獲取隨機餐廳 - 使用 JavaScript API
+ * 獲取隨機餐廳 - 改進版本使用多樣化搜索策略
  * @param {Object} userLocation - 用戶位置
  * @param {string} selectedMealTime - 選擇的用餐時段
  * @returns {Promise<Object>} 隨機餐廳
@@ -871,36 +900,39 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   const history = getRestaurantHistory() || { shown_restaurants: [], expanded_radius: 0 };
   const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
 
-  // 最多嘗試20次，每次擴大1km，配合20km搜索限制
-  const maxAttempts = Math.min(20, (20000 - originalRadius) / 1000); // 確保不超過20km限制
+  // 最多嘗試15次：前5次使用多樣化搜索，後10次擴大範圍
+  const maxAttempts = 15;
+  
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const currentExpandedRadius = history.expanded_radius + attempt;
-    const searchRadius = originalRadius + (currentExpandedRadius * 1000); // 每次增加1000米
-
-    console.log(`🔍 第${attempt + 1}次搜索，半徑: ${searchRadius/1000}km`);
+    let searchRadius = originalRadius;
+    let searchOptions = { attempt: attempt };
+    
+    // 前5次嘗試：在原始範圍內使用不同搜索策略
+    if (attempt < 5) {
+      console.log(`🎲 第${attempt + 1}次多樣化搜索 (半徑: ${searchRadius/1000}km)`);
+    } else {
+      // 後續嘗試：擴大搜索範圍
+      const radiusIncrease = (attempt - 4) * 1000; // 每次增加1000米
+      searchRadius = originalRadius + radiusIncrease;
+      console.log(`🔍 第${attempt + 1}次擴大範圍搜索 (半徑: ${searchRadius/1000}km)`);
+    }
 
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
     try {
-      // 獲取餐廳列表
-      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime);
+      // 獲取餐廳列表，傳入搜索選項
+      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, searchOptions);
 
       // 篩選：營業中 + 未出現過
       const availableRestaurants = restaurants.filter(restaurant => {
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
 
-        // 添加調試日誌
-        console.log(`🔍 篩選餐廳: ${restaurant.name}`, {
-          selectedMealTime,
-          isOpen,
-          notShown,
-          hasOpeningHours: !!restaurant.detailsCache?.opening_hours,
-          hasIsOpenMethod: typeof restaurant.detailsCache?.opening_hours?.isOpen === 'function',
-          hasPeriods: !!restaurant.detailsCache?.opening_hours?.periods,
-          periodsCount: restaurant.detailsCache?.opening_hours?.periods?.length || 0
-        });
+        // 簡化調試日誌
+        if (!isOpen || !notShown) {
+          console.log(`🔍 餐廳被篩除: ${restaurant.name} (營業:${isOpen}, 未顯示:${notShown})`);
+        }
 
         return isOpen && notShown;
       });
@@ -920,16 +952,17 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         }
 
         // 更新歷史記錄
-        updateRestaurantHistory(selectedRestaurant.id, currentExpandedRadius);
+        const expandedRadius = attempt > 4 ? (attempt - 4) : 0;
+        updateRestaurantHistory(selectedRestaurant.id, expandedRadius);
 
         // 恢復原始搜索半徑
         GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
 
-        console.log('🎉 成功獲取餐廳:', selectedRestaurant.name);
+        console.log(`🎉 成功獲取餐廳: ${selectedRestaurant.name} (第${attempt + 1}次嘗試)`);
         return selectedRestaurant;
       }
 
-      console.log(`⚠️ 在${searchRadius/1000}km範圍內沒有找到合適的餐廳，嘗試擴大搜索範圍...`);
+      console.log(`⚠️ 第${attempt + 1}次搜索未找到合適餐廳，繼續嘗試...`);
 
     } catch (error) {
       console.error(`❌ 第${attempt + 1}次搜索失敗:`, error);
@@ -945,7 +978,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   // 恢復原始搜索半徑
   GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
 
-  throw new Error('在擴大搜索範圍後仍未找到合適的餐廳，請稍後再試或調整搜索條件。');
+  throw new Error('使用多種搜索策略後仍未找到合適的餐廳，請稍後再試或清除歷史記錄。');
 };
 
 // 全局函數用於計算距離

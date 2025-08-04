@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐廳搜索策略測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 20px 0; padding: 15px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 10px; }
+        .restaurant-count { font-weight: bold; color: #d9534f; }
+        .restaurant-list { max-height: 200px; overflow-y: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>餐廳搜索策略測試</h1>
+    
+    <div class="test-section">
+        <h2>測試 1: 隨機偏移搜索中心點</h2>
+        <button onclick="testRandomOffset()">執行隨機偏移測試</button>
+        <div id="randomOffsetResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 2: 按路名搜索</h2>
+        <button onclick="testStreetSearch()">執行路名搜索測試</button>
+        <div id="streetSearchResult" class="result"></div>
+    </div>
+
+    <!-- 載入主配置檔案以獲取 API KEY -->
+    <script src="./utils/locationUtils.js"></script>
+    <script>
+        // 測試用的台南位置
+        const testLocation = { lat: 22.9908, lng: 120.2133 }; // 台南車站附近
+        
+        // 重命名變數避免與 locationUtils.js 衝突
+        let testPlacesService;
+        let testGeocoder;
+
+        // 初始化 Google Maps 服務
+        function initServices() {
+            // 動態載入 Google Maps API
+            if (!window.google) {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=onGoogleMapsTestLoaded`;
+                script.async = true;
+                document.head.appendChild(script);
+                return;
+            }
+            
+            const mapDiv = document.createElement('div');
+            mapDiv.style.display = 'none';
+            document.body.appendChild(mapDiv);
+            
+            const testMap = new google.maps.Map(mapDiv, {
+                center: testLocation,
+                zoom: 15
+            });
+            
+            testPlacesService = new google.maps.places.PlacesService(testMap);
+            testGeocoder = new google.maps.Geocoder();
+        }
+        
+        // Google Maps API 載入完成回調
+        window.onGoogleMapsTestLoaded = function() {
+            console.log('✅ Google Maps API 載入完成');
+            
+            const mapDiv = document.createElement('div');
+            mapDiv.style.display = 'none';
+            document.body.appendChild(mapDiv);
+            
+            const testMap = new google.maps.Map(mapDiv, {
+                center: testLocation,
+                zoom: 15
+            });
+            
+            testPlacesService = new google.maps.places.PlacesService(testMap);
+            testGeocoder = new google.maps.Geocoder();
+        };
+
+        // 測試 1: 隨機偏移搜索
+        async function testRandomOffset() {
+            const resultDiv = document.getElementById('randomOffsetResult');
+            resultDiv.innerHTML = '<p>🔍 執行隨機偏移搜索測試...</p>';
+            
+            if (!testPlacesService) {
+                initServices();
+                return;
+            }
+            
+            const allRestaurants = new Set(); // 使用 Set 避免重複
+            const searchResults = [];
+            
+            // 執行 5 次隨機偏移搜索
+            for (let i = 0; i < 5; i++) {
+                // 隨機偏移 500 米
+                const randomOffset = 0.005;
+                const offsetLat = testLocation.lat + (Math.random() - 0.5) * randomOffset;
+                const offsetLng = testLocation.lng + (Math.random() - 0.5) * randomOffset;
+                const searchLocation = { lat: offsetLat, lng: offsetLng };
+                
+                console.log(`🎲 第${i+1}次隨機偏移搜索:`, searchLocation);
+                
+                try {
+                    const restaurants = await searchNearbyWithTypes(searchLocation, ['restaurant', 'meal_takeaway']);
+                    
+                    restaurants.forEach(r => {
+                        if (!allRestaurants.has(r.place_id)) {
+                            allRestaurants.add(r.place_id);
+                        }
+                    });
+                    
+                    searchResults.push({
+                        attempt: i + 1,
+                        location: searchLocation,
+                        count: restaurants.length,
+                        restaurants: restaurants.map(r => r.name)
+                    });
+                    
+                } catch (error) {
+                    console.error(`❌ 第${i+1}次搜索失敗:`, error);
+                }
+            }
+            
+            // 顯示結果
+            let html = `<h3>🎲 隨機偏移搜索結果</h3>`;
+            html += `<p class="restaurant-count">總計找到 ${allRestaurants.size} 家不重複餐廳</p>`;
+            
+            searchResults.forEach(result => {
+                html += `<div style="border-left: 3px solid #007bff; padding-left: 10px; margin: 10px 0;">`;
+                html += `<strong>第${result.attempt}次:</strong> 找到 ${result.count} 家餐廳<br>`;
+                html += `<small>位置: ${result.location.lat.toFixed(4)}, ${result.location.lng.toFixed(4)}</small><br>`;
+                html += `<div class="restaurant-list">${result.restaurants.join(', ')}</div>`;
+                html += `</div>`;
+            });
+            
+            resultDiv.innerHTML = html;
+            
+            console.log('🎲 隨機偏移搜索完成，總計:', allRestaurants.size, '家餐廳');
+        }
+
+        // 測試 2: 按路名搜索
+        async function testStreetSearch() {
+            const resultDiv = document.getElementById('streetSearchResult');
+            resultDiv.innerHTML = '<p>🛣️ 執行路名搜索測試...</p>';
+            
+            if (!testPlacesService || !testGeocoder) {
+                initServices();
+                return;
+            }
+            
+            // 動態獲取用戶位置附近的道路
+            const streets = await getNearbyStreets(testLocation);
+            
+            const allRestaurants = new Set();
+            const searchResults = [];
+            
+            for (let i = 0; i < streets.length; i++) {
+                const street = streets[i];
+                console.log(`🛣️ 第${i+1}條路搜索: ${street}`);
+                
+                try {
+                    // 先獲取路名的座標
+                    const location = await geocodeAddress(street);
+                    
+                    // 在該位置搜索餐廳
+                    const restaurants = await searchNearbyWithTypes(location, ['restaurant', 'meal_takeaway']);
+                    
+                    restaurants.forEach(r => {
+                        if (!allRestaurants.has(r.place_id)) {
+                            allRestaurants.add(r.place_id);
+                        }
+                    });
+                    
+                    searchResults.push({
+                        street: street,
+                        location: location,
+                        count: restaurants.length,
+                        restaurants: restaurants.map(r => r.name)
+                    });
+                    
+                } catch (error) {
+                    console.error(`❌ ${street} 搜索失敗:`, error);
+                }
+            }
+            
+            // 顯示結果
+            let html = `<h3>🛣️ 路名搜索結果</h3>`;
+            html += `<p class="restaurant-count">總計找到 ${allRestaurants.size} 家不重複餐廳</p>`;
+            
+            searchResults.forEach(result => {
+                html += `<div style="border-left: 3px solid #28a745; padding-left: 10px; margin: 10px 0;">`;
+                html += `<strong>${result.street}:</strong> 找到 ${result.count} 家餐廳<br>`;
+                html += `<small>位置: ${result.location.lat.toFixed(4)}, ${result.location.lng.toFixed(4)}</small><br>`;
+                html += `<div class="restaurant-list">${result.restaurants.join(', ')}</div>`;
+                html += `</div>`;
+            });
+            
+            resultDiv.innerHTML = html;
+            
+            console.log('🛣️ 路名搜索完成，總計:', allRestaurants.size, '家餐廳');
+        }
+
+        // 動態獲取用戶位置附近的道路
+        async function getNearbyStreets(location) {
+            try {
+                // 使用逆地理編碼獲取附近的地址信息
+                const response = await new Promise((resolve, reject) => {
+                    testGeocoder.geocode({ 
+                        location: new google.maps.LatLng(location.lat, location.lng)
+                    }, (results, status) => {
+                        if (status === 'OK') {
+                            resolve(results);
+                        } else {
+                            reject(new Error(`逆地理編碼失敗: ${status}`));
+                        }
+                    });
+                });
+
+                // 提取地址組件，生成附近街道列表
+                const streets = [];
+                const baseAddress = response[0];
+                
+                // 從地址組件中提取城市和區域信息
+                let city = '';
+                let area = '';
+                let route = '';
+                
+                baseAddress.address_components.forEach(component => {
+                    const types = component.types;
+                    if (types.includes('administrative_area_level_2') || types.includes('locality')) {
+                        city = component.long_name;
+                    } else if (types.includes('administrative_area_level_3') || types.includes('sublocality_level_1')) {
+                        area = component.long_name;
+                    } else if (types.includes('route')) {
+                        route = component.long_name;
+                    }
+                });
+
+                // 生成常見街道模式（適用於全球）
+                const streetPatterns = [
+                    'Main Street', 'High Street', 'Park Avenue', 'Oak Street', 'Elm Street',
+                    'First Avenue', 'Second Avenue', 'Market Street', 'Church Street', 'School Street'
+                ];
+
+                // 如果有具體的路名，優先使用
+                if (route) {
+                    streets.push(`${route}, ${area || city}`);
+                }
+
+                // 添加周邊模擬搜索點（基於距離偏移）
+                const offsets = [
+                    { lat: 0.01, lng: 0, name: 'North Area' },
+                    { lat: -0.01, lng: 0, name: 'South Area' },
+                    { lat: 0, lng: 0.01, name: 'East Area' },
+                    { lat: 0, lng: -0.01, name: 'West Area' },
+                    { lat: 0.007, lng: 0.007, name: 'Northeast Area' },
+                    { lat: -0.007, lng: 0.007, name: 'Southeast Area' },
+                    { lat: 0.007, lng: -0.007, name: 'Northwest Area' },
+                    { lat: -0.007, lng: -0.007, name: 'Southwest Area' }
+                ];
+
+                // 為每個偏移位置生成搜索地址
+                for (const offset of offsets) {
+                    const offsetLat = location.lat + offset.lat;
+                    const offsetLng = location.lng + offset.lng;
+                    
+                    // 使用偏移後的座標作為搜索中心
+                    streets.push({
+                        name: `${offset.name} (${offsetLat.toFixed(4)}, ${offsetLng.toFixed(4)})`,
+                        lat: offsetLat,
+                        lng: offsetLng
+                    });
+                }
+
+                console.log('🛣️ 生成的搜索區域:', streets);
+                return streets;
+
+            } catch (error) {
+                console.error('❌ 獲取附近街道失敗:', error);
+                
+                // 回退方案：使用距離偏移生成搜索點
+                const fallbackStreets = [];
+                const offsets = [
+                    { lat: 0.01, lng: 0, name: 'North 1km' },
+                    { lat: -0.01, lng: 0, name: 'South 1km' },
+                    { lat: 0, lng: 0.01, name: 'East 1km' },
+                    { lat: 0, lng: -0.01, name: 'West 1km' },
+                    { lat: 0.005, lng: 0.005, name: 'Northeast 0.5km' },
+                    { lat: -0.005, lng: 0.005, name: 'Southeast 0.5km' },
+                    { lat: 0.005, lng: -0.005, name: 'Northwest 0.5km' },
+                    { lat: -0.005, lng: -0.005, name: 'Southwest 0.5km' }
+                ];
+
+                offsets.forEach(offset => {
+                    fallbackStreets.push({
+                        name: offset.name,
+                        lat: location.lat + offset.lat,
+                        lng: location.lng + offset.lng
+                    });
+                });
+
+                return fallbackStreets;
+            }
+        }
+
+        // 地址轉座標
+        function geocodeAddress(address) {
+            return new Promise((resolve, reject) => {
+                // 如果 address 是物件（包含座標），直接返回
+                if (typeof address === 'object' && address.lat && address.lng) {
+                    resolve(address);
+                    return;
+                }
+                
+                testGeocoder.geocode({ address: address }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const location = results[0].geometry.location;
+                        resolve({
+                            lat: location.lat(),
+                            lng: location.lng()
+                        });
+                    } else {
+                        reject(new Error(`無法找到地址: ${address}`));
+                    }
+                });
+            });
+        }
+
+        // 在指定位置搜索多種類型的餐廳
+        async function searchNearbyWithTypes(location, types) {
+            const allRestaurants = [];
+            
+            for (const type of types) {
+                try {
+                    const restaurants = await searchNearby(location, type);
+                    restaurants.forEach(r => {
+                        if (!allRestaurants.find(existing => existing.place_id === r.place_id)) {
+                            allRestaurants.push(r);
+                        }
+                    });
+                } catch (error) {
+                    console.warn(`⚠️ ${type} 搜索失敗:`, error);
+                }
+            }
+            
+            return allRestaurants;
+        }
+
+        // 基本的 nearbySearch
+        function searchNearby(location, type) {
+            return new Promise((resolve, reject) => {
+                const request = {
+                    location: new google.maps.LatLng(location.lat, location.lng),
+                    radius: 1000, // 1km 搜索範圍
+                    type: type
+                };
+                
+                testPlacesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        resolve(results || []);
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                        resolve([]);
+                    } else {
+                        reject(new Error(`搜索失敗: ${status}`));
+                    }
+                });
+            });
+        }
+
+        // 頁面載入後初始化
+        window.onload = function() {
+            console.log('🚀 餐廳搜索策略測試頁面已載入');
+            console.log('📍 測試位置: 台南車站附近', testLocation);
+        };
+    </script>
+</body>
+</html>
