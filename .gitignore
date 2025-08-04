@@ -21,8 +21,14 @@ desktop.ini
 *.backup
 *.bak
 
-# API 金鑰配置文件 (重要：絕不能提交)
+# 本地開發資料夾 (重要：絕不能提交)
+_local/
+
+# 其他 API 金鑰配置文件 (重要：絕不能提交)
+.env.local
+.env
 .api_key
+utils/config.local.js
 utils/locationUtils.js.bak
 utils/locationUtils.js.backup
 

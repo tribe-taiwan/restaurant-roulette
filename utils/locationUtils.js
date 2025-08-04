@@ -10,13 +10,17 @@ const logger = {
 };
 
 // Google Places JavaScript API 配置
-const GOOGLE_PLACES_CONFIG = {
+// 使用 window 物件讓它可以被動態修改
+window.GOOGLE_PLACES_CONFIG = {
   API_KEY: '%%GOOGLE_PLACES_API_KEY%%', // 將在部署時被 GitHub Actions 替換
   SEARCH_PARAMS: {
     radius: 5000, // 預設5公里範圍，可動態更新
     type: 'restaurant'
   }
 };
+
+// 為了向後相容，也創建一個 const 引用
+const GOOGLE_PLACES_CONFIG = window.GOOGLE_PLACES_CONFIG;
 
 // 引用統一的用餐時段配置（避免重複定義）
 // 由於專案使用全域腳本載入，直接從 mealTimeConfig.js 獲取

@@ -14,26 +14,31 @@
 
 ### 2. 配置本地開發
 
-**方法 A：直接修改文件（僅限本地開發）**
+**⚠️ 重要：以下方法僅供本地開發測試，請勿提交修改到 Git！**
+
+**方法 A：臨時修改檔案（最簡單）**
 
 1. 打開 `utils/locationUtils.js`
-2. 將第 3 行的 `%%GOOGLE_PLACES_API_KEY%%` 替換為你的實際 API 金鑰
-3. **重要：不要提交這個修改到 Git！**
+2. 找到第 14 行：`API_KEY: '%%GOOGLE_PLACES_API_KEY%%',`
+3. 臨時替換為：`API_KEY: '你的真實API金鑰',`
+4. 儲存檔案並重新整理瀏覽器
+5. **測試完成後立即還原！**
 
-**方法 B：使用腳本替換（推薦）**
+**方法 B：使用 .env.local 檔案（推薦）**
 
-1. 創建本地配置文件：
+1. 複製範例檔案：
    ```bash
-   echo "YOUR_ACTUAL_API_KEY" > .api_key
+   cp .env.local.example .env.local
    ```
 
-2. 使用替換腳本：
+2. 編輯 `.env.local` 檔案：
+   ```
+   GOOGLE_PLACES_API_KEY=你的真實API金鑰
+   ```
+
+3. 重新啟動開發伺服器：
    ```bash
-   # Windows
-   powershell -Command "(Get-Content utils/locationUtils.js) -replace '%%GOOGLE_PLACES_API_KEY%%', (Get-Content .api_key) | Set-Content utils/locationUtils.js"
-   
-   # macOS/Linux
-   sed -i.bak "s/%%GOOGLE_PLACES_API_KEY%%/$(cat .api_key)/g" utils/locationUtils.js
+   npm run dev
    ```
 
 ### 3. 驗證配置
