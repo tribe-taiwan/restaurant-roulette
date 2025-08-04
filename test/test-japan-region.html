@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本地區測試 - Restaurant Roulette</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #3367d6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇯🇵 日本地區 Google Places API 測試</h1>
+        <p>測試在日本地區是否可以正常使用 Google Places API 搜索餐廳</p>
+        
+        <div>
+            <button class="test-button" onclick="testTokyoRestaurants()">🗼 測試東京餐廳搜索</button>
+            <button class="test-button" onclick="testOsakaRestaurants()">🏯 測試大阪餐廳搜索</button>
+            <button class="test-button" onclick="testAPI()">🔧 測試 API 連接</button>
+            <button class="test-button" onclick="clearResults()">🧹 清除結果</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <!-- 載入主配置檔案，依據安全指南不硬編碼API KEY -->
+    <script src="../utils/locationUtils.js"></script>
+
+    <script>
+        // 遵循安全指南：使用重命名變數避免衝突
+        let testPlacesService = null;
+        let testMap = null;
+        let isTestAPILoaded = false;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `result ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            results.appendChild(logEntry);
+            results.scrollTop = results.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // 初始化測試用的 Google Maps API
+        function initializeTestAPI() {
+            return new Promise((resolve, reject) => {
+                if (isTestAPILoaded && testPlacesService) {
+                    log('Google Maps API 已載入，直接使用', 'success');
+                    resolve();
+                    return;
+                }
+
+                log('正在載入 Google Maps API...', 'info');
+                
+                // 遵循安全指南：使用 GOOGLE_PLACES_CONFIG.API_KEY 不硬編碼
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=onTestGoogleMapsLoaded`;
+                script.async = true;
+                script.defer = true;
+
+                script.onerror = () => {
+                    log('Google Maps API 載入失敗', 'error');
+                    reject(new Error('Google Maps API 載入失敗'));
+                };
+
+                // 設定超時
+                const timeout = setTimeout(() => {
+                    log('Google Maps API 載入超時', 'error');
+                    reject(new Error('載入超時'));
+                }, 10000);
+
+                // 全域回調函數
+                window.onTestGoogleMapsLoaded = () => {
+                    clearTimeout(timeout);
+                    try {
+                        log('Google Maps API 載入完成', 'success');
+
+                        // 創建隱藏地圖
+                        const mapDiv = document.createElement('div');
+                        mapDiv.style.display = 'none';
+                        document.body.appendChild(mapDiv);
+
+                        testMap = new google.maps.Map(mapDiv, {
+                            center: { lat: 35.6762, lng: 139.6503 }, // 東京
+                            zoom: 15
+                        });
+
+                        testPlacesService = new google.maps.places.PlacesService(testMap);
+                        isTestAPILoaded = true;
+
+                        log('Places Service 初始化成功', 'success');
+                        resolve();
+                    } catch (error) {
+                        log(`初始化失敗: ${error.message}`, 'error');
+                        reject(error);
+                    }
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        // 測試東京餐廳搜索
+        async function testTokyoRestaurants() {
+            log('🗼 開始測試東京餐廳搜索...', 'info');
+            
+            try {
+                await initializeTestAPI();
+                
+                const tokyoLocation = new google.maps.LatLng(35.6762, 139.6503); // 東京車站
+                const request = {
+                    location: tokyoLocation,
+                    radius: 1000, // 1km
+                    type: 'restaurant'
+                };
+
+                log('發送東京餐廳搜索請求...', 'info');
+                
+                testPlacesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        log(`✅ 東京搜索成功！找到 ${results.length} 家餐廳`, 'success');
+                        
+                        // 顯示前3家餐廳
+                        results.slice(0, 3).forEach((place, index) => {
+                            log(`${index + 1}. ${place.name} (評分: ${place.rating || 'N/A'})`, 'info');
+                        });
+                    } else {
+                        log(`❌ 東京搜索失敗: ${status}`, 'error');
+                        
+                        // 詳細錯誤分析
+                        switch(status) {
+                            case 'REQUEST_DENIED':
+                                log('錯誤原因：API 請求被拒絕，可能是 API Key 限制', 'error');
+                                break;
+                            case 'OVER_QUERY_LIMIT':
+                                log('錯誤原因：超過查詢限制', 'error');
+                                break;
+                            case 'ZERO_RESULTS':
+                                log('錯誤原因：沒有找到結果', 'error');
+                                break;
+                            default:
+                                log(`錯誤原因：${status}`, 'error');
+                        }
+                    }
+                });
+
+            } catch (error) {
+                log(`東京測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 測試大阪餐廳搜索
+        async function testOsakaRestaurants() {
+            log('🏯 開始測試大阪餐廳搜索...', 'info');
+            
+            try {
+                await initializeTestAPI();
+                
+                const osakaLocation = new google.maps.LatLng(34.6937, 135.5023); // 大阪車站
+                const request = {
+                    location: osakaLocation,
+                    radius: 1000, // 1km
+                    type: 'restaurant'
+                };
+
+                log('發送大阪餐廳搜索請求...', 'info');
+                
+                testPlacesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        log(`✅ 大阪搜索成功！找到 ${results.length} 家餐廳`, 'success');
+                        
+                        // 顯示前3家餐廳
+                        results.slice(0, 3).forEach((place, index) => {
+                            log(`${index + 1}. ${place.name} (評分: ${place.rating || 'N/A'})`, 'info');
+                        });
+                    } else {
+                        log(`❌ 大阪搜索失敗: ${status}`, 'error');
+                    }
+                });
+
+            } catch (error) {
+                log(`大阪測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 測試 API 基本連接
+        async function testAPI() {
+            log('🔧 開始測試 API 基本連接...', 'info');
+            
+            try {
+                // 檢查配置
+                if (!GOOGLE_PLACES_CONFIG || !GOOGLE_PLACES_CONFIG.API_KEY) {
+                    log('❌ 配置載入失敗：GOOGLE_PLACES_CONFIG 不存在', 'error');
+                    return;
+                }
+
+                if (GOOGLE_PLACES_CONFIG.API_KEY === '%%GOOGLE_PLACES_API_KEY%%') {
+                    log('⚠️ API Key 尚未替換，使用預留位置', 'error');
+                    log('這在本地測試中是正常的，部署後會自動替換', 'info');
+                    return;
+                }
+
+                log(`API Key 前8位: ${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}...`, 'info');
+                
+                await initializeTestAPI();
+                
+                if (testPlacesService) {
+                    log('✅ API 連接測試成功', 'success');
+                    log('Google Places Service 已正確初始化', 'success');
+                } else {
+                    log('❌ API 連接測試失敗', 'error');
+                }
+
+            } catch (error) {
+                log(`API 測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 頁面載入時的初始檢查
+        window.addEventListener('load', () => {
+            log('=== 日本地區 Google Places API 測試程序 ===', 'info');
+            log('點擊按鈕開始測試不同功能', 'info');
+            
+            // 檢查配置載入狀態
+            if (typeof GOOGLE_PLACES_CONFIG === 'undefined') {
+                log('❌ 配置載入失敗：請確認 locationUtils.js 已正確載入', 'error');
+            } else {
+                log('✅ 配置已載入', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
