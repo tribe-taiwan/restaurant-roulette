@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
@@ -205,11 +205,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       if (!touchStart || !touchEnd) return;
       
       const distance = touchStart - touchEnd;
-      const isLeftSwipe = distance > 50; // 左滑距離超過50px
+      const isLeftSwipe = distance > 50; // 左滑距離超過50px（搜尋下一家）
+      const isRightSwipe = distance < -50; // 右滑距離超過50px（回到上一家）
 
       if (isLeftSwipe && !isSpinning) {
         // 左滑：搜尋下一家餐廳
+        console.log('👆 左滑手勢：搜尋下一家餐廳');
         onSpin(false);
+      } else if (isRightSwipe && !isSpinning && onPreviousRestaurant) {
+        // 右滑：回到上一家餐廳
+        console.log('👆 右滑手勢：回到上一家餐廳');
+        onPreviousRestaurant();
       }
     };
 
@@ -449,30 +455,49 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                 )}
                 
-                {/* Rating Label */}
+                {/* Rating Label with Restaurant Type Tags */}
                 {finalRestaurant.rating && finalRestaurant.rating > 0 && (
-                  <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium mb-1 flex items-center gap-1">
-                    <span className="flex items-center">{renderStars(finalRestaurant.rating)}</span>
-                    <span>{finalRestaurant.rating}</span>
-                    {finalRestaurant.reviewCount && finalRestaurant.reviewCount > 0 && (
-                      <span>({finalRestaurant.reviewCount.toLocaleString()})</span>
-                    )}
-                  </div>
-                )}
-                
-                {/* Restaurant Type Tags */}
-                {finalRestaurant.cuisine && finalRestaurant.cuisine.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {finalRestaurant.cuisine.slice(0, 2).map((type, index) => (
-                      <div key={index} className="bg-gray-800 bg-opacity-80 text-white px-2 py-1 rounded text-xs">
-                        {type}
+                  <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium mb-1 flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <span className="flex items-center">{renderStars(finalRestaurant.rating)}</span>
+                      <span>{finalRestaurant.rating}</span>
+                      {finalRestaurant.reviewCount && finalRestaurant.reviewCount > 0 && (
+                        <span>({finalRestaurant.reviewCount.toLocaleString()})</span>
+                      )}
+                    </div>
+                    
+                    {/* Restaurant Type Tags - 放在星號右邊 */}
+                    {finalRestaurant.cuisine && finalRestaurant.cuisine.length > 0 && (
+                      <div className="flex gap-1">
+                        {finalRestaurant.cuisine.slice(0, 2).map((type, index) => (
+                          <div key={index} className="bg-gray-600 bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs">
+                            {type}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </div>
             )}
             
+            {/* Hover Arrow - Left Side (Previous Restaurant) */}
+            {finalRestaurant && !isSpinning && (
+              <div 
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onPreviousRestaurant) {
+                    console.log('🔙 點擊向左箭頭，回到上一家餐廳');
+                    onPreviousRestaurant();
+                  }
+                }}
+                title="回到上一家餐廳"
+              >
+                <div className="icon-chevron-left text-white text-6xl drop-shadow-lg"></div>
+              </div>
+            )}
+
             {/* Hover Arrow - Right Side */}
             {finalRestaurant && !isSpinning && (
               <div 

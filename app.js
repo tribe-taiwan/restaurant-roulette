@@ -59,6 +59,9 @@ function App() {
     const [addressInput, setAddressInput] = React.useState('');
     const [savedLocations, setSavedLocations] = React.useState([]);
     const [isGeocodingAddress, setIsGeocodingAddress] = React.useState(false);
+    
+    // 餐廳歷史記錄狀態
+    const [restaurantHistory, setRestaurantHistory] = React.useState([]); // 儲存用戶查看過的餐廳歷史
 
     const translations = {
       en: {
@@ -382,8 +385,31 @@ function App() {
         const actualRadius = baseUnit * unitMultiplier;
         console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius });
         window.clearRestaurantHistory();
+        // 同時清除本地餐廳歷史記錄
+        setRestaurantHistory([]);
       }
     }, [selectedMealTime, baseUnit, unitMultiplier]);
+
+    // 追蹤當前餐廳變化，更新餐廳歷史記錄
+    React.useEffect(() => {
+      if (currentRestaurant && currentRestaurant.id) {
+        console.log('📝 添加餐廳到歷史記錄:', currentRestaurant.name);
+        setRestaurantHistory(prev => {
+          // 檢查是否已存在相同餐廳，避免重複添加
+          const exists = prev.some(restaurant => restaurant.id === currentRestaurant.id);
+          if (exists) {
+            console.log('🔄 餐廳已存在於歷史記錄中，跳過添加');
+            return prev;
+          }
+          // 限制歷史記錄最多保存 10 家餐廳
+          const newHistory = [...prev, currentRestaurant];
+          if (newHistory.length > 10) {
+            newHistory.shift(); // 移除最舊的記錄
+          }
+          return newHistory;
+        });
+      }
+    }, [currentRestaurant]);
 
     // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
@@ -858,6 +884,24 @@ function App() {
       }
     };
 
+    // 回到上一家餐廳函數
+    const handlePreviousRestaurant = () => {
+      if (restaurantHistory.length < 2) {
+        console.log('🔙 沒有足夠的歷史記錄，無法回到上一家餐廳');
+        return;
+      }
+
+      // 取得上一家餐廳（倒數第二個）
+      const previousRestaurant = restaurantHistory[restaurantHistory.length - 2];
+      console.log('🔙 回到上一家餐廳:', previousRestaurant.name);
+
+      // 移除歷史記錄中的最後一筆記錄（當前餐廳）
+      setRestaurantHistory(prev => prev.slice(0, -1));
+      
+      // 設置上一家餐廳為當前餐廳
+      setCurrentRestaurant(previousRestaurant);
+    };
+
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
         
@@ -944,6 +988,7 @@ function App() {
               onImageClick={handleImageClick}
               userLocation={userLocation}
               userAddress={userAddress}
+              onPreviousRestaurant={handlePreviousRestaurant}
             />
           </div>
 
