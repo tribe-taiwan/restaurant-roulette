@@ -383,12 +383,12 @@ function App() {
     React.useEffect(() => {
       if (window.clearRestaurantHistory && !isInitialLoad) {
         const actualRadius = baseUnit * unitMultiplier;
-        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius });
+        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius, userLocation });
         window.clearRestaurantHistory();
         // 同時清除本地餐廳歷史記錄
         setRestaurantHistory([]);
       }
-    }, [selectedMealTime, baseUnit, unitMultiplier]);
+    }, [selectedMealTime, baseUnit, unitMultiplier, userLocation]);
 
     // 追蹤當前餐廳變化，更新餐廳歷史記錄
     React.useEffect(() => {
