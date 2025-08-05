@@ -94,47 +94,33 @@
         
         /* 動態快速動畫類別 - 實際使用的版本 */
 
-        /* 動態生成的慢速動畫類別 */
+        /* 動態生成的慢速動畫類別 1s 要大於 最慢的fast動畫 */
         .animate-scroll-slow-stop-dynamic {
             animation: scrollSlowStopDynamic 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         .animate-scroll-fast-dynamic-1 {
-            animation: scrollFastDynamic 2s linear infinite;
+            animation: scrollFastDynamic 0.2s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-2 {
-            animation: scrollFastDynamic 3s linear infinite;
+            animation: scrollFastDynamic 0.3s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-3 {
-            animation: scrollFastDynamic 3.5s linear infinite;
+            animation: scrollFastDynamic 0.4s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-4 {
-            animation: scrollFastDynamic 4s linear infinite;
+            animation: scrollFastDynamic 0.6s linear infinite;
         }
 
+        /* 最慢的fast動畫 */
         .animate-scroll-fast-dynamic-5 {
-            animation: scrollFastDynamic 4.5s linear infinite;
-        }
-
-        /* 保留原始動畫作為備用 */
-        .animate-scroll-names {
-            animation: scrollNames 0.5s linear infinite;
+            animation: scrollFastDynamic 0.8s linear infinite;
         }
 
         /* 注意：實際使用的動畫由 JavaScript 動態生成：scrollFastDynamic 和 scrollSlowStopDynamic */
-
-        /* 原始動畫（保留作為備用） */
-        @keyframes scrollNames {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-1536px); /* 6張圖片 * 256px */
-            }
-        }
 
         
         /* 滑桿樣式 */
