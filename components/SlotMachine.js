@@ -133,18 +133,30 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       console.log('🎨 動態CSS動畫已生成（保持相同效果）');
     }, []);
 
+    // 🎲 亂數排序函數 - 增加轉盤的隨機性
+    const shuffleArray = React.useCallback((array) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }, []);
+
     // 組件初始化時自動偵測圖片
     React.useEffect(() => {
       autoDetectSlotImages().then(detectedImages => {
         if (detectedImages.length > 0) {
-          setSlotImages(detectedImages);
-          console.log(`🎰 圖片數量已更新: ${detectedImages.length} 張`);
+          // 🎲 一開始就亂數排序圖片順序，增加隨機性
+          const shuffledImages = shuffleArray(detectedImages);
+          setSlotImages(shuffledImages);
+          console.log(`🎰 圖片數量已更新: ${detectedImages.length} 張（已亂數排序）`);
           
           // 🎯 根據偵測結果生成動態CSS動畫
           createDynamicAnimation(detectedImages.length);
         }
       });
-    }, [autoDetectSlotImages, createDynamicAnimation]);
+    }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
 
     // 觸控事件處理（手機）
     const handleTouchStart = (e) => {
@@ -196,14 +208,18 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           console.log('🎰 API返回，開始無縫銜接動畫');
           setAnimationPhase('slow');
 
+          // 🎲 每次轉動都亂數排序，增加隨機性
+          const shuffledSlots = shuffleArray(slotImages);
+          console.log('🎲 慢速階段使用亂數排序的圖片');
+
           // 構建最終序列：確保餐廳圖片在正確位置
           const finalSequence = [];
 
-          // 從當前循環位置開始的完整循環
-          finalSequence.push(...slotImages);
+          // 從當前循環位置開始的完整循環（亂數排序）
+          finalSequence.push(...shuffledSlots);
 
-          // 添加額外的slot圖片確保足夠的滾動距離
-          finalSequence.push(...slotImages.slice(0, 2));
+          // 添加額外的slot圖片確保足夠的滾動距離（亂數排序）
+          finalSequence.push(...shuffledSlots.slice(0, 2));
 
           // 餐廳圖片作為最後一張
           finalSequence.push(finalRestaurant.image);
@@ -222,17 +238,20 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           console.log('🎰 開始快速循環，等待API返回');
           setAnimationPhase('fast');
 
+          // 🎲 快速循環時也使用亂數排序，每次都不同
           const fastSequence = [];
           for (let i = 0; i < 50; i++) {
-            fastSequence.push(...slotImages);
+            const shuffledSlots = shuffleArray(slotImages);
+            fastSequence.push(...shuffledSlots);
           }
+          console.log('🎲 快速階段使用50組亂數排序的圖片');
           setScrollingNames(fastSequence);
         }
       } else {
         setAnimationPhase('idle');
         setScrollingNames([]);
       }
-    }, [isSpinning, finalRestaurant]);
+    }, [isSpinning, finalRestaurant, shuffleArray]);
 
     // 獲取當前動畫類別
     const getAnimationClass = () => {
@@ -258,7 +277,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             style={{
               backgroundImage: finalRestaurant && finalRestaurant.image ? 
                 `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
-                'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                slotImages.length > 0 ? 
+                  `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${slotImages[slotImages.length - 1]})` : 
+                  'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
@@ -320,8 +341,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               ) : (
                 <div className="text-xl font-bold text-white drop-shadow-lg py-8 flex items-center justify-center gap-2">
-                  😋
-                  {translations.spinButton}
+                  {/* 🎯 如果有slot圖片，顯示「打烊了」，否則顯示原始訊息 */}
+                  {slotImages.length > 0 ? (
+                    <>
+                      😴
+                      {language === 'zh' ? '打烊了' : 
+                       language === 'ja' ? '閉店' :
+                       language === 'ko' ? '영업종료' : 
+                       language === 'es' ? 'Cerrado' :
+                       language === 'fr' ? 'Fermé' : 'Closed'}
+                    </>
+                  ) : (
+                    <>
+                      😋
+                      {translations.spinButton}
+                    </>
+                  )}
                 </div>
               )}
             </div>
