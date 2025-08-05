@@ -2,6 +2,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
+    const [fastAnimationLevel, setFastAnimationLevel] = React.useState(1); // 1-5 漸進式減速級別
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
     
@@ -237,6 +238,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // API未返回，持續快速循環
           console.log('🎰 開始快速循環，等待API返回');
           setAnimationPhase('fast');
+          setFastAnimationLevel(1); // 重置為最快級別
 
           // 🎲 快速循環時也使用亂數排序，每次都不同
           const fastSequence = [];
@@ -249,15 +251,39 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         }
       } else {
         setAnimationPhase('idle');
+        setFastAnimationLevel(1); // 重置動畫級別
         setScrollingNames([]);
       }
     }, [isSpinning, finalRestaurant, shuffleArray]);
+
+    // 漸進式減速邏輯 - 每0.5秒增加動畫級別
+    React.useEffect(() => {
+      let intervalId;
+
+      if (animationPhase === 'fast' && !finalRestaurant) {
+        console.log('🎰 開始漸進式減速，當前級別:', fastAnimationLevel);
+
+        intervalId = setInterval(() => {
+          setFastAnimationLevel(prevLevel => {
+            const nextLevel = Math.min(prevLevel + 1, 5); // 最多到級別5
+            console.log('🎰 動畫減速，級別:', prevLevel, '→', nextLevel);
+            return nextLevel;
+          });
+        }, 500); // 每0.5秒切換
+      }
+
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+    }, [animationPhase, finalRestaurant, fastAnimationLevel]);
 
     // 獲取當前動畫類別
     const getAnimationClass = () => {
       switch (animationPhase) {
         case 'fast':
-          return 'animate-scroll-fast';
+          return `animate-scroll-fast-${fastAnimationLevel}`;
         case 'slow':
           // 🎯 使用動態生成的CSS動畫（如果存在），否則使用原始動畫
           const dynamicStyle = document.getElementById('dynamic-slot-animation');
