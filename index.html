@@ -92,61 +92,31 @@
             100% { transform: translateY(0); }
         }
         
-        /* 修復後的老虎機動畫 - 解決無縫銜接問題 */
-        .animate-scroll-fast {
-            animation: scrollFast 0.1s linear infinite;
-        }
+        /* 動態快速動畫類別 - 實際使用的版本 */
 
-        /* 漸進式減速動畫類別 */
-        .animate-scroll-fast-1 {
-            animation: scrollFast 0.3s linear infinite;
-        }
-
-        .animate-scroll-fast-2 {
-            animation: scrollFast 0.4s linear infinite;
-        }
-
-        .animate-scroll-fast-3 {
-            animation: scrollFast 0.45s linear infinite;
-        }
-
-        .animate-scroll-fast-4 {
-            animation: scrollFast 0.5s linear infinite;
-        }
-
-        .animate-scroll-fast-5 {
-            animation: scrollFast 0.6s linear infinite;
-        }
-
-        .animate-scroll-slow-stop {
-            animation: scrollSlowStop 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        /* 動態生成的動畫類別 */
+        /* 動態生成的慢速動畫類別 */
         .animate-scroll-slow-stop-dynamic {
-            /* animation: scrollSlowStopDynamic 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; */
             animation: scrollSlowStopDynamic 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        /* 動態快速動畫類別 */
         .animate-scroll-fast-dynamic-1 {
-            animation: scrollFastDynamic 0.1s linear infinite;
+            animation: scrollFastDynamic 2s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-2 {
-            animation: scrollFastDynamic 0.15s linear infinite;
+            animation: scrollFastDynamic 3s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-3 {
-            animation: scrollFastDynamic 0.2s linear infinite;
+            animation: scrollFastDynamic 3.5s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-4 {
-            animation: scrollFastDynamic 0.25s linear infinite;
+            animation: scrollFastDynamic 4s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-5 {
-            animation: scrollFastDynamic 0.3s linear infinite;
+            animation: scrollFastDynamic 4.5s linear infinite;
         }
 
         /* 保留原始動畫作為備用 */
@@ -154,30 +124,7 @@
             animation: scrollNames 0.5s linear infinite;
         }
 
-        /* 快速滾動 - 更短的循環週期確保更好的銜接 */
-        @keyframes scrollFast {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-256px); /* h-64 = 256px，一張圖片的高度 */
-            }
-        }
-
-        /* 慢速停止 - 精確停在餐廳圖片位置（動態計算，保持相同動畫效果） */
-        @keyframes scrollSlowStop {
-            0% {
-                transform: translateY(0);
-                animation-timing-function: ease-out;
-            }
-            70% {
-                transform: translateY(-1792px); /* 7張圖片的高度 */
-                animation-timing-function: ease-in;
-            }
-            100% {
-                transform: translateY(-2048px); /* 8張圖片的高度，停在餐廳圖片 */
-            }
-        }
+        /* 注意：實際使用的動畫由 JavaScript 動態生成：scrollFastDynamic 和 scrollSlowStopDynamic */
 
         /* 原始動畫（保留作為備用） */
         @keyframes scrollNames {

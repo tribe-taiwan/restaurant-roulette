@@ -296,13 +296,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const getAnimationClass = () => {
       switch (animationPhase) {
         case 'fast':
-          // 🎯 優先使用動態生成的快速動畫（如果存在），否則使用固定動畫
-          const dynamicStyle = document.getElementById('dynamic-slot-animation');
-          return dynamicStyle ? `animate-scroll-fast-dynamic-${fastAnimationLevel}` : `animate-scroll-fast-${fastAnimationLevel}`;
+          // 🎯 使用動態生成的快速動畫
+          return `animate-scroll-fast-dynamic-${fastAnimationLevel}`;
         case 'slow':
-          // 🎯 使用動態生成的CSS動畫（如果存在），否則使用原始動畫
-          const dynamicSlowStyle = document.getElementById('dynamic-slot-animation');
-          return dynamicSlowStyle ? 'animate-scroll-slow-stop-dynamic' : 'animate-scroll-slow-stop';
+          // 🎯 使用動態生成的慢速動畫
+          return 'animate-scroll-slow-stop-dynamic';
         default:
           return '';
       }
