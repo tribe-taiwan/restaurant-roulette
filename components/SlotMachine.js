@@ -47,14 +47,104 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
     };
 
-    const slotImages = [
+    // 🎯 動態偵測圖片數量 - 自動適應資料夾中的圖片
+    const [slotImages, setSlotImages] = React.useState([
       "./assets/image/slot-machine/slot (1).jpg",
       "./assets/image/slot-machine/slot (2).jpg",
       "./assets/image/slot-machine/slot (3).jpg",
       "./assets/image/slot-machine/slot (4).jpg",
       "./assets/image/slot-machine/slot (5).jpg",
       "./assets/image/slot-machine/slot (6).jpg"
-    ];
+    ]);
+
+    // 自動偵測可用的slot圖片數量
+    const autoDetectSlotImages = React.useCallback(async () => {
+      const basePath = './assets/image/slot-machine';
+      const detectedImages = [];
+      let maxTries = 20; // 最多嘗試20張圖片
+
+      console.log('🔍 開始自動偵測slot圖片數量...');
+
+      for (let i = 1; i <= maxTries; i++) {
+        const imagePath = `${basePath}/slot (${i}).jpg`;
+        
+        try {
+          const response = await fetch(imagePath, { method: 'HEAD' });
+          if (response.ok) {
+            detectedImages.push(imagePath);
+            console.log(`✅ 找到圖片 ${i}: ${imagePath}`);
+          } else {
+            console.log(`❌ 圖片 ${i} 不存在，停止偵測`);
+            break;
+          }
+        } catch (error) {
+          console.log(`❌ 圖片 ${i} 載入失敗，停止偵測`);
+          break;
+        }
+      }
+
+      console.log(`🎯 自動偵測完成！找到 ${detectedImages.length} 張slot圖片`);
+      return detectedImages;
+    }, []);
+
+    // 🎯 動態生成CSS動畫 - 保持相同的動畫曲線和時間，只改變位置計算
+    const createDynamicAnimation = React.useCallback((imageCount) => {
+      const itemHeight = 256; // 每張圖片高度（h-64 = 256px）
+      
+      // 🎯 使用原來的邏輯：slot圖片 + 前2張 + 餐廳圖片（保持相同效果）
+      const totalImages = imageCount + 2 + 1;
+      const finalPosition = (totalImages - 1) * itemHeight; // 停在最後一張（餐廳圖片）
+      
+      // 保持原來的70%位置計算方式
+      const midPosition = Math.floor((totalImages - 3) * itemHeight);
+      
+      console.log(`🎰 動態CSS計算: ${imageCount}張slot圖片 + 2張 + 1張餐廳 = ${totalImages}張總計`);
+      console.log(`🎰 70%位置: ${midPosition}px, 最終位置: ${finalPosition}px`);
+      
+      // 動態創建CSS keyframes - 保持原來完全相同的動畫曲線和時間
+      const keyframes = `
+        @keyframes scrollSlowStopDynamic {
+          0% {
+            transform: translateY(0);
+            animation-timing-function: ease-out;
+          }
+          70% {
+            transform: translateY(-${midPosition}px);
+            animation-timing-function: ease-in;
+          }
+          100% {
+            transform: translateY(-${finalPosition}px);
+          }
+        }
+      `;
+      
+      // 移除舊的動畫樣式
+      const oldStyle = document.getElementById('dynamic-slot-animation');
+      if (oldStyle) {
+        oldStyle.remove();
+      }
+      
+      // 添加新的動畫樣式
+      const style = document.createElement('style');
+      style.id = 'dynamic-slot-animation';
+      style.textContent = keyframes;
+      document.head.appendChild(style);
+      
+      console.log('🎨 動態CSS動畫已生成（保持相同效果）');
+    }, []);
+
+    // 組件初始化時自動偵測圖片
+    React.useEffect(() => {
+      autoDetectSlotImages().then(detectedImages => {
+        if (detectedImages.length > 0) {
+          setSlotImages(detectedImages);
+          console.log(`🎰 圖片數量已更新: ${detectedImages.length} 張`);
+          
+          // 🎯 根據偵測結果生成動態CSS動畫
+          createDynamicAnimation(detectedImages.length);
+        }
+      });
+    }, [autoDetectSlotImages, createDynamicAnimation]);
 
     // 觸控事件處理（手機）
     const handleTouchStart = (e) => {
@@ -150,7 +240,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         case 'fast':
           return 'animate-scroll-fast';
         case 'slow':
-          return 'animate-scroll-slow-stop';
+          // 🎯 使用動態生成的CSS動畫（如果存在），否則使用原始動畫
+          const dynamicStyle = document.getElementById('dynamic-slot-animation');
+          return dynamicStyle ? 'animate-scroll-slow-stop-dynamic' : 'animate-scroll-slow-stop';
         default:
           return '';
       }
