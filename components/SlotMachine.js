@@ -6,65 +6,26 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
     
-    // 價位標籤資料
-    const priceLabels = {
-      en: { 1: 'Budget', 2: 'Moderate', 3: 'Expensive', 4: 'Fine Dining' },
-      zh: { 1: '經濟實惠', 2: '中等價位', 3: '高價位', 4: '精緻餐飲' },
-      ja: { 1: 'リーズナブル', 2: '中価格帯', 3: '高価格帯', 4: '高級料理' },
-      ko: { 1: '저렴한', 2: '중간 가격', 3: '비싼', 4: '고급 요리' },
-      vi: { 1: 'Bình dân', 2: 'Trung bình', 3: 'Đắt tiền', 4: 'Sang trọng' },
-      ms: { 1: 'Bajet', 2: 'Sederhana', 3: 'Mahal', 4: 'Mewah' }
-    };
+    // 使用共用的價位標籤
+    const priceLabels = window.getPriceLabels();
     
-    // 複用RestaurantCard的星級顯示邏輯
+    // 使用共用的星級顯示邏輯
     const renderStars = (rating) => {
-      if (!rating || rating <= 0) return null;
-      
-      const fullStars = Math.round(rating);
-      const emptyStars = 5 - fullStars;
+      const stars = window.renderStars(rating);
+      if (!stars) return null;
       
       return (
         <>
-          {[...Array(fullStars)].map((_, i) => (
-            <span key={`full-${i}`} className="text-[#fbbc04]">★</span>
-          ))}
-          {[...Array(emptyStars)].map((_, i) => (
-            <span key={`empty-${i}`} className="text-gray-400">☆</span>
+          {stars.map(star => (
+            <span key={star.key} className={star.className}>{star.symbol}</span>
           ))}
         </>
       );
     };
 
-    // 導航URL生成函數（複製自RestaurantCard）
+    // 使用共用的導航URL生成函數
     const getDirectionsUrl = (restaurant) => {
-      console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
-      console.log('🗺️ 當前userAddress:', userAddress);
-      console.log('🗺️ 餐廳地址:', restaurant.address);
-      
-      // 優先使用userAddress作為起點地址
-      if (userAddress && restaurant.address) {
-        const origin = encodeURIComponent(userAddress);
-        const destination = encodeURIComponent(restaurant.address);
-        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-        console.log('🎯 最終導航URL:', finalUrl);
-        console.log('🎯 導航起點地址:', userAddress);
-        console.log('🎯 導航終點地址:', restaurant.address);
-        return finalUrl;
-      }
-
-      // 回退到座標（如果有userLocation但沒有userAddress）
-      if (userLocation && restaurant.address) {
-        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
-        const destination = encodeURIComponent(restaurant.address);
-        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-        console.log('🎯 使用座標的導航URL:', finalUrl);
-        console.log('🎯 導航起點座標:', userLocation);
-        console.log('🎯 導航終點地址:', restaurant.address);
-        return finalUrl;
-      }
-
-      // 回退選項：直接導航到餐廳位置
-      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
+      return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     };
 
     // 🎯 動態偵測圖片數量 - 自動適應資料夾中的圖片

@@ -4,103 +4,13 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
   try {
     const [selectedImage, setSelectedImage] = React.useState(null);
 
-    const priceLabels = {
-      en: { 1: 'Budget', 2: 'Moderate', 3: 'Expensive', 4: 'Fine Dining' },
-      zh: { 1: '經濟實惠', 2: '中等價位', 3: '高價位', 4: '精緻餐飲' },
-      ja: { 1: 'リーズナブル', 2: '中価格帯', 3: '高価格帯', 4: '高級料理' },
-      ko: { 1: '저렴한', 2: '중간 가격', 3: '비싼', 4: '고급 요리' },
-      es: { 1: 'Económico', 2: 'Moderado', 3: 'Caro', 4: 'Alta Cocina' },
-      fr: { 1: 'Économique', 2: 'Modéré', 3: 'Cher', 4: 'Haute Cuisine' }
-    };
+    // 使用共用的價位標籤
+    const priceLabels = window.getPriceLabels();
 
+    // 使用共用的翻譯函數
     const getTranslation = (key) => {
-      const translations = {
-        en: {
-          hoursNotAvailable: 'Hours not available',
-          viewLocation: 'View location',
-          clickToViewPhotos: 'Click to view Google Maps photos',
-          viewRoute: 'Route & Navigation',
-          viewWebsite: 'Website',
-          address: 'Address',
-          phone: 'Phone',
-          businessHours: 'Business Hours',
-          openNow: 'Open Now',
-          closed: 'Closed',
-          hoursUnknown: 'Hours Unknown',
-          temporarilyClosed: '⚠️ This restaurant may be temporarily closed, please call to confirm'
-        },
-        zh: {
-          hoursNotAvailable: '營業時間不可用',
-          viewLocation: '查看位置',
-          clickToViewPhotos: '點擊查看Google地圖照片',
-          viewRoute: '路線與導航',
-          viewWebsite: '網站',
-          address: '地址',
-          phone: '電話',
-          businessHours: '營業時間',
-          openNow: '營業中',
-          closed: '已打烊',
-          hoursUnknown: '營業時間未知',
-          temporarilyClosed: '⚠️ 此餐廳可能暫時關閉，請致電確認'
-        },
-        ja: {
-          hoursNotAvailable: '営業時間が利用できません',
-          viewLocation: '場所を見る',
-          clickToViewPhotos: 'Google マップの写真を見る',
-          viewRoute: 'ルートとナビゲーション',
-          viewWebsite: 'ウェブサイトを見る',
-          address: '住所',
-          phone: '電話',
-          businessHours: '営業時間',
-          openNow: '営業中',
-          closed: '閉店',
-          hoursUnknown: '営業時間不明',
-          temporarilyClosed: '⚠️ このレストランは一時的に閉店している可能性があります。お電話でご確認ください'
-        },
-        ko: {
-          hoursNotAvailable: '영업시간 정보 없음',
-          viewLocation: '위치 보기',
-          clickToViewPhotos: 'Google 지도 사진 보기',
-          viewRoute: '경로 및 내비게이션 보기',
-          viewWebsite: '웹사이트 보기',
-          address: '주소',
-          phone: '전화',
-          businessHours: '영업시간',
-          openNow: '영업 중',
-          closed: '영업종료',
-          hoursUnknown: '영업시간 알 수 없음',
-          temporarilyClosed: '⚠️ 이 식당은 일시적으로 문을 닫았을 수 있습니다. 전화로 확인하세요'
-        },
-        es: {
-          hoursNotAvailable: 'Horario no disponible',
-          viewLocation: 'Ver ubicación',
-          clickToViewPhotos: 'Ver fotos de Google Maps',
-          viewRoute: 'Ver Ruta y Navegación',
-          viewWebsite: 'Ver Sitio Web',
-          address: 'Dirección',
-          phone: 'Teléfono',
-          businessHours: 'Horario de Atención',
-          openNow: 'Abierto Ahora',
-          closed: 'Cerrado',
-          hoursUnknown: 'Horario Desconocido',
-          temporarilyClosed: '⚠️ Este restaurante puede estar temporalmente cerrado, llame para confirmar'
-        },
-        fr: {
-          hoursNotAvailable: 'Horaires non disponibles',
-          viewLocation: 'Voir l\'emplacement',
-          clickToViewPhotos: 'Voir les photos Google Maps',
-          viewRoute: 'Voir Itinéraire et Navigation',
-          viewWebsite: 'Voir Site Web',
-          address: 'Adresse',
-          phone: 'Téléphone',
-          businessHours: 'Heures d\'Ouverture',
-          openNow: 'Ouvert Maintenant',
-          closed: 'Fermé',
-          hoursUnknown: 'Horaires Inconnus',
-          temporarilyClosed: '⚠️ Ce restaurant peut être temporairement fermé, appelez pour confirmer'
-        }
-      };
-      return translations[language]?.[key] || translations.en[key];
+      const translations = window.getRestaurantTranslations(language);
+      return translations[key] || key;
     };
 
     const formatHours = (hours) => {
@@ -146,52 +56,21 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
       setSelectedImage(null);
     };
 
+    // 使用共用的導航URL生成函數
     const getDirectionsUrl = () => {
-      console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
-      console.log('🗺️ 當前userAddress:', userAddress);
-      console.log('🗺️ 餐廳地址:', restaurant.address);
-      
-      // 優先使用userAddress作為起點地址
-      if (userAddress && restaurant.address) {
-        const origin = encodeURIComponent(userAddress);
-        const destination = encodeURIComponent(restaurant.address);
-        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-        console.log('🎯 最終導航URL:', finalUrl);
-        console.log('🎯 導航起點地址:', userAddress);
-        console.log('🎯 導航終點地址:', restaurant.address);
-        return finalUrl;
-      }
-
-      // 回退到座標（如果有userLocation但沒有userAddress）
-      if (userLocation && restaurant.address) {
-        const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
-        const destination = encodeURIComponent(restaurant.address);
-        const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-        console.log('🎯 使用座標的導航URL:', finalUrl);
-        console.log('🎯 導航起點座標:', userLocation);
-        console.log('🎯 導航終點地址:', restaurant.address);
-        return finalUrl;
-      }
-
-      // 回退選項：直接導航到餐廳位置
-      return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
+      return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     };
 
-    // Google風格的星級顯示（簡化版，無半顆星）
+    // 使用共用的星級顯示函數
     const renderGoogleStars = () => {
       const rating = restaurant.rating || 0;
-      const fullStars = Math.round(rating); // 四捨五入到最接近的整數
-      const emptyStars = 5 - fullStars;
+      const stars = window.renderStars(rating);
+      if (!stars) return null;
       
       return (
         <div className="flex items-center gap-1">
-          {/* 實心星星 */}
-          {[...Array(fullStars)].map((_, i) => (
-            <span key={`full-${i}`} className="text-[#fbbc04] text-lg">★</span>
-          ))}
-          {/* 空心星星 */}
-          {[...Array(emptyStars)].map((_, i) => (
-            <span key={`empty-${i}`} className="text-gray-400 text-lg">☆</span>
+          {stars.map(star => (
+            <span key={star.key} className={`${star.className} text-lg`}>{star.symbol}</span>
           ))}
         </div>
       );
