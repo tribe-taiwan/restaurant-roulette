@@ -786,25 +786,36 @@ function App() {
      */
     const checkForQuickData = async () => {
       try {
-        // 檢查餐廳歷史記錄
+        // 檢查餐廳歷史記錄和快取
         const history = window.getRestaurantHistory ? window.getRestaurantHistory() : null;
         console.log('🔍 檢查餐廳歷史記錄:', history);
         
-        if (!history || !history.shown_restaurants || history.shown_restaurants.length === 0) {
+        if (!history) {
           console.log('📝 無餐廳歷史記錄，需要API調用');
           return false;
         }
         
-        console.log(`📊 目前有 ${history.shown_restaurants.length} 筆餐廳記錄`);
+        // 檢查快取中是否有未顯示的餐廳
+        const cachedRestaurants = history.cached_restaurants || [];
+        const shownRestaurants = history.shown_restaurants || [];
         
-        // 降低門檻：有5筆以上餐廳資料就認為可以快速取得
-        if (history.shown_restaurants.length >= 5) {
-          console.log('📚 有充足的餐廳資料可以重複使用');
+        // 篩選出未顯示且符合當前時段的餐廳
+        const availableRestaurants = cachedRestaurants.filter(restaurant => {
+          const notShown = !shownRestaurants.includes(restaurant.id);
+          // 這裡可以進一步檢查時段，但為了簡化先只檢查是否已顯示
+          return notShown;
+        });
+        
+        console.log(`📊 快取檢查結果: 總快取${cachedRestaurants.length}家, 已顯示${shownRestaurants.length}家, 可用${availableRestaurants.length}家`);
+        
+        // 如果有未顯示的快取餐廳，就可以立即使用
+        if (availableRestaurants.length > 0) {
+          console.log('🚀 發現可用的快取餐廳，可立即顯示');
           return true;
         }
         
-        // 其他情況認為需要API調用
-        console.log('🔄 餐廳資料不足，需要API調用');
+        // 沒有可用的快取餐廳，需要API調用
+        console.log('🔄 沒有可用的快取餐廳，需要API調用');
         return false;
         
       } catch (error) {
