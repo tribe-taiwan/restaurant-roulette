@@ -222,34 +222,49 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
         {/* Restaurant Info */}
         <div>
-            {/* 網站和導航 - 移到地址上面 */}
-            <div className="flex flex-wrap gap-4 mb-6">
+            {/* 導航和網站圖示按鈕 */}
+            <div className="flex items-center gap-3 mb-6">
+              {/* 導航按鈕 */}
               <a
                 href={getDirectionsUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary flex-1 text-lg inline-flex items-center justify-center gap-2"
+                // --- 修改開始 ---
+                // 1. 新增 group 用於統一 hover 效果
+                // 2. 移除 w-12 h-12 justify-center
+                // 3. 新增 padding (px-4 py-3) 和 gap (gap-3)
+                className="group flex items-center gap-3 rounded-lg bg-[var(--surface-color)] px-4 py-3 text-[var(--text-primary)] transition-colors duration-200 border border-gray-600 hover:bg-[var(--primary-color)] hover:border-[var(--primary-color)] hover:text-white"
+                // --- 修改結束 ---
+                title={getTranslation('viewRoute')}
               >
-                <div className="icon-navigation text-lg"></div>
-                {getTranslation('viewRoute')}
+                {/* 4. 將 hover 效果改為 group-hover */}
+                <div className="icon-navigation text-[var(--primary-color)] text-xl"></div>
+                {/* 5. 將文字從 title 移到這裡，並套用樣式 */}
+                <span className="font-semibold">{getTranslation('viewRoute')}</span>
               </a>
 
+              {/* 網站按鈕 */}
               {restaurant.website && (
                 <a
                   href={restaurant.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-primary flex-1 text-lg inline-flex items-center justify-center gap-2"
+                  // --- 修改開始 ---
+                  className="group flex items-center gap-3 rounded-lg bg-[var(--surface-color)] px-4 py-3 text-[var(--text-primary)] transition-colors duration-200 border border-gray-600 hover:bg-[var(--primary-color)] hover:border-[var(--primary-color)] hover:text-white"
+                  // --- 修改結束 ---
+                  title={getTranslation('viewWebsite')}
                 >
-                  <div className="icon-globe text-lg"></div>
-                  {getTranslation('viewWebsite')}
+                  {/* 將 hover 效果改為 group-hover */}
+                  <div className="icon-globe text-xl"></div>
+                  {/* 將文字從 title 移到這裡，並套用樣式 */}
+                  <span className="font-semibold">{getTranslation('viewWebsite')}</span>
                 </a>
               )}
             </div>
 
             <div className="space-y-4 mb-6">
               <div className="flex items-start gap-3">
-                <div className="icon-map-pin text-[var(--primary-color)] text-lg mt-1"></div>
+                <div className="icon-map-pin text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('address')}
@@ -259,19 +274,19 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="icon-phone text-[var(--success-color)] text-lg mt-1"></div>
+                <div className="icon-phone text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('phone')}
                   </div>
-                  <a href={`tel:${restaurant.phone}`} className="text-[var(--success-color)] hover:underline">
+                  <a href={`tel:${restaurant.phone}`} className="hover:underline">
                     {restaurant.phone}
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="icon-clock text-[var(--secondary-color)] text-lg mt-1"></div>
+                <div className="icon-clock text-lg mt-1"></div>
                 <div>
                   <div className="font-medium text-[var(--text-primary)] mb-1">
                     {getTranslation('businessHours')}
