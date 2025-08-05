@@ -227,12 +227,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           setScrollingNames(finalSequence);
 
-          // 設置動畫結束計時器（2秒後結束，對應CSS動畫時間）
+          // 設置動畫結束計時器（1秒後結束，對應CSS動畫時間）
           setTimeout(() => {
             console.log('🎰 動畫結束，觸發 slotAnimationEnd 事件');
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
-          }, 2050); // 稍微延長一點確保動畫完成
+          }, 1050); // 稍微延長一點確保動畫完成
 
         } else {
           // API未返回，持續快速循環
