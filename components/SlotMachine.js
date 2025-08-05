@@ -214,17 +214,31 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, [isSpinning, finalRestaurant, candidateList.length]);
 
-    // 修復後的動畫邏輯 - 解決無縫銜接問題
+    /**
+     * 智能動畫控制邏輯 - 根據資料狀態決定動畫類型
+     * 
+     * 動畫狀態說明：
+     * - idle: 靜止狀態，顯示最終結果或預設圖片
+     * - fast: 快速動畫，等待API返回時分散用戶注意力
+     * - slow: 慢速動畫，API已返回，執行最終的視覺過渡
+     * 
+     * 邏輯流程：
+     * 1. isSpinning=true 且無結果 → 快速動畫（分散注意力）
+     * 2. isSpinning=true 且有結果 → 慢速動畫（過渡到結果）
+     * 3. isSpinning=false → 停止動畫，顯示最終結果
+     */
     React.useEffect(() => {
       if (isSpinning) {
         if (finalRestaurant && finalRestaurant.image) {
-          // API已返回，執行無縫銜接邏輯
-          console.log('🎰 API返回，開始無縫銜接動畫');
+          // =====================================
+          // 情況：API已返回結果，執行最終動畫
+          // =====================================
+          console.log('🎰 API返回結果，開始最終過渡動畫');
           setAnimationPhase('slow');
 
           // 🎲 每次轉動都亂數排序，增加隨機性
           const shuffledSlots = shuffleArray(slotImages);
-          console.log('🎲 慢速階段使用亂數排序的圖片');
+          console.log('🎲 最終動畫使用亂數排序的圖片');
 
           // 構建最終序列：確保餐廳圖片在正確位置
           const finalSequence = [];
@@ -242,27 +256,33 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 設置動畫結束計時器（1秒後結束，對應CSS動畫時間）
           setTimeout(() => {
-            console.log('🎰 動畫結束，觸發 slotAnimationEnd 事件');
+            console.log('🎰 最終動畫結束，觸發 slotAnimationEnd 事件');
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
           }, 1050); // 稍微延長一點確保動畫完成
 
         } else {
-          // API未返回，持續快速循環
-          console.log('🎰 開始快速循環，等待API返回');
+          // =====================================
+          // 情況：等待API返回，顯示載入動畫
+          // =====================================
+          console.log('🎰 等待API返回，開始快速循環動畫');
           setAnimationPhase('fast');
           setFastAnimationLevel(1); // 重置為最快級別
 
-          // 🎲 快速循環時也使用亂數排序，每次都不同
+          // 🎲 快速循環時使用亂數排序的圖片，創造視覺豐富性
           const fastSequence = [];
           for (let i = 0; i < 50; i++) {
             const shuffledSlots = shuffleArray(slotImages);
             fastSequence.push(...shuffledSlots);
           }
-          console.log('🎲 快速階段使用50組亂數排序的圖片');
+          console.log('🎲 快速循環階段使用50組亂數排序的圖片');
           setScrollingNames(fastSequence);
         }
       } else {
+        // =====================================
+        // 情況：停止動畫，回到靜止狀態
+        // =====================================
+        console.log('🎰 停止動畫，回到靜止狀態');
         setAnimationPhase('idle');
         setFastAnimationLevel(1); // 重置動畫級別
         setScrollingNames([]);

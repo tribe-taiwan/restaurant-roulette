@@ -666,20 +666,43 @@ function App() {
     // 核心業務邏輯函數區塊
     // ===========================================
     
+    /**
+     * 智能餐廳搜索函數 - 根據資料可用性決定是否顯示動畫
+     * 
+     * 邏輯說明：
+     * 1. 立即可用：有快取資料或能快速返回 → 不顯示輪盤動畫
+     * 2. 需要等待：需要API調用或複雜搜索 → 顯示輪盤動畫分散注意力
+     * 3. 自動調用：初次載入時的自動搜索 → 根據實際需要決定
+     */
     const handleSpin = async (isAutoSpin = false) => {
       if (isSpinning) return;
 
-      console.log('🎮 開始轉動輪盤...', { selectedMealTime, isAutoSpin });
-      setIsSpinning(true);
-      setCurrentRestaurant(null);
+      console.log('🎮 開始餐廳搜索...', { selectedMealTime, isAutoSpin });
       setSpinError(null);
 
       try {
-        // 只有手動點擊時才等待視覺效果
-        if (!isAutoSpin) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // ========================================
+        // 第一步：檢查是否需要顯示載入動畫
+        // ========================================
+        const needsAnimation = await shouldShowAnimation(isAutoSpin);
+        
+        if (needsAnimation) {
+          console.log('⏳ 需要等待API，啟動輪盤動畫...');
+          setIsSpinning(true);
+          setCurrentRestaurant(null);
+          
+          // 只有手動點擊且需要動畫時才等待視覺效果
+          if (!isAutoSpin) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        } else {
+          console.log('⚡ 資料可立即取得，直接更新結果...');
+          setCurrentRestaurant(null); // 清除舊資料，準備顯示新資料
         }
         
+        // ========================================
+        // 第二步：執行實際的餐廳搜索
+        // ========================================
         console.log('🔍 開始搜索餐廳，用戶位置:', userLocation);
         
         // 計算實際搜索半徑並更新搜索設定
@@ -688,28 +711,105 @@ function App() {
           window.updateSearchRadius(actualRadius);
         }
         
-        // 調用更新後的 getRandomRestaurant 函數（現在支援營業時間篩選和新距離系統）
+        // 調用餐廳搜索API
         const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
         
-        // 重新計算營業狀態以支援多國語言
-        if (restaurant.operatingStatus && window.getBusinessStatus) {
-          try {
-            // 需要餐廳的 opening_hours 資料來重新計算
-            // 暫時保留原始狀態，之後需要改進
-            console.log('🌐 重新計算營業狀態支援語言:', selectedLanguage);
-          } catch (error) {
-            console.warn('⚠️ 重新計算營業狀態失敗:', error);
+        // ========================================
+        // 第三步：處理搜索結果
+        // ========================================
+        if (restaurant) {
+          // 重新計算營業狀態以支援多國語言
+          if (restaurant.operatingStatus && window.getBusinessStatus) {
+            try {
+              console.log('🌐 重新計算營業狀態支援語言:', selectedLanguage);
+            } catch (error) {
+              console.warn('⚠️ 重新計算營業狀態失敗:', error);
+            }
           }
+          
+          console.log('✅ 成功獲取餐廳:', restaurant);
+          setCurrentRestaurant(restaurant);
+          
+          // 如果有動畫，讓它自然結束；如果沒有動畫，立即顯示結果
+          if (!needsAnimation) {
+            // 立即顯示結果，無需等待動畫
+            console.log('🚀 立即顯示餐廳資訊');
+          }
+        } else {
+          throw new Error('無法找到符合條件的餐廳');
         }
-        
-        console.log('✅ 成功獲取餐廳:', restaurant);
-        setCurrentRestaurant(restaurant);
-        // API 返回後，讓慢速動畫自然結束，不需要人為延遲
 
       } catch (error) {
-        console.error('❌ 轉動輪盤時發生錯誤:', error);
+        console.error('❌ 餐廳搜索發生錯誤:', error);
         setSpinError(error.message);
-        setIsSpinning(false); // 錯誤時立即停止
+        setIsSpinning(false); // 錯誤時立即停止動畫
+      }
+    };
+
+    /**
+     * 判斷是否需要顯示輪盤動畫
+     * 
+     * @param {boolean} isAutoSpin - 是否為自動調用
+     * @returns {boolean} 是否需要顯示動畫
+     */
+    const shouldShowAnimation = async (isAutoSpin) => {
+      // 檢查是否有快取的餐廳資料可以立即使用
+      const hasQuickData = await checkForQuickData();
+      console.log('🔍 快取資料檢查結果:', hasQuickData);
+      
+      if (hasQuickData) {
+        console.log('📋 發現快取資料，可立即顯示 - 不需動畫');
+        return false; // 有快取資料，不需要動畫
+      }
+      
+      // 自動調用時，如果是第一次載入，顯示動畫讓用戶知道系統在工作
+      if (isAutoSpin && isInitialLoad) {
+        console.log('🎯 初次載入，顯示動畫提升體驗');
+        return true;
+      }
+      
+      // 手動點擊時，如果沒有快取資料，仍然顯示動畫
+      if (!isAutoSpin) {
+        console.log('👆 手動點擊且無快取資料，顯示動畫作為等待反饋');
+        return true;
+      }
+      
+      // 其他情況預設不顯示動畫
+      console.log('🤔 其他情況，不顯示動畫');
+      return false;
+    };
+
+    /**
+     * 檢查是否有可以立即使用的快速資料
+     * 
+     * @returns {boolean} 是否有快速可用的資料
+     */
+    const checkForQuickData = async () => {
+      try {
+        // 檢查餐廳歷史記錄
+        const history = window.getRestaurantHistory ? window.getRestaurantHistory() : null;
+        console.log('🔍 檢查餐廳歷史記錄:', history);
+        
+        if (!history || !history.shown_restaurants || history.shown_restaurants.length === 0) {
+          console.log('📝 無餐廳歷史記錄，需要API調用');
+          return false;
+        }
+        
+        console.log(`📊 目前有 ${history.shown_restaurants.length} 筆餐廳記錄`);
+        
+        // 降低門檻：有5筆以上餐廳資料就認為可以快速取得
+        if (history.shown_restaurants.length >= 5) {
+          console.log('📚 有充足的餐廳資料可以重複使用');
+          return true;
+        }
+        
+        // 其他情況認為需要API調用
+        console.log('🔄 餐廳資料不足，需要API調用');
+        return false;
+        
+      } catch (error) {
+        console.warn('⚠️ 檢查快速資料時發生錯誤:', error);
+        return false; // 出錯時保守地顯示動畫
       }
     };
 

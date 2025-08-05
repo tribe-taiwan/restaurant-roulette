@@ -820,7 +820,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
 /**
  * 餐廳歷史記錄管理
  */
-function getRestaurantHistory() {
+window.getRestaurantHistory = function() {
   try {
     const history = localStorage.getItem('restaurant_history');
     if (!history) return null;
@@ -850,6 +850,7 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
       history = {
         timestamp: Date.now(),
         shown_restaurants: [],
+        cached_restaurants: [], // 新增：快取的所有餐廳
         expanded_radius: expandedRadius
       };
     }
@@ -866,6 +867,76 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
     console.log('📝 更新餐廳歷史記錄:', { restaurantId, expandedRadius, totalShown: history.shown_restaurants.length });
   } catch (error) {
     console.warn('⚠️ 更新餐廳歷史記錄失敗:', error);
+  }
+}
+
+/**
+ * 更新餐廳快取 - 儲存API搜索到的所有餐廳
+ * @param {Array} restaurants - 搜索到的餐廳列表
+ */
+function updateRestaurantCache(restaurants) {
+  try {
+    let history = getRestaurantHistory();
+
+    if (!history) {
+      history = {
+        timestamp: Date.now(),
+        shown_restaurants: [],
+        cached_restaurants: [],
+        expanded_radius: 0
+      };
+    }
+
+    // 確保 cached_restaurants 數組存在
+    if (!history.cached_restaurants) {
+      history.cached_restaurants = [];
+    }
+
+    // 合併新的餐廳到快取，避免重複
+    restaurants.forEach(restaurant => {
+      const exists = history.cached_restaurants.some(cached => cached.id === restaurant.id);
+      if (!exists) {
+        history.cached_restaurants.push(restaurant);
+      }
+    });
+
+    localStorage.setItem('restaurant_history', JSON.stringify(history));
+    console.log('📋 更新餐廳快取:', { 
+      新增: restaurants.length, 
+      總快取: history.cached_restaurants.length,
+      已顯示: history.shown_restaurants.length 
+    });
+  } catch (error) {
+    console.warn('⚠️ 更新餐廳快取失敗:', error);
+  }
+}
+
+/**
+ * 從快取中獲取可用餐廳
+ * @param {string} selectedMealTime - 選擇的用餐時段
+ * @returns {Array} 可用的餐廳列表
+ */
+function getAvailableRestaurantsFromCache(selectedMealTime) {
+  try {
+    const history = getRestaurantHistory();
+    
+    if (!history || !history.cached_restaurants || history.cached_restaurants.length === 0) {
+      console.log('📝 快取中沒有餐廳資料');
+      return [];
+    }
+
+    // 篩選：營業中 + 未出現過
+    const availableRestaurants = history.cached_restaurants.filter(restaurant => {
+      const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
+      const notShown = !history.shown_restaurants.includes(restaurant.id);
+      return isOpen && notShown;
+    });
+
+    console.log(`📊 快取篩選結果: ${availableRestaurants.length}家可用餐廳 (總快取${history.cached_restaurants.length}家)`);
+    return availableRestaurants;
+  } catch (error) {
+    console.warn('⚠️ 從快取獲取餐廳失敗:', error);
+    return [];
   }
 }
 
@@ -909,7 +980,37 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
   console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime, distanceConfig });
 
-  const history = getRestaurantHistory() || { shown_restaurants: [], expanded_radius: 0 };
+  // ========================================
+  // 第一步：檢查快取中是否有可用餐廳
+  // ========================================
+  const cachedRestaurants = getAvailableRestaurantsFromCache(selectedMealTime);
+  if (cachedRestaurants.length > 0) {
+    console.log('🚀 從快取中選擇餐廳，無需API調用');
+    
+    // 隨機選擇一家餐廳
+    const selectedRestaurant = cachedRestaurants[Math.floor(Math.random() * cachedRestaurants.length)];
+    
+    // 添加距離信息
+    if (userLocation) {
+      selectedRestaurant.distance = calculateDistance(
+        userLocation.lat, userLocation.lng,
+        selectedRestaurant.lat, selectedRestaurant.lng
+      );
+    }
+    
+    // 更新歷史記錄（標記為已顯示）
+    updateRestaurantHistory(selectedRestaurant.id, 0);
+    
+    console.log(`🎉 從快取獲取餐廳: ${selectedRestaurant.name}`);
+    return selectedRestaurant;
+  }
+
+  // ========================================
+  // 第二步：快取中沒有可用餐廳，調用API
+  // ========================================
+  console.log('📡 快取中沒有可用餐廳，開始API搜索...');
+
+  const history = getRestaurantHistory() || { shown_restaurants: [], cached_restaurants: [], expanded_radius: 0 };
   const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
   
   // 從新距離系統獲取參數
@@ -940,6 +1041,12 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     try {
       // 獲取餐廳列表，傳入搜索選項
       const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, searchOptions);
+
+      // 重要：將所有搜索到的餐廳加入快取
+      if (restaurants.length > 0) {
+        updateRestaurantCache(restaurants);
+        console.log(`📋 已將 ${restaurants.length} 家餐廳加入快取`);
+      }
 
       // 篩選：營業中 + 未出現過
       const availableRestaurants = restaurants.filter(restaurant => {
