@@ -1,6 +1,7 @@
 function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
+    const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
     
@@ -97,52 +98,63 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, [isSpinning, finalRestaurant, candidateList.length]);
 
+    // 修復後的動畫邏輯 - 解決無縫銜接問題
     React.useEffect(() => {
       if (isSpinning) {
         if (finalRestaurant && finalRestaurant.image) {
-          // API 已返回，構建最終序列並觸發慢速停止動畫
-          const extendedImages = [];
+          // API已返回，執行無縫銜接邏輯
+          console.log('🎰 API返回，開始無縫銜接動畫');
+          setAnimationPhase('slow');
 
-          // 添加一些 slot 圖片
-          for (let i = 0; i < 8; i++) {
-            extendedImages.push(...slotImages);
-          }
-          // 最後幾張 slot 圖片
-          extendedImages.push(slotImages[0], slotImages[1]);
+          // 構建最終序列：確保餐廳圖片在正確位置
+          const finalSequence = [];
+
+          // 從當前循環位置開始的完整循環
+          finalSequence.push(...slotImages);
+
+          // 添加額外的slot圖片確保足夠的滾動距離
+          finalSequence.push(...slotImages.slice(0, 2));
+
           // 餐廳圖片作為最後一張
-          extendedImages.push(finalRestaurant.image);
+          finalSequence.push(finalRestaurant.image);
 
-          setScrollingNames(extendedImages);
+          setScrollingNames(finalSequence);
 
-          // 觸發慢速停止動畫
+          // 設置動畫結束計時器（2秒後結束，對應CSS動畫時間）
           setTimeout(() => {
-            // 切換到慢速動畫
-            const container = document.querySelector('.animate-scroll-names');
-            if (container) {
-              container.classList.remove('animate-scroll-names');
-              container.classList.add('animate-scroll-slow-stop');
-
-              // 監聽動畫結束事件
-              container.addEventListener('animationend', () => {
-                // 通知父組件停止轉動
-                if (onSpin) {
-                  // 使用一個特殊的方式通知父組件動畫結束
-                  window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
-                }
-              }, { once: true });
-            }
-          }, 100);
+            console.log('🎰 動畫結束，觸發 slotAnimationEnd 事件');
+            setAnimationPhase('idle');
+            window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
+          }, 2050); // 稍微延長一點確保動畫完成
 
         } else {
-          // API 未返回，持續快速循環 slot 圖片
-          const extendedImages = [];
+          // API未返回，持續快速循環
+          console.log('🎰 開始快速循環，等待API返回');
+          setAnimationPhase('fast');
+
+          const fastSequence = [];
           for (let i = 0; i < 50; i++) {
-            extendedImages.push(...slotImages);
+            fastSequence.push(...slotImages);
           }
-          setScrollingNames(extendedImages);
+          setScrollingNames(fastSequence);
         }
+      } else {
+        setAnimationPhase('idle');
+        setScrollingNames([]);
       }
     }, [isSpinning, finalRestaurant]);
+
+    // 獲取當前動畫類別
+    const getAnimationClass = () => {
+      switch (animationPhase) {
+        case 'fast':
+          return 'animate-scroll-fast';
+        case 'slow':
+          return 'animate-scroll-slow-stop';
+        default:
+          return '';
+      }
+    };
 
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
@@ -165,7 +177,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
             <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
-              isSpinning ? 'animate-scroll-names' : ''
+              isSpinning ? getAnimationClass() : ''
             }`}>
               {isSpinning ? (
                 scrollingNames.map((imageSrc, index) => {

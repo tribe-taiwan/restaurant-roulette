@@ -92,34 +92,52 @@
             100% { transform: translateY(0); }
         }
         
-        .animate-scroll-names {
-            animation: scrollNames 0.5s linear infinite;
+        /* 修復後的老虎機動畫 - 解決無縫銜接問題 */
+        .animate-scroll-fast {
+            animation: scrollFast 0.1s linear infinite;
         }
 
         .animate-scroll-slow-stop {
             animation: scrollSlowStop 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        @keyframes scrollNames {
+        /* 保留原始動畫作為備用 */
+        .animate-scroll-names {
+            animation: scrollNames 0.5s linear infinite;
+        }
+
+        /* 快速滾動 - 更短的循環週期確保更好的銜接 */
+        @keyframes scrollFast {
             0% {
                 transform: translateY(0);
             }
             100% {
-                transform: translateY(-1536px); /* 6張圖片 * 256px */
+                transform: translateY(-256px); /* h-64 = 256px，一張圖片的高度 */
             }
         }
 
+        /* 慢速停止 - 精確停在餐廳圖片位置 */
         @keyframes scrollSlowStop {
             0% {
                 transform: translateY(0);
                 animation-timing-function: ease-out;
             }
             70% {
-                transform: translateY(-2000px);
+                transform: translateY(-1792px); /* 7張圖片的高度 */
                 animation-timing-function: ease-in;
             }
             100% {
-                transform: translateY(-2304px); /* 停在餐廳圖片 */
+                transform: translateY(-2048px); /* 8張圖片的高度，停在餐廳圖片 */
+            }
+        }
+
+        /* 原始動畫（保留作為備用） */
+        @keyframes scrollNames {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-1536px); /* 6張圖片 * 256px */
             }
         }
 

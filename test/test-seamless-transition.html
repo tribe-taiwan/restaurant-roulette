@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老虎機無縫銜接測試 - 使用真實圖片</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .slot-container {
+            height: 256px;
+            width: 400px;
+            margin: 20px auto;
+            overflow: hidden;
+            border: 3px solid #fbbf24;
+            border-radius: 8px;
+            position: relative;
+            background: #f9fafb;
+        }
+
+        .slot-reel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slot-item {
+            height: 256px;
+            width: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .slot-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 原始動畫（有問題） */
+        .animate-original-fast {
+            animation: originalFast 0.5s linear infinite;
+        }
+
+        .animate-original-slow {
+            animation: originalSlow 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes originalFast {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-1536px); /* 6張圖片 */ }
+        }
+
+        @keyframes originalSlow {
+            0% { transform: translateY(0); }  /* 問題：重新從0開始 */
+            70% { transform: translateY(-2000px); }
+            100% { transform: translateY(-2304px); }
+        }
+
+        /* 修復後的動畫 */
+        .animate-fixed-fast {
+            animation: fixedFast 0.1s linear infinite;
+        }
+
+        .animate-fixed-slow {
+            animation: fixedSlow 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes fixedFast {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-256px); /* 1張圖片高度 */ }
+        }
+
+        @keyframes fixedSlow {
+            0% { transform: translateY(0); }
+            70% { transform: translateY(-1792px); /* 7張圖片 */ }
+            100% { transform: translateY(-2048px); /* 8張圖片，停在餐廳圖片 */ }
+        }
+
+        .test-section {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .test-section.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn.danger {
+            background: #dc2626;
+        }
+
+        .btn.danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn.success {
+            background: #059669;
+        }
+
+        .btn.success:hover {
+            background: #047857;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status.idle {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .status.spinning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .restaurant-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #1f2937;">老虎機無縫銜接測試</h1>
+        <p style="text-align: center; color: #6b7280;">使用真實slot圖片測試動畫銜接效果</p>
+
+        <!-- 原始版本測試 -->
+        <div class="test-section" id="api-test-section">
+            <h3 style="color: #059669;">🔍 Google Places 新版API測試</h3>
+            <div class="slot-container">
+                <div id="api-test-result" style="padding: 20px; text-align: center;">
+                    <div id="api-status">準備測試新版API...</div>
+                    <div id="api-image-container" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+            <div class="status idle" id="api-test-status">狀態: 等待測試</div>
+            <button class="btn success" onclick="testNewPlacesAPI()" id="api-test-btn">測試新版Places API</button>
+        </div>
+
+        <!-- 修復版本測試 -->
+        <div class="test-section" id="fixed-section">
+            <h3 style="color: #059669;">✅ 修復版本（無縫銜接）</h3>
+            <div class="slot-container">
+                <div class="slot-reel" id="fixed-reel">
+                    <!-- 圖片將由JavaScript動態添加 -->
+                </div>
+                <div class="debug-info" id="fixed-debug">等待測試</div>
+            </div>
+            <div class="status idle" id="fixed-status">狀態: 等待測試</div>
+            <button class="btn success" onclick="testFixed()" id="fixed-btn">測試修復版本</button>
+        </div>
+
+        <!-- 對比測試 -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn" onclick="runComparison()" id="compare-btn">運行對比測試</button>
+        </div>
+
+        <!-- 說明 -->
+        <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <h4>測試重點：</h4>
+            <ul style="text-align: left;">
+                <li><strong>原始版本</strong>：注意動畫切換時的跳躍</li>
+                <li><strong>修復版本</strong>：餐廳圖片無縫接在slot圖片之後</li>
+                <li><strong>關鍵差異</strong>：快速循環週期和動畫銜接邏輯</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 載入API配置 -->
+    <script src="../utils/locationUtils.js"></script>
+    <!-- 直接載入本地API Key（修復路徑問題） -->
+    <script>
+        // 直接從正確路徑載入API Key
+        fetch('../_local/.api_key')
+            .then(response => response.text())
+            .then(apiKey => {
+                if (window.GOOGLE_PLACES_CONFIG) {
+                    window.GOOGLE_PLACES_CONFIG.API_KEY = apiKey.trim();
+                    console.log('✅ 測試頁面：本地 API Key 已載入');
+                }
+            })
+            .catch(error => {
+                console.error('❌ 測試頁面：無法讀取 .api_key 檔案:', error);
+            });
+    </script>
+
+    <script>
+        // 真實的slot圖片路徑
+        const slotImages = [
+            '../assets/image/slot-machine/slot (1).jpg',
+            '../assets/image/slot-machine/slot (2).jpg',
+            '../assets/image/slot-machine/slot (3).jpg',
+            '../assets/image/slot-machine/slot (4).jpg',
+            '../assets/image/slot-machine/slot (5).jpg',
+            '../assets/image/slot-machine/slot (6).jpg'
+        ];
+
+        // API返回的餐廳圖片
+        let restaurantImage = null;
+        let testPlacesService = null;
+
+        // 使用真實API獲取餐廳圖片
+        async function getRestaurantImage() {
+            if (restaurantImage) return restaurantImage; // 已獲取過
+
+            console.log('🔍 開始獲取真實餐廳圖片...');
+
+            try {
+                // 等待API Key載入完成
+                let attempts = 0;
+                while (attempts < 20) {
+                    if (window.GOOGLE_PLACES_CONFIG &&
+                        window.GOOGLE_PLACES_CONFIG.API_KEY &&
+                        !window.GOOGLE_PLACES_CONFIG.API_KEY.includes('%%')) {
+                        console.log('✅ 檢測到本地API Key已載入');
+                        break;
+                    }
+                    console.log(`⏳ 等待API Key載入... (${attempts + 1}/20)`);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                }
+
+                if (!window.GOOGLE_PLACES_CONFIG ||
+                    !window.GOOGLE_PLACES_CONFIG.API_KEY ||
+                    window.GOOGLE_PLACES_CONFIG.API_KEY.includes('%%')) {
+                    throw new Error('API Key載入超時');
+                }
+
+                // 使用真實API Key初始化Google Maps
+                console.log('📡 使用真實API Key初始化Google Maps...');
+
+                if (!testPlacesService) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = `https://maps.googleapis.com/maps/api/js?key=${window.GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=initRealAPI`;
+                        script.async = true;
+
+                        window.initRealAPI = () => {
+                            try {
+                                console.log('🗺️ 創建地圖服務...');
+                                const mapDiv = document.createElement('div');
+                                mapDiv.style.display = 'none';
+                                document.body.appendChild(mapDiv);
+
+                                const testMap = new google.maps.Map(mapDiv, {
+                                    center: { lat: 22.9908, lng: 120.2133 },
+                                    zoom: 15
+                                });
+
+                                testPlacesService = new google.maps.places.PlacesService(testMap);
+                                console.log('✅ Google Maps API初始化完成');
+                                resolve();
+                            } catch (error) {
+                                reject(error);
+                            }
+                        };
+
+                        script.onerror = () => reject(new Error('Google Maps API載入失敗'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                console.log('🔍 搜索台南附近餐廳...');
+
+                // 搜索餐廳並獲取圖片
+                return new Promise((resolve) => {
+                    const request = {
+                        location: { lat: 22.9908, lng: 120.2133 },
+                        radius: 1000,
+                        type: 'restaurant'
+                    };
+
+                    testPlacesService.nearbySearch(request, (results, status) => {
+                        console.log('📊 搜索結果:', status, results ? results.length : 0);
+
+                        if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+                            for (let restaurant of results) {
+                                if (restaurant.photos && restaurant.photos.length > 0) {
+                                    restaurantImage = restaurant.photos[0].getUrl({ maxWidth: 400 });
+                                    console.log('✅ 獲取真實餐廳圖片:', restaurant.name, restaurantImage);
+                                    resolve(restaurantImage);
+                                    return;
+                                }
+                            }
+                        }
+
+                        console.log('⚠️ 未找到有照片的餐廳，使用紅色備用');
+                        restaurantImage = 'fallback-red';
+                        resolve(restaurantImage);
+                    });
+                });
+
+            } catch (error) {
+                console.error('❌ API錯誤:', error);
+                restaurantImage = 'fallback-red';
+                return restaurantImage;
+            }
+        }
+
+        let currentTest = null;
+
+        function createSlotItems(images, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            images.forEach((src, index) => {
+                const item = document.createElement('div');
+                item.className = 'slot-item';
+                
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = `slot-${index}`;
+                img.onerror = function() {
+                    // 如果是餐廳圖片載入失敗，顯示紅色背景
+                    if (src === restaurantImage || src === 'fallback-red' || (src && (src.includes('googleusercontent.com') || src.includes('unsplash.com')))) {
+                        this.style.background = '#dc2626';
+                        this.style.display = 'flex';
+                        this.style.alignItems = 'center';
+                        this.style.justifyContent = 'center';
+                        this.innerHTML = `<span style="color: white; font-size: 24px;">🍽️ 餐廳圖片</span>`;
+                    } else {
+                        this.style.background = '#e5e7eb';
+                        this.style.display = 'flex';
+                        this.style.alignItems = 'center';
+                        this.style.justifyContent = 'center';
+                        this.innerHTML = `<span style="color: #6b7280;">圖片 ${index + 1}</span>`;
+                    }
+                };
+
+                // 如果是紅色備用，直接觸發錯誤處理顯示紅色背景
+                if (src === 'fallback-red') {
+                    img.onerror();
+                }
+                
+                item.appendChild(img);
+                
+                // 如果是餐廳圖片，添加覆蓋層
+                if (src === restaurantImage || src === 'fallback-red' || (src && src.includes('googleusercontent.com'))) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'restaurant-overlay';
+                    overlay.textContent = '🎉 找到餐廳！';
+                    item.appendChild(overlay);
+                }
+                
+                container.appendChild(item);
+            });
+        }
+
+        function updateStatus(type, status, message) {
+            const statusEl = document.getElementById(`${type}-status`);
+            const debugEl = document.getElementById(`${type}-debug`);
+            
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = `狀態: ${message}`;
+            debugEl.textContent = message;
+        }
+
+        // 測試新版Google Places API
+        async function testNewPlacesAPI() {
+            if (currentTest) return;
+            currentTest = 'api-test';
+
+            const section = document.getElementById('api-test-section');
+            section.classList.add('active');
+
+            const statusDiv = document.getElementById('api-status');
+            const imageContainer = document.getElementById('api-image-container');
+            const testBtn = document.getElementById('api-test-btn');
+
+            testBtn.disabled = true;
+            statusDiv.textContent = '初始化新版Places API...';
+            imageContainer.innerHTML = '';
+
+            try {
+                // 等待API Key載入
+                let attempts = 0;
+                while (attempts < 20) {
+                    if (window.GOOGLE_PLACES_CONFIG &&
+                        window.GOOGLE_PLACES_CONFIG.API_KEY &&
+                        !window.GOOGLE_PLACES_CONFIG.API_KEY.includes('%%')) {
+                        break;
+                    }
+                    statusDiv.textContent = `等待API Key載入... (${attempts + 1}/20)`;
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                }
+
+                if (!window.GOOGLE_PLACES_CONFIG ||
+                    !window.GOOGLE_PLACES_CONFIG.API_KEY ||
+                    window.GOOGLE_PLACES_CONFIG.API_KEY.includes('%%')) {
+                    throw new Error('API Key載入失敗');
+                }
+
+                statusDiv.textContent = '載入Google Maps API...';
+
+                // 載入Google Maps API（測試頁面獨立載入）
+                if (!window.google || !window.google.maps) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = `https://maps.googleapis.com/maps/api/js?key=${window.GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=initTestAPI`;
+                        script.async = true;
+
+                        window.initTestAPI = () => {
+                            statusDiv.textContent = '✅ Google Maps API載入完成';
+                            resolve();
+                        };
+
+                        script.onerror = () => reject(new Error('Google Maps API載入失敗'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                statusDiv.textContent = '搜索台南附近餐廳...';
+
+                // 使用新版Places API搜索餐廳
+                const { Place } = await google.maps.importLibrary("places");
+
+                const request = {
+                    textQuery: 'restaurant in Tainan',
+                    fields: ['displayName', 'photos', 'location'],
+                    locationBias: { lat: 22.9908, lng: 120.2133 },
+                    maxResultCount: 10
+                };
+
+                const { places } = await Place.searchByText(request);
+
+                if (places && places.length > 0) {
+                    // 找第一個有照片的餐廳
+                    for (let place of places) {
+                        if (place.photos && place.photos.length > 0) {
+                            const photoUrl = place.photos[0].getURI({ maxWidth: 400 });
+
+                            statusDiv.textContent = `✅ 找到餐廳: ${place.displayName}`;
+
+                            const img = document.createElement('img');
+                            img.src = photoUrl;
+                            img.style.maxWidth = '100%';
+                            img.style.borderRadius = '8px';
+                            img.onload = () => {
+                                statusDiv.textContent = `✅ 成功載入餐廳圖片: ${place.displayName}`;
+                            };
+                            img.onerror = () => {
+                                statusDiv.textContent = `❌ 圖片載入失敗: ${place.displayName}`;
+                            };
+
+                            imageContainer.appendChild(img);
+
+                            // 設置為餐廳圖片供老虎機使用
+                            restaurantImage = photoUrl;
+                            console.log('✅ 新版API獲取餐廳圖片:', place.displayName, photoUrl);
+                            break;
+                        }
+                    }
+                } else {
+                    throw new Error('未找到餐廳');
+                }
+
+            } catch (error) {
+                console.error('❌ 新版API測試失敗:', error);
+                statusDiv.textContent = `❌ 測試失敗: ${error.message}`;
+                imageContainer.innerHTML = '<div style="color: red;">測試失敗</div>';
+            } finally {
+                section.classList.remove('active');
+                testBtn.disabled = false;
+                currentTest = null;
+            }
+        }
+
+        async function testFixed() {
+            if (currentTest) return;
+            currentTest = 'fixed';
+
+            const section = document.getElementById('fixed-section');
+            section.classList.add('active');
+
+            updateStatus('fixed', 'spinning', '開始修復測試...');
+            document.getElementById('fixed-btn').disabled = true;
+
+            // 先設置快速循環序列
+            const fastImages = [];
+            for (let i = 0; i < 20; i++) {
+                fastImages.push(...slotImages);
+            }
+
+            createSlotItems(fastImages, 'fixed-reel');
+
+            const reel = document.getElementById('fixed-reel');
+            reel.className = 'slot-reel animate-fixed-fast';
+
+            // 模擬API返回
+            setTimeout(async () => {
+                updateStatus('fixed', 'spinning', '獲取餐廳圖片...');
+                const apiImage = await getRestaurantImage();
+
+                updateStatus('fixed', 'spinning', 'API返回，重建序列...');
+
+                // 修復：重新構建序列
+                const finalSequence = [
+                    ...slotImages,
+                    ...slotImages.slice(0, 2),
+                    apiImage // 使用API返回的圖片
+                ];
+
+                createSlotItems(finalSequence, 'fixed-reel');
+                
+                // 平滑切換動畫
+                setTimeout(() => {
+                    const newReel = document.getElementById('fixed-reel');
+                    newReel.classList.remove('animate-fixed-fast');
+                    newReel.classList.add('animate-fixed-slow');
+                    
+                    newReel.addEventListener('animationend', () => {
+                        updateStatus('fixed', 'success', '完成（無縫銜接）');
+                        section.classList.remove('active');
+                        document.getElementById('fixed-btn').disabled = false;
+                        currentTest = null;
+                    }, { once: true });
+                }, 50);
+            }, 2000);
+        }
+
+        function runComparison() {
+            if (currentTest) return;
+            
+            document.getElementById('compare-btn').disabled = true;
+            
+            // 先測試新版API
+            setTimeout(() => {
+                testNewPlacesAPI();
+                
+                // 等API測試完成後測試修復版本
+                const checkAPI = setInterval(() => {
+                    if (!currentTest) {
+                        clearInterval(checkAPI);
+                        setTimeout(() => {
+                            testFixed();
+                            
+                            // 等修復版本完成後重新啟用按鈕
+                            const checkFixed = setInterval(() => {
+                                if (!currentTest) {
+                                    clearInterval(checkFixed);
+                                    document.getElementById('compare-btn').disabled = false;
+                                }
+                            }, 500);
+                        }, 1000);
+                    }
+                }, 500);
+            }, 500);
+        }
+
+        // 頁面載入完成後的初始化
+        window.addEventListener('load', () => {
+            console.log('測試頁面載入完成');
+            console.log('Slot圖片路徑:', slotImages);
+            console.log('GOOGLE_PLACES_CONFIG:', window.GOOGLE_PLACES_CONFIG);
+
+            // 檢查API配置
+            if (window.GOOGLE_PLACES_CONFIG) {
+                console.log('API Key狀態:', window.GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 20) + '...');
+            } else {
+                console.error('❌ locationUtils.js 未正確載入');
+            }
+        });
+    </script>
+</body>
+</html>
