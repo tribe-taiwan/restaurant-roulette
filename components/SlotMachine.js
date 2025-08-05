@@ -445,39 +445,41 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               )}
             </div>
             
-            {/* Restaurant Info Labels - Bottom Left */}
+            {/* Price Label - 完全獨立的絕對定位 */}
+            {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
+              <div className="absolute bottom-10 left-4 pointer-events-none">
+                <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
+                  {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
+                </div>
+              </div>
+            )}
+
+            {/* Rating and Type Tags - 獨立的絕對定位 */}
             {finalRestaurant && !isSpinning && (
-              <div className="absolute bottom-4 left-4 pointer-events-none">
-                {/* Price Label */}
-                {finalRestaurant.priceLevel && (
-                  <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold mb-2">
-                    {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
-                  </div>
-                )}
-                
-                {/* Rating Label with Restaurant Type Tags */}
-                {finalRestaurant.rating && finalRestaurant.rating > 0 && (
-                  <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium mb-1 flex items-center gap-2">
-                    <div className="flex items-center gap-1">
+              <div className="absolute bottom-2 left-4 pointer-events-none">
+                <div className="flex items-center gap-2">
+                  {/* Rating Label - 只包含星號和評分 */}
+                  {finalRestaurant.rating && finalRestaurant.rating > 0 && (
+                    <div className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                       <span className="flex items-center">{renderStars(finalRestaurant.rating)}</span>
                       <span>{finalRestaurant.rating}</span>
                       {finalRestaurant.reviewCount && finalRestaurant.reviewCount > 0 && (
                         <span>({finalRestaurant.reviewCount.toLocaleString()})</span>
                       )}
                     </div>
-                    
-                    {/* Restaurant Type Tags - 放在星號右邊 */}
-                    {finalRestaurant.cuisine && finalRestaurant.cuisine.length > 0 && (
-                      <div className="flex gap-1">
-                        {finalRestaurant.cuisine.slice(0, 2).map((type, index) => (
-                          <div key={index} className="bg-gray-600 bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs">
-                            {type}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+
+                  {/* Restaurant Type Tags - 獨立顯示，無背景遮罩 */}
+                  {finalRestaurant.cuisine && finalRestaurant.cuisine.length > 0 && (
+                    <div className="flex gap-1">
+                      {finalRestaurant.cuisine.slice(0, 2).map((type, index) => (
+                        <div key={index} className="bg-black bg-opacity-50 text-white px-1.5 py-0.5 rounded text-xs">
+                          {type}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             
