@@ -16,6 +16,25 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       ms: { 1: 'Bajet', 2: 'Sederhana', 3: 'Mahal', 4: 'Mewah' }
     };
     
+    // 複用RestaurantCard的星級顯示邏輯
+    const renderStars = (rating) => {
+      if (!rating || rating <= 0) return null;
+      
+      const fullStars = Math.round(rating);
+      const emptyStars = 5 - fullStars;
+      
+      return (
+        <>
+          {[...Array(fullStars)].map((_, i) => (
+            <span key={`full-${i}`} className="text-[#fbbc04]">★</span>
+          ))}
+          {[...Array(emptyStars)].map((_, i) => (
+            <span key={`empty-${i}`} className="text-gray-400">☆</span>
+          ))}
+        </>
+      );
+    };
+
     // 導航URL生成函數（複製自RestaurantCard）
     const getDirectionsUrl = (restaurant) => {
       console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
@@ -420,10 +439,37 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               )}
             </div>
             
-            {/* Price Label - Bottom Left */}
-            {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
-              <div className="absolute bottom-4 left-4 bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold pointer-events-none">
-                {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
+            {/* Restaurant Info Labels - Bottom Left */}
+            {finalRestaurant && !isSpinning && (
+              <div className="absolute bottom-4 left-4 pointer-events-none">
+                {/* Price Label */}
+                {finalRestaurant.priceLevel && (
+                  <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold mb-2">
+                    {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
+                  </div>
+                )}
+                
+                {/* Rating Label */}
+                {finalRestaurant.rating && finalRestaurant.rating > 0 && (
+                  <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium mb-1 flex items-center gap-1">
+                    <span className="flex items-center">{renderStars(finalRestaurant.rating)}</span>
+                    <span>{finalRestaurant.rating}</span>
+                    {finalRestaurant.reviewCount && finalRestaurant.reviewCount > 0 && (
+                      <span>({finalRestaurant.reviewCount.toLocaleString()})</span>
+                    )}
+                  </div>
+                )}
+                
+                {/* Restaurant Type Tags */}
+                {finalRestaurant.cuisine && finalRestaurant.cuisine.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {finalRestaurant.cuisine.slice(0, 2).map((type, index) => (
+                      <div key={index} className="bg-gray-800 bg-opacity-80 text-white px-2 py-1 rounded text-xs">
+                        {type}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             

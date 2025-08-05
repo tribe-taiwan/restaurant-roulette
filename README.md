@@ -1,4 +1,4 @@
-# 🍽️ Restaurant Roulette - 甲崩喔
+# 🍽️ Restaurant Roulette/甲崩喔 - 台灣智能經貿協會   
 [![GitHub stars](https://img.shields.io/github/stars/AndrewShih1210/restaurant-roulette?style=social)](https://github.com/AndrewShih1210/restaurant-roulette)
 [![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://restaurant-roulette.web.app)
 
@@ -63,12 +63,12 @@ npm run build && npm start
 
 ## 👥 夢幻開發團隊
 
-| 核心成員                                                                                                                             | 專業領域         | GitHub   |
+| 技術團隊 - 台灣智能經貿協會                                                                                                                  | 專業領域         | GitHub   |
 |----------------------------------------------------------------------------------------------------------------------------------|--------------|----------|
 | **行銷鬼才 [陳彦良](https://github.com/a0000001)** ![GitHub](https://img.shields.io/badge/GitHub-a0000001-blue?logo=github)             | 系統架構 & AI 整合 | 🏆 核心開發 |
 | **教育博士 [施育廷](https://github.com/AndrewShih1210)** ![GitHub](https://img.shields.io/badge/GitHub-AndrewShih1210-blue?logo=github) | 前瞻技術研究       | 🎯 創新顧問  |
 | **新創高手 [歐孟堅](https://github.com/omjomjomj)** ![GitHub](https://img.shields.io/badge/GitHub-omjomjomj-blue?logo=github)           | 資訊整合協調       | 🎯 技術顧問  |
-| **高級顧問 [王子德](https://github.com/woyo)** ![GitHub](https://img.shields.io/badge/GitHub-woyo-blue?logo=github)                | QA & CI/CD   | 🚀 自動化測試 |
+| **高級顧問 [王子德](https://github.com/woyo)** ![GitHub](https://img.shields.io/badge/GitHub-woyo-blue?logo=github)                     | QA & CI/CD   | 🚀 自動化測試 |
 ---
 
 ## 🌟 使用場景

@@ -19,8 +19,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           hoursNotAvailable: 'Hours not available',
           viewLocation: 'View location',
           clickToViewPhotos: 'Click to view Google Maps photos',
-          viewRoute: 'View Route & Navigation',
-          viewWebsite: 'Visit Website',
+          viewRoute: 'Route & Navigation',
+          viewWebsite: 'Website',
           address: 'Address',
           phone: 'Phone',
           businessHours: 'Business Hours',
@@ -33,8 +33,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           hoursNotAvailable: '營業時間不可用',
           viewLocation: '查看位置',
           clickToViewPhotos: '點擊查看Google地圖照片',
-          viewRoute: '查看路線與導航',
-          viewWebsite: '查看網站',
+          viewRoute: '路線與導航',
+          viewWebsite: '網站',
           address: '地址',
           phone: '電話',
           businessHours: '營業時間',
@@ -199,7 +199,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
     return (
       <div className="card w-full max-w-2xl mx-auto" data-name="restaurant-card" data-file="components/RestaurantCard.js">
-        {/* Restaurant Header */}
+        {/* Restaurant Header - 暫時註解掉 */}
+        {/* 
         <div className="mb-6">
           <h2 className="text-3xl font-bold mb-3 text-[var(--text-primary)]">{restaurant.name}</h2>
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -208,7 +209,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
               <span className="text-[var(--text-secondary)] font-medium ml-1">{restaurant.rating}</span>
               <span className="text-[var(--text-secondary)]">({restaurant.reviewCount.toLocaleString()})</span>
             </div>
-            {/* Cuisine Type 顯示在星級評分右邊 */}
             <div className="flex flex-wrap gap-1 ml-2">
               {restaurant.cuisine.map((type, index) => (
                 <span key={index} className="bg-[var(--primary-color)] text-white px-2 py-1 rounded-full text-xs">
@@ -218,6 +218,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             </div>
           </div>
         </div>
+        */}
 
         {/* Restaurant Info */}
         <div>
@@ -227,9 +228,9 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                 href={getDirectionsUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                className="btn-primary flex-1 text-lg inline-flex items-center justify-center gap-2"
               >
-                <div className="icon-navigation text-sm"></div>
+                <div className="icon-navigation text-lg"></div>
                 {getTranslation('viewRoute')}
               </a>
 
@@ -238,9 +239,9 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                   href={restaurant.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  className="btn-primary flex-1 text-lg inline-flex items-center justify-center gap-2"
                 >
-                  <div className="icon-globe text-sm"></div>
+                  <div className="icon-globe text-lg"></div>
                   {getTranslation('viewWebsite')}
                 </a>
               )}
