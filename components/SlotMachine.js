@@ -5,7 +5,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const [fastAnimationLevel, setFastAnimationLevel] = React.useState(1); // 1-5 漸進式減速級別
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
-    
+
+    // 滑動轉場狀態
+    const [isSliding, setIsSliding] = React.useState(false);
+    const [currentImage, setCurrentImage] = React.useState(null);
+    const [nextImage, setNextImage] = React.useState(null);
+    const [slideDirection, setSlideDirection] = React.useState('left');
+
     // 使用共用的價位標籤
     const priceLabels = window.getPriceLabels();
     
@@ -27,6 +33,48 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const getDirectionsUrl = (restaurant) => {
       return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     };
+
+    // 滑動轉場函數
+    const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
+      if (isSliding || isSpinning) return;
+
+      const getCurrentImageUrl = () => {
+        if (finalRestaurant && finalRestaurant.image) return finalRestaurant.image;
+        return null;
+      };
+
+      const getNewImageUrl = () => {
+        if (newRestaurant && newRestaurant.image) return newRestaurant.image;
+        return null;
+      };
+
+      const currentImg = getCurrentImageUrl();
+      const newImg = getNewImageUrl();
+
+      // 只有當圖片不同時才執行滑動轉場
+      if (currentImg === newImg) return;
+
+      setCurrentImage(currentImg);
+      setNextImage(newImg);
+      setSlideDirection(direction);
+      setIsSliding(true);
+
+      // 300ms後完成動畫
+      setTimeout(() => {
+        setIsSliding(false);
+        setCurrentImage(null);
+        setNextImage(null);
+      }, 300);
+    }, [finalRestaurant, isSliding, isSpinning]);
+
+    // 監聽finalRestaurant變化，觸發滑動轉場
+    const previousRestaurant = React.useRef(finalRestaurant);
+    React.useEffect(() => {
+      if (previousRestaurant.current !== finalRestaurant && !isSpinning) {
+        triggerSlideTransition(finalRestaurant, 'left');
+      }
+      previousRestaurant.current = finalRestaurant;
+    }, [finalRestaurant, isSpinning, triggerSlideTransition]);
 
     // 🎯 動態偵測圖片數量 - 自動適應資料夾中的圖片
     const [slotImages, setSlotImages] = React.useState([
@@ -316,24 +364,63 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center mb-6">
           
-          {/* Restaurant Image Display */}
-          <div 
+          {/* Restaurant Image Display with Slide Transition */}
+          <div
             className="group rounded-t-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
-            style={{
-              backgroundImage: finalRestaurant && finalRestaurant.image ? 
-                `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` : 
-                slotImages.length > 0 ? 
-                  `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${slotImages[slotImages.length - 1]})` : 
-                  'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onClick={() => finalRestaurant && !isSpinning && onImageClick && onImageClick()}
             title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
+            {/* 滑動轉場容器 */}
+            {isSliding && (currentImage || nextImage) ? (
+              <div className="absolute inset-0 overflow-hidden">
+                {/* 當前圖片 - 滑出 */}
+                {currentImage && (
+                  <div
+                    className="absolute inset-0 w-full h-full transition-transform duration-300 ease-out"
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      transform: slideDirection === 'left' ? 'translateX(-100%)' : 'translateX(100%)',
+                      zIndex: 1
+                    }}
+                  />
+                )}
+                {/* 下一張圖片 - 從右側滑入 */}
+                {nextImage && (
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${nextImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
+                      animation: slideDirection === 'left' ? 'slideInFromRight 300ms ease-out forwards' : 'slideInFromLeft 300ms ease-out forwards',
+                      zIndex: 2
+                    }}
+                  />
+                )}
+              </div>
+            ) : (
+              /* 正常顯示狀態 */
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: finalRestaurant && finalRestaurant.image ?
+                    `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` :
+                    slotImages.length > 0 ?
+                      `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${slotImages[slotImages.length - 1]})` :
+                      'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              />
+            )}
+
+            {/* 內容覆蓋層 */}
             <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
               isSpinning ? getAnimationClass() : ''
             }`}>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滑動轉場效果測試</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* 滑動轉場動畫 */
+        @keyframes slideInFromRight {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useCallback, useRef, useEffect } = React;
+
+        function SlideTransitionTest() {
+            // 滑動轉場狀態
+            const [isSliding, setIsSliding] = useState(false);
+            const [currentImage, setCurrentImage] = useState(null);
+            const [nextImage, setNextImage] = useState(null);
+            const [slideDirection, setSlideDirection] = useState('left');
+            
+            // 測試圖片
+            const testImages = [
+                'https://picsum.photos/400/300?random=1',
+                'https://picsum.photos/400/300?random=2',
+                'https://picsum.photos/400/300?random=3',
+                'https://picsum.photos/400/300?random=4',
+                'https://picsum.photos/400/300?random=5'
+            ];
+            
+            const [currentImageIndex, setCurrentImageIndex] = useState(0);
+            const [displayImage, setDisplayImage] = useState(testImages[0]);
+
+            // 滑動轉場函數
+            const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
+                if (isSliding) return;
+                
+                const currentImg = displayImage;
+                const newImg = newImageUrl;
+                
+                // 只有當圖片不同時才執行滑動轉場
+                if (currentImg === newImg) return;
+                
+                setCurrentImage(currentImg);
+                setNextImage(newImg);
+                setSlideDirection(direction);
+                setIsSliding(true);
+                
+                // 300ms後完成動畫並更新顯示圖片
+                setTimeout(() => {
+                    setIsSliding(false);
+                    setCurrentImage(null);
+                    setNextImage(null);
+                    setDisplayImage(newImg);
+                }, 300);
+            }, [displayImage, isSliding]);
+
+            // 下一張圖片
+            const goToNextImage = () => {
+                const nextIndex = (currentImageIndex + 1) % testImages.length;
+                setCurrentImageIndex(nextIndex);
+                triggerSlideTransition(testImages[nextIndex], 'left');
+            };
+
+            // 上一張圖片
+            const goToPrevImage = () => {
+                const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
+                setCurrentImageIndex(prevIndex);
+                triggerSlideTransition(testImages[prevIndex], 'right');
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto">
+                    <h1 className="text-3xl font-bold text-center mb-8">滑動轉場效果測試</h1>
+                    
+                    {/* 圖片顯示區域 */}
+                    <div className="relative w-full h-64 mb-6 rounded-lg overflow-hidden bg-gray-200">
+                        {/* 滑動轉場容器 */}
+                        {isSliding && (currentImage || nextImage) ? (
+                            <div className="absolute inset-0 overflow-hidden">
+                                {/* 當前圖片 - 滑出 */}
+                                {currentImage && (
+                                    <div 
+                                        className="absolute inset-0 w-full h-full transition-transform duration-300 ease-out"
+                                        style={{
+                                            backgroundImage: `url(${currentImage})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            transform: slideDirection === 'left' ? 'translateX(-100%)' : 'translateX(100%)',
+                                            zIndex: 1
+                                        }}
+                                    />
+                                )}
+                                {/* 下一張圖片 - 從右側滑入 */}
+                                {nextImage && (
+                                    <div 
+                                        className="absolute inset-0 w-full h-full"
+                                        style={{
+                                            backgroundImage: `url(${nextImage})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
+                                            animation: slideDirection === 'left' ? 'slideInFromRight 300ms ease-out forwards' : 'slideInFromLeft 300ms ease-out forwards',
+                                            zIndex: 2
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        ) : (
+                            /* 正常顯示狀態 */
+                            <div 
+                                className="absolute inset-0"
+                                style={{
+                                    backgroundImage: `url(${displayImage})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center'
+                                }}
+                            />
+                        )}
+                        
+                        {/* 狀態指示器 */}
+                        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+                            {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
+                        </div>
+                    </div>
+                    
+                    {/* 控制按鈕 */}
+                    <div className="flex justify-center gap-4">
+                        <button
+                            onClick={goToPrevImage}
+                            disabled={isSliding}
+                            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            ← 上一張
+                        </button>
+                        <button
+                            onClick={goToNextImage}
+                            disabled={isSliding}
+                            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            下一張 →
+                        </button>
+                    </div>
+                    
+                    {/* 說明 */}
+                    <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+                        <h3 className="font-bold mb-2">測試說明：</h3>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>點擊「下一張」按鈕測試左滑效果（新圖片從右側滑入）</li>
+                            <li>點擊「上一張」按鈕測試右滑效果（新圖片從左側滑入）</li>
+                            <li>滑動過程中按鈕會被禁用，防止重複觸發</li>
+                            <li>動畫時長為 300ms，使用 ease-out 緩動函數</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<SlideTransitionTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>

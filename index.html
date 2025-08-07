@@ -122,7 +122,26 @@
 
         /* 注意：實際使用的動畫由 JavaScript 動態生成：scrollFastDynamic 和 scrollSlowStopDynamic */
 
-        
+        /* 滑動轉場動畫 */
+        @keyframes slideInFromRight {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+
         /* 滑桿樣式 */
         .slider {
             background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) var(--value, 25%), #374151 var(--value, 25%), #374151 100%);
