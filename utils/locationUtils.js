@@ -228,6 +228,66 @@ function initializeGoogleMaps() {
  * @param {string} selectedMealTime - 選擇的用餐時段 ('breakfast', 'lunch', 'dinner', 'all')
  * @returns {boolean} 是否營業
  */
+/**
+ * 計算餐廳距離關門還有幾分鐘（用於20分鐘緩衝區）
+ * @param {Object} openingHours - Google Places API 營業時間物件
+ * @returns {number|null} 距離關門的分鐘數，如果無法計算則返回 null
+ */
+function calculateMinutesUntilClose(openingHours) {
+  if (!openingHours || !openingHours.periods) {
+    return null;
+  }
+
+  const now = new Date();
+  const currentDay = now.getDay();
+  const currentTime = now.getHours() * 100 + now.getMinutes();
+
+  try {
+    // 找到今天的營業時間
+    for (const period of openingHours.periods) {
+      if (!period.open || !period.close) continue;
+      
+      const openTime = parseInt(period.open.time);
+      const closeTime = parseInt(period.close.time);
+      
+      // 檢查今天的營業時段
+      if (period.open.day === currentDay) {
+        let isInBusinessHours = false;
+        let closeDateTime = new Date(now);
+        
+        if (closeTime > openTime) {
+          // 同日營業
+          isInBusinessHours = currentTime >= openTime && currentTime < closeTime;
+          closeDateTime.setHours(Math.floor(closeTime / 100), closeTime % 100, 0, 0);
+        } else {
+          // 跨夜營業
+          isInBusinessHours = currentTime >= openTime;
+          closeDateTime.setDate(closeDateTime.getDate() + 1);
+          closeDateTime.setHours(Math.floor(closeTime / 100), closeTime % 100, 0, 0);
+        }
+        
+        if (isInBusinessHours) {
+          const minutesUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60));
+          return Math.max(0, minutesUntilClose);
+        }
+      }
+      
+      // 檢查昨夜跨夜營業
+      const yesterdayDay = (currentDay + 6) % 7;
+      if (period.open.day === yesterdayDay && closeTime < openTime && currentTime <= closeTime) {
+        const closeDateTime = new Date(now);
+        closeDateTime.setHours(Math.floor(closeTime / 100), closeTime % 100, 0, 0);
+        const minutesUntilClose = Math.ceil((closeDateTime - now) / (1000 * 60));
+        return Math.max(0, minutesUntilClose);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ calculateMinutesUntilClose 計算失敗:', error);
+  }
+
+  return null;
+}
+
 function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   if (!openingHours || selectedMealTime === 'all') {
     return true; // 如果沒有營業時間資訊或選擇全部時段，則顯示所有餐廳
@@ -240,6 +300,16 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       try {
         const isOpenNow = openingHours.isOpen();
         console.log('🕐 使用 Google 推薦的 isOpen() 方法結果:', isOpenNow);
+        
+        // 如果營業中，檢查20分鐘緩衝區
+        if (isOpenNow) {
+          const minutesUntilClose = calculateMinutesUntilClose(openingHours);
+          if (minutesUntilClose !== null && minutesUntilClose <= 20) {
+            console.log(`⚠️ 餐廳將在${minutesUntilClose}分鐘後關門，排除此餐廳`);
+            return false;
+          }
+        }
+        
         return isOpenNow;
       } catch (error) {
         console.warn('⚠️ Google isOpen() API 調用失敗，回退到 periods 計算:', error);
