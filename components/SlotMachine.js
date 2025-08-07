@@ -423,12 +423,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 {/* 當前圖片 - 滑出 */}
                 {currentImage && (
                   <div
-                    className="absolute inset-0 w-full h-full transition-transform duration-300 ease-out"
+                    className="absolute inset-0 w-full h-full"
                     style={{
                       backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      transform: slideDirection === 'left' ? 'translateX(-100%)' : 'translateX(100%)',
+                      transform: 'translateX(0)',
+                      animation: slideDirection === 'left' ? 'slideOutToLeft 300ms ease-out forwards' : 'slideOutToRight 300ms ease-out forwards',
                       zIndex: 1
                     }}
                   />
