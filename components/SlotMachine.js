@@ -45,11 +45,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         const img = new Image();
         img.onload = () => {
-          console.log('✅ [SlotMachine] 圖片預載入成功:', url.substring(0, 50) + '...');
           resolve(img);
         };
         img.onerror = (error) => {
-          console.warn('⚠️ [SlotMachine] 圖片預載入失敗:', url.substring(0, 50) + '...', error);
           reject(error);
         };
         img.src = url;
@@ -63,19 +61,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 滑動轉場函數（圖片已預載入）
     const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
-      console.log('🔄 [SlotMachine] 滑動轉場觸發檢查:', {
-        isSliding,
-        isSpinning,
-        newRestaurant: newRestaurant?.name,
-        newImage: newRestaurant?.image
-      });
+      // 🔄 保留滑動轉場的關鍵LOG，因為這是我們最近在偵錯的功能
+      console.log('🔄 [SlotMachine] 滑動轉場觸發:', newRestaurant?.name);
 
       // 🛡️ 協調機制：防止動畫衝突
       if (isSliding) {
         console.log('❌ [SlotMachine] 滑動轉場被阻止: 已在滑動中');
         return;
       }
-      
+
       if (isSpinning) {
         console.log('❌ [SlotMachine] 滑動轉場被阻止: 輪盤動畫進行中');
         return;
@@ -94,12 +88,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const currentImg = getCurrentImageUrl();
       const newImg = getNewImageUrl();
 
-      console.log('🖼️ [SlotMachine] 圖片檢查:', {
-        currentImg: currentImg ? currentImg.substring(0, 50) + '...' : null,
-        newImg: newImg ? newImg.substring(0, 50) + '...' : null
-      });
-
-      console.log('✅ [SlotMachine] 開始滑動轉場動畫（圖片已預載入）');
+      // 移除圖片檢查和開始動畫日誌
       setCurrentImage(currentImg);
       setNextImage(newImg);
       setSlideDirection(direction);
@@ -107,7 +96,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       // 300ms後完成動畫
       setTimeout(() => {
-        console.log('✅ [SlotMachine] 滑動轉場動畫完成');
         setIsSliding(false);
         setCurrentImage(null);
         setNextImage(null);
@@ -117,14 +105,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 預載入當前餐廳圖片
     React.useEffect(() => {
       if (finalRestaurant?.image) {
-        console.log('🔄 [SlotMachine] 預載入當前餐廳圖片...');
-        preloadImage(finalRestaurant.image)
-          .then(() => {
-            console.log('✅ [SlotMachine] 當前餐廳圖片預載入完成');
-          })
-          .catch((error) => {
-            console.warn('⚠️ [SlotMachine] 當前餐廳圖片預載入失敗:', error.message);
-          });
+        preloadImage(finalRestaurant.image).catch(() => {
+          // 靜默處理預載入失敗
+        });
       }
     }, [finalRestaurant?.image]);
 
@@ -164,18 +147,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const response = await fetch(encodedImagePath, { method: 'HEAD' });
           if (response.ok) {
             detectedImages.push(imagePath);
-            console.log(`✅ 找到圖片 ${i}: ${imagePath}`);
+            // 移除找到圖片日誌
           } else {
-            console.log(`❌ 圖片 ${i} 不存在，停止偵測`);
             break;
           }
         } catch (error) {
-          console.log(`❌ 圖片 ${i} 載入失敗，停止偵測`);
           break;
         }
       }
 
-      console.log(`🎯 自動偵測完成！找到 ${detectedImages.length} 張slot圖片`);
+      // 移除偵測完成日誌
       return detectedImages;
     }, []);
 
@@ -193,9 +174,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       // 🎯 快速動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
       const fastScrollDistance = imageCount * itemWidth;
 
-      console.log(`🎰 動態CSS計算: ${imageCount}張slot圖片 + 2張 + 1張餐廳 = ${totalImages}張總計`);
-      console.log(`🎰 快速動畫距離: ${fastScrollDistance}px (${imageCount}張圖片)`);
-      console.log(`🎰 70%位置: ${midPosition}px, 最終位置: ${finalPosition}px`);
+      // 移除動態CSS計算日誌
 
       // 動態創建CSS keyframes - 改為左右滑動動畫
       const keyframes = `
@@ -235,7 +214,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       style.textContent = keyframes;
       document.head.appendChild(style);
 
-      console.log('🎨 動態CSS動畫已生成（左右滑動）');
+      // 移除CSS動畫生成日誌
     }, []);
 
     // 🎲 亂數排序函數 - 增加轉盤的隨機性
@@ -255,7 +234,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // 🎲 一開始就亂數排序圖片順序，增加隨機性
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
-          console.log(`🎰 圖片數量已更新: ${detectedImages.length} 張（已亂數排序）`);
+          // 移除圖片數量更新日誌
           
           // 🎯 根據偵測結果生成動態CSS動畫
           createDynamicAnimation(detectedImages.length);
@@ -282,11 +261,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       if (isLeftSwipe && !isSpinning) {
         // 左滑：搜尋下一家餐廳
-        console.log('👆 左滑手勢：搜尋下一家餐廳');
         onSpin(false);
       } else if (isRightSwipe && !isSpinning && onPreviousRestaurant) {
         // 右滑：回到上一家餐廳
-        console.log('👆 右滑手勢：回到上一家餐廳');
         onPreviousRestaurant();
       }
     };
@@ -330,12 +307,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // =====================================
           // 情況：API已返回結果，執行最終動畫
           // =====================================
-          console.log('🎰 API返回結果，開始最終過渡動畫');
           setAnimationPhase('slow');
 
           // 🎲 每次轉動都亂數排序，增加隨機性
           const shuffledSlots = shuffleArray(slotImages);
-          console.log('🎲 最終動畫使用亂數排序的圖片');
 
           // 構建最終序列：確保餐廳圖片在正確位置
           const finalSequence = [];
@@ -353,7 +328,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 設置動畫結束計時器（1秒後結束，對應CSS動畫時間）
           setTimeout(() => {
-            console.log('🎰 最終動畫結束，觸發 slotAnimationEnd 事件');
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
           }, 1050); // 稍微延長一點確保動畫完成
@@ -362,7 +336,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // =====================================
           // 情況：等待API返回，顯示載入動畫
           // =====================================
-          console.log('🎰 等待API返回，開始快速循環動畫');
           setAnimationPhase('fast');
           setFastAnimationLevel(1); // 重置為最快級別
 
@@ -372,14 +345,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             const shuffledSlots = shuffleArray(slotImages);
             fastSequence.push(...shuffledSlots);
           }
-          console.log('🎲 快速循環階段使用50組亂數排序的圖片');
           setScrollingNames(fastSequence);
         }
       } else {
         // =====================================
         // 情況：停止動畫，回到靜止狀態
         // =====================================
-        console.log('🎰 停止動畫，回到靜止狀態');
         setAnimationPhase('idle');
         setFastAnimationLevel(1); // 重置動畫級別
         setScrollingNames([]);
@@ -391,12 +362,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       let intervalId;
 
       if (animationPhase === 'fast' && !finalRestaurant) {
-        console.log('🎰 開始漸進式減速，當前級別:', fastAnimationLevel);
-
         intervalId = setInterval(() => {
           setFastAnimationLevel(prevLevel => {
             const nextLevel = Math.min(prevLevel + 1, 5); // 最多到級別5
-            console.log('🎰 動畫減速，級別:', prevLevel, '→', nextLevel);
             return nextLevel;
           });
         }, 500); // 每0.5秒切換
@@ -604,7 +572,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onPreviousRestaurant) {
-                    console.log('🔙 點擊向左箭頭，回到上一家餐廳');
                     onPreviousRestaurant();
                   }
                 }}

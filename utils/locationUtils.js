@@ -339,13 +339,11 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
           if (closeTime < openTime) {
             // 跨夜營業：當前時間在開門時間之後，或在關門時間之前
             if (currentTime >= openTime || currentTime <= closeTime) {
-              console.log(`✅ 跨夜營業中: ${currentTime} 在 ${openTime}-${closeTime} 範圍內`);
               return true;
             }
           } else {
             // 同日營業：當前時間在開門和關門時間之間
             if (currentTime >= openTime && currentTime <= closeTime) {
-              console.log(`✅ 正常營業中: ${currentTime} 在 ${openTime}-${closeTime} 範圍內`);
               return true;
             }
           }
@@ -359,13 +357,12 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
           
           // 如果是跨夜營業且今天在關門時間內
           if (closeTime < openTime && currentTime <= closeTime) {
-            console.log(`✅ 昨夜跨夜營業中: ${currentTime} 在昨天 ${openTime}-今天${closeTime} 範圍內`);
             return true;
           }
         }
       }
       
-      console.log(`❌ 當前不在營業時間內`);
+      // 移除營業時間檢查失敗日誌
       return false;
     }
     
@@ -404,21 +401,10 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
         closeTime = 24; // 24小時營業
       }
       
-      // 檢查選擇的用餐時段是否與營業時間重疊
-      console.log(`🕐 檢查用餐時段重疊:`, {
-        selectedMealTime,
-        selectedTime,
-        openTime,
-        closeTime,
-        currentHour
-      });
-
       // 處理晚餐時段16-24的情況
       if (selectedTime.end === 24) {
         // 晚餐時段特殊處理：只要營業到16點以後就算符合
-        const result = closeTime > selectedTime.start;
-        console.log(`🌃 晚餐時段檢查結果:`, result);
-        return result;
+        return closeTime > selectedTime.start;
       }
 
       // 檢查時段重疊邏輯
@@ -426,13 +412,6 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       const overlap2 = selectedTime.end > openTime && selectedTime.end <= closeTime;
       const overlap3 = selectedTime.start < openTime && selectedTime.end > closeTime;
       const result = overlap1 || overlap2 || overlap3;
-
-      console.log(`🕐 時段重疊檢查:`, {
-        overlap1: `${selectedTime.start} >= ${openTime} && ${selectedTime.start} < ${closeTime} = ${overlap1}`,
-        overlap2: `${selectedTime.end} > ${openTime} && ${selectedTime.end} <= ${closeTime} = ${overlap2}`,
-        overlap3: `${selectedTime.start} < ${openTime} && ${selectedTime.end} > ${closeTime} = ${overlap3}`,
-        finalResult: result
-      });
 
       return result;
     }
@@ -473,11 +452,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
   }
 
   try {
-    console.log('🔍 開始搜索附近餐廳...', userLocation, '用餐時段:', selectedMealTime, '選項:', options);
-    
     // 確保 Google Maps API 已載入
     if (!placesService) {
-      console.log('📡 初始化 Google Maps API...');
       await initializeGoogleMaps();
     }
 
@@ -509,14 +485,10 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       searchAreas.slice(0, Math.min(3 + options.attempt, searchAreas.length)) : 
       searchAreas.slice(0, 4); // 預設搜索前4個區域
     
-    console.log(`🗺️ 使用多區域搜索策略，搜索 ${areasToSearch.length} 個區域`);
-    
     // 搜索策略：餐廳類型
     const searchTypes = ['restaurant', 'meal_takeaway'];
-    
+
     for (const area of areasToSearch) {
-      console.log(`🎯 搜索區域: ${area.name} (${area.lat.toFixed(4)}, ${area.lng.toFixed(4)})`);
-      
       for (const type of searchTypes) {
         // 建立搜索請求，使用用戶設定的搜索半徑
         const request = {
@@ -524,8 +496,6 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
           radius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius, // 使用用戶滑軌設定的完整範圍
           type: type
         };
-        
-        console.log(`📡 發送 ${type} 搜索請求... (區域: ${area.name}, 半徑: ${request.radius/1000}km)`);
         
         try {
           // 使用 Promise 包裝 PlacesService 回調
@@ -552,7 +522,7 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
             }
           });
           
-          console.log(`📊 ${area.name} ${type} 找到 ${results.length} 家餐廳 (新增 ${newCount} 家)，總計 ${allRestaurants.length} 家不重複餐廳`);
+          // 移除詳細搜索日誌，減少LOG量
           
         } catch (error) {
           console.warn(`⚠️ ${area.name} ${type} 搜索出錯:`, error);
@@ -575,13 +545,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
-    console.log(`✅ 總共找到 ${allRestaurants.length} 家不重複餐廳`);
-
     // 隨機打亂餐廳列表順序，增加多樣性
     const shuffledRestaurants = allRestaurants.sort(() => Math.random() - 0.5);
-
-    // 獲取所有餐廳的詳細營業時間資訊
-    console.log('🕐 獲取餐廳詳細資訊...');
     const restaurantsWithDetails = await Promise.all(
       shuffledRestaurants.map(async (restaurant) => {
         try {
@@ -599,7 +564,7 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       restaurantsWithDetails.map(restaurant => formatRestaurantData(restaurant))
     );
 
-    console.log(`🎯 返回 ${formattedRestaurants.length} 家格式化餐廳`);
+    // 移除格式化完成日誌
     return formattedRestaurants;
 
   } catch (error) {
@@ -648,7 +613,7 @@ async function getPlaceDetails(placeId) {
  */
 async function formatRestaurantData(place) {
   try {
-    console.log('🔄 正在格式化餐廳資料:', place.name);
+    // 移除格式化過程日誌
 
     // 獲取詳細資訊（如果有快取則使用快取）
     const details = place.detailsCache || await getPlaceDetails(place.place_id);
@@ -723,7 +688,7 @@ async function formatRestaurantData(place) {
       detailsCache: details
     };
 
-    console.log('✅ 餐廳資料格式化完成:', formattedData.name);
+    // 移除格式化完成日誌
     return formattedData;
 
   } catch (error) {
@@ -931,7 +896,7 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
     history.expanded_radius = expandedRadius;
 
     localStorage.setItem('restaurant_history', JSON.stringify(history));
-    console.log('📝 更新餐廳歷史記錄:', { restaurantId, expandedRadius, totalShown: history.shown_restaurants.length });
+    // 移除歷史記錄更新日誌
   } catch (error) {
     console.warn('⚠️ 更新餐廳歷史記錄失敗:', error);
   }
@@ -968,11 +933,7 @@ function updateRestaurantCache(restaurants) {
     });
 
     localStorage.setItem('restaurant_history', JSON.stringify(history));
-    console.log('📋 更新餐廳快取:', { 
-      新增: restaurants.length, 
-      總快取: history.cached_restaurants.length,
-      已顯示: history.shown_restaurants.length 
-    });
+    // 移除快取更新日誌
   } catch (error) {
     console.warn('⚠️ 更新餐廳快取失敗:', error);
   }
@@ -999,7 +960,7 @@ function getAvailableRestaurantsFromCache(selectedMealTime) {
       return isOpen && notShown;
     });
 
-    console.log(`📊 快取篩選結果: ${availableRestaurants.length}家可用餐廳 (總快取${history.cached_restaurants.length}家)`);
+    // 移除快取篩選結果日誌
     return availableRestaurants;
   } catch (error) {
     console.warn('⚠️ 從快取獲取餐廳失敗:', error);
@@ -1045,14 +1006,14 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
  * @returns {Promise<Object>} 隨機餐廳
  */
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
-  console.log('🎯 開始獲取隨機餐廳...', { selectedMealTime, distanceConfig });
+  // 移除開始搜索日誌
 
   // ========================================
   // 第一步：檢查快取中是否有可用餐廳
   // ========================================
   const cachedRestaurants = getAvailableRestaurantsFromCache(selectedMealTime);
   if (cachedRestaurants.length > 0) {
-    console.log('🚀 從快取中選擇餐廳，無需API調用');
+    // 移除快取選擇日誌
     
     // 隨機選擇一家餐廳
     const selectedRestaurant = cachedRestaurants[Math.floor(Math.random() * cachedRestaurants.length)];
@@ -1068,14 +1029,14 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 更新歷史記錄（標記為已顯示）
     updateRestaurantHistory(selectedRestaurant.id, 0);
     
-    console.log(`🎉 從快取獲取餐廳: ${selectedRestaurant.name}`);
+    // 移除快取獲取成功日誌
     return selectedRestaurant;
   }
 
   // ========================================
   // 第二步：快取中沒有可用餐廳，調用API
   // ========================================
-  console.log('📡 快取中沒有可用餐廳，開始API搜索...');
+  // 移除API搜索開始日誌
 
   const history = getRestaurantHistory() || { shown_restaurants: [], cached_restaurants: [], expanded_radius: 0 };
   const originalRadius = GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
@@ -1094,12 +1055,12 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
       searchRadius = baseRadius;
-      console.log(`🎲 第${attempt + 1}次多樣化搜索 (基礎距離: ${searchRadius}m = ${baseUnit}m × ${unitMultiplier})`);
+      // 移除多樣化搜索日誌
     } else {
       // 後續嘗試：使用baseUnit智能擴展範圍
       const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
       searchRadius = baseRadius + (baseUnit * expansionMultiplier);
-      console.log(`🔍 第${attempt + 1}次智能擴展搜索 (擴展距離: ${searchRadius}m = 基礎${baseRadius}m + ${baseUnit}m × ${expansionMultiplier})`);
+      // 移除智能擴展搜索日誌
     }
 
     // 臨時更新搜索半徑
@@ -1112,7 +1073,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
       // 重要：將所有搜索到的餐廳加入快取
       if (restaurants.length > 0) {
         updateRestaurantCache(restaurants);
-        console.log(`📋 已將 ${restaurants.length} 家餐廳加入快取`);
+        // 移除快取加入日誌
       }
 
       // 篩選：營業中 + 未出現過
@@ -1120,15 +1081,12 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
 
-        // 簡化調試日誌
-        if (!isOpen || !notShown) {
-          console.log(`🔍 餐廳被篩除: ${restaurant.name} (營業:${isOpen}, 未顯示:${notShown})`);
-        }
+        // 移除餐廳篩除日誌，減少LOG量
 
         return isOpen && notShown;
       });
 
-      console.log(`📊 篩選結果: ${availableRestaurants.length}家可用餐廳 (總共${restaurants.length}家)`);
+      // 移除篩選結果日誌
 
       if (availableRestaurants.length > 0) {
         // 隨機選擇一家餐廳
@@ -1149,7 +1107,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         // 恢復原始搜索半徑
         GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
 
-        console.log(`🎉 成功獲取餐廳: ${selectedRestaurant.name} (第${attempt + 1}次嘗試)`);
+        // 移除成功獲取餐廳日誌
         return selectedRestaurant;
       }
 

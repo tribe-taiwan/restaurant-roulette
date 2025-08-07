@@ -411,7 +411,7 @@ function App() {
     // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
       if (userLocation && locationStatus === 'success' && isInitialLoad && !currentRestaurant && !isSpinning) {
-        console.log('🎯 Landing 自動獲取第一家餐廳 - 延遲 1 秒確保 API 準備完成');
+        // 移除Landing自動獲取日誌
         const timer = setTimeout(() => {
           handleSpin(true); // 傳入 true 表示自動調用
           setIsInitialLoad(false);
@@ -709,7 +709,7 @@ function App() {
     const handleSpin = async (isAutoSpin = false) => {
       if (isSpinning) return;
 
-      console.log('🎮 開始餐廳搜索...', { selectedMealTime, isAutoSpin });
+      // 移除餐廳搜索開始日誌
       setSpinError(null);
 
       try {
@@ -720,7 +720,7 @@ function App() {
           window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
         
         if (cachedRestaurants.length > 0) {
-          console.log(`⚡ 發現 ${cachedRestaurants.length} 家快取餐廳，直接滑動`);
+          // 移除快取餐廳發現日誌
           // 直接從快取取得餐廳，觸發滑動轉場
           const selectedRestaurant = cachedRestaurants[Math.floor(Math.random() * cachedRestaurants.length)];
           
@@ -738,9 +738,9 @@ function App() {
           }
           
           setCurrentRestaurant(selectedRestaurant);
-          console.log('🚀 快速顯示餐廳:', selectedRestaurant.name);
+          // 移除快速顯示餐廳日誌
         } else {
-          console.log('⏳ 無可用快取，啟動輪盤搜索新餐廳');
+          // 移除啟動輪盤搜索日誌
           // 啟動輪盤動畫，搜索新餐廳
           setIsSpinning(true);
           setCurrentRestaurant(null);
@@ -755,7 +755,7 @@ function App() {
           const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
           
           if (restaurant) {
-            console.log('✅ API獲取餐廳成功:', restaurant.name);
+            // 移除API獲取成功日誌
             setCurrentRestaurant(restaurant);
             // 圖片載入完成後結束動畫
             preloadImageAndStopSpin(restaurant);
@@ -780,18 +780,18 @@ function App() {
         const img = new Image();
         
         img.onload = () => {
-          console.log('🖼️ 圖片載入完成，結束輪盤動畫');
+          // 移除圖片載入完成日誌
           setIsSpinning(false);
         };
         
         img.onerror = () => {
-          console.log('⚠️ 圖片載入失敗，延遲結束動畫');
+          // 移除圖片載入失敗日誌
           setTimeout(() => setIsSpinning(false), 500);
         };
         
         img.src = restaurant.image;
       } else {
-        console.log('📝 無圖片餐廳，延遲結束動畫');
+        // 移除無圖片餐廳日誌
         setTimeout(() => setIsSpinning(false), 800);
       }
     };
