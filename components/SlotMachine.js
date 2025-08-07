@@ -61,18 +61,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     };
 
-    // 滑動轉場函數（帶圖片預載入）
-    const triggerSlideTransition = React.useCallback(async (newRestaurant, direction = 'left') => {
+    // 滑動轉場函數（圖片已預載入）
+    const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
       console.log('🔄 [SlotMachine] 滑動轉場觸發檢查:', {
         isSliding,
         isSpinning,
-        isPreloading,
         newRestaurant: newRestaurant?.name,
         newImage: newRestaurant?.image
       });
 
-      if (isSliding || isSpinning || isPreloading) {
-        console.log('❌ [SlotMachine] 滑動轉場被阻止:', { isSliding, isSpinning, isPreloading });
+      if (isSliding || isSpinning) {
+        console.log('❌ [SlotMachine] 滑動轉場被阻止:', { isSliding, isSpinning });
         return;
       }
 
@@ -94,22 +93,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         newImg: newImg ? newImg.substring(0, 50) + '...' : null
       });
 
-      // 開始預載入新圖片
-      if (newImg) {
-        console.log('⏳ [SlotMachine] 開始預載入新圖片...');
-        setIsPreloading(true);
-
-        try {
-          await preloadImage(newImg);
-          console.log('✅ [SlotMachine] 圖片預載入完成，開始滑動動畫');
-        } catch (error) {
-          console.warn('⚠️ [SlotMachine] 圖片預載入失敗，繼續執行動畫:', error.message);
-        } finally {
-          setIsPreloading(false);
-        }
-      }
-
-      console.log('✅ [SlotMachine] 開始滑動轉場動畫');
+      console.log('✅ [SlotMachine] 開始滑動轉場動畫（圖片已預載入）');
       setCurrentImage(currentImg);
       setNextImage(newImg);
       setSlideDirection(direction);
@@ -122,7 +106,21 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setCurrentImage(null);
         setNextImage(null);
       }, 300);
-    }, [finalRestaurant, isSliding, isSpinning, isPreloading]);
+    }, [finalRestaurant, isSliding, isSpinning]);
+
+    // 預載入當前餐廳圖片
+    React.useEffect(() => {
+      if (finalRestaurant?.image) {
+        console.log('🔄 [SlotMachine] 預載入當前餐廳圖片...');
+        preloadImage(finalRestaurant.image)
+          .then(() => {
+            console.log('✅ [SlotMachine] 當前餐廳圖片預載入完成');
+          })
+          .catch((error) => {
+            console.warn('⚠️ [SlotMachine] 當前餐廳圖片預載入失敗:', error.message);
+          });
+      }
+    }, [finalRestaurant?.image]);
 
     // 監聽finalRestaurant變化，觸發滑動轉場
     const previousRestaurantId = React.useRef(finalRestaurant?.id || finalRestaurant?.placeId);
@@ -508,15 +506,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               />
             )}
 
-            {/* 圖片預載入指示器 */}
-            {isPreloading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
-                <div className="bg-white bg-opacity-90 rounded-lg px-4 py-2 flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
-                  <span className="text-sm text-gray-700">載入圖片中...</span>
-                </div>
-              </div>
-            )}
+
 
             {/* 內容覆蓋層 */}
             <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
