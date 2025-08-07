@@ -36,7 +36,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 滑動轉場函數
     const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
-      if (isSliding || isSpinning) return;
+      console.log('🔄 滑動轉場觸發檢查:', { isSliding, isSpinning, newRestaurant: newRestaurant?.name });
+
+      if (isSliding || isSpinning) {
+        console.log('❌ 滑動轉場被阻止:', { isSliding, isSpinning });
+        return;
+      }
 
       const getCurrentImageUrl = () => {
         if (finalRestaurant && finalRestaurant.image) return finalRestaurant.image;
@@ -51,9 +56,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const currentImg = getCurrentImageUrl();
       const newImg = getNewImageUrl();
 
-      // 只有當圖片不同時才執行滑動轉場
-      if (currentImg === newImg) return;
+      console.log('🖼️ 圖片檢查:', { currentImg, newImg });
 
+      // 只有當圖片不同時才執行滑動轉場
+      if (currentImg === newImg) {
+        console.log('❌ 圖片相同，不執行滑動轉場');
+        return;
+      }
+
+      console.log('✅ 開始滑動轉場動畫');
       setCurrentImage(currentImg);
       setNextImage(newImg);
       setSlideDirection(direction);
@@ -61,6 +72,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       // 300ms後完成動畫
       setTimeout(() => {
+        console.log('✅ 滑動轉場動畫完成');
         setIsSliding(false);
         setCurrentImage(null);
         setNextImage(null);
@@ -70,8 +82,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 監聽finalRestaurant變化，觸發滑動轉場
     const previousRestaurant = React.useRef(finalRestaurant);
     React.useEffect(() => {
+      console.log('🎯 餐廳變化檢查:', {
+        previous: previousRestaurant.current?.name,
+        current: finalRestaurant?.name,
+        isSpinning
+      });
+
       if (previousRestaurant.current !== finalRestaurant && !isSpinning) {
+        console.log('✅ 觸發滑動轉場');
         triggerSlideTransition(finalRestaurant, 'left');
+      } else {
+        console.log('❌ 不觸發滑動轉場');
       }
       previousRestaurant.current = finalRestaurant;
     }, [finalRestaurant, isSpinning, triggerSlideTransition]);
@@ -96,9 +117,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       for (let i = 1; i <= maxTries; i++) {
         const imagePath = `${basePath}/slot (${i}).jpg`;
+        const encodedImagePath = encodeURI(imagePath);
         
         try {
-          const response = await fetch(imagePath, { method: 'HEAD' });
+          const response = await fetch(encodedImagePath, { method: 'HEAD' });
           if (response.ok) {
             detectedImages.push(imagePath);
             console.log(`✅ 找到圖片 ${i}: ${imagePath}`);
