@@ -60,12 +60,20 @@ function App() {
     const [savedLocations, setSavedLocations] = React.useState([]);
     const [isGeocodingAddress, setIsGeocodingAddress] = React.useState(false);
     
-    // 餐廳歷史記錄狀態
-    const [restaurantHistory, setRestaurantHistory] = React.useState([]); // 儲存用戶查看過的餐廳歷史
+    // 使用餐廳歷史記錄 hook
+    const { restaurantHistory, handlePreviousRestaurant, clearHistory, hasHistory } = window.useRestaurantHistory(
+      currentRestaurant, 
+      { selectedMealTime, baseUnit, unitMultiplier, userLocation },
+      isInitialLoad
+    );
+
+    // 獲取當前主題配置
+    const currentTheme = window.ThemeManager?.getCurrentTheme();
+    const brandName = currentTheme?.brand?.businessName || "Maizuru Tainan B&B";
 
     const translations = {
       en: {
-        title: "Maizuru Tainan B&B",
+        title: brandName,
         spinButton: "What to eat?",
         addCandidate: "Add Option",
         spinning: "Searching...",
@@ -114,7 +122,7 @@ function App() {
         hours: "hours"
       },
       zh: {
-        title: "舞鶴台南民宿",
+        title: brandName,
         spinButton: "甲崩喔",
         addCandidate: "加入候選",
         spinning: "正在搜尋...",
@@ -379,37 +387,7 @@ function App() {
       }
     }, [selectedLanguage, currentRestaurant]);
 
-    // 搜索條件變化時清除餐廳歷史記錄
-    React.useEffect(() => {
-      if (window.clearRestaurantHistory && !isInitialLoad) {
-        const actualRadius = baseUnit * unitMultiplier;
-        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius, userLocation });
-        window.clearRestaurantHistory();
-        // 同時清除本地餐廳歷史記錄
-        setRestaurantHistory([]);
-      }
-    }, [selectedMealTime, baseUnit, unitMultiplier, userLocation]);
 
-    // 追蹤當前餐廳變化，更新餐廳歷史記錄
-    React.useEffect(() => {
-      if (currentRestaurant && currentRestaurant.id) {
-        console.log('📝 添加餐廳到歷史記錄:', currentRestaurant.name);
-        setRestaurantHistory(prev => {
-          // 檢查是否已存在相同餐廳，避免重複添加
-          const exists = prev.some(restaurant => restaurant.id === currentRestaurant.id);
-          if (exists) {
-            console.log('🔄 餐廳已存在於歷史記錄中，跳過添加');
-            return prev;
-          }
-          // 限制歷史記錄最多保存 10 家餐廳
-          const newHistory = [...prev, currentRestaurant];
-          if (newHistory.length > 10) {
-            newHistory.shift(); // 移除最舊的記錄
-          }
-          return newHistory;
-        });
-      }
-    }, [currentRestaurant]);
 
     // Landing 時自動獲取第一家餐廳 - 添加延遲確保 API 完全準備好
     React.useEffect(() => {
@@ -499,7 +477,16 @@ function App() {
     };
 
     // 智能住家/公司按鈕處理 - 根據輸入框狀態決定行為
-    const handleLocationButton = async (type) => {
+    const handleLocationButton = async (type, customLocation = null) => {
+      // 處理民宿位置的特殊情況
+      if (type === 'homebase' && customLocation) {
+        console.log('🏠 使用民宿作為起點位置:', customLocation);
+        setUserLocation({ lat: customLocation.lat, lng: customLocation.lng });
+        setUserAddress(customLocation.address);
+        setLocationStatus('success');
+        return;
+      }
+
       if (addressInput.trim()) {
         // 輸入框有內容時：儲存位置功能
         await saveLocationFromInput(type);
@@ -884,32 +871,22 @@ function App() {
       }
     };
 
-    // 回到上一家餐廳函數
-    const handlePreviousRestaurant = () => {
-      if (restaurantHistory.length < 2) {
-        console.log('🔙 沒有足夠的歷史記錄，無法回到上一家餐廳');
-        return;
+    // 處理回到上一家餐廳
+    const handlePreviousClick = () => {
+      const previousRestaurant = handlePreviousRestaurant();
+      if (previousRestaurant) {
+        setCurrentRestaurant(previousRestaurant);
       }
-
-      // 取得上一家餐廳（倒數第二個）
-      const previousRestaurant = restaurantHistory[restaurantHistory.length - 2];
-      console.log('🔙 回到上一家餐廳:', previousRestaurant.name);
-
-      // 移除歷史記錄中的最後一筆記錄（當前餐廳）
-      setRestaurantHistory(prev => prev.slice(0, -1));
-      
-      // 設置上一家餐廳為當前餐廳
-      setCurrentRestaurant(previousRestaurant);
     };
 
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
         
         {/* Hero 區塊 - 延伸到視窗邊緣 */}
-        <div 
+        <div
           className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('./assets/image/banner.jpg')`
+            backgroundImage: `url('${currentTheme?.images?.banner || './assets/image/banner.jpg'}')`
           }}
         >
           {/* 半透明遮罩 */}
@@ -926,39 +903,56 @@ function App() {
           
           {/* Social Media Icons - Right Side */}
           <div className="absolute bottom-4 right-4 z-20 flex gap-2">
-            {/* Booking 圖標 - 保持圖片，Lucide 沒有 */}
+            {/* 民宿 Logo */}
+            {currentTheme?.images?.bnbLogo && (
+              <a
+                href={currentTheme?.socialMedia?.booking?.url || "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+                title={`${currentTheme?.brand?.businessName || '民宿'} 官網`}
+              >
+                <img
+                  src={currentTheme.images.bnbLogo}
+                  alt={currentTheme?.brand?.businessName || '民宿 Logo'}
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              </a>
+            )}
+
+            {/* Booking 圖標 - 訂房平台 */}
             <a
-              href="https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"
+              href={currentTheme?.socialMedia?.booking?.url || "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"}
               target="_blank"
               rel="noopener noreferrer"
               className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
-              title="在 Booking.com 預訂"
+              title={currentTheme?.socialMedia?.booking?.title || "線上訂房"}
             >
               <img
-                src="./assets/image/booking-logo.png"
-                alt="Booking.com"
+                src={currentTheme?.images?.bookingLogo || "./assets/image/booking-logo.png"}
+                alt="線上訂房"
                 className="w-full h-full object-contain"
               />
             </a>
 
             {/* Instagram 圖標 */}
             <a
-              href="https://www.instagram.com/tainanbnb_maizuru/"
+              href={currentTheme?.socialMedia?.instagram?.url || "https://www.instagram.com/tainanbnb_maizuru/"}
               target="_blank"
               rel="noopener noreferrer"
               className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
-              title="關注我們的 Instagram"
+              title={currentTheme?.socialMedia?.instagram?.title || "關注我們的 Instagram"}
             >
               <div className="icon-instagram text-white text-2xl"></div>
             </a>
 
             {/* Facebook 圖標 */}
             <a
-              href="https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW"
+              href={currentTheme?.socialMedia?.facebook?.url || "https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW"}
               target="_blank"
               rel="noopener noreferrer"
               className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
-              title="關注我們的 Facebook"
+              title={currentTheme?.socialMedia?.facebook?.title || "關注我們的 Facebook"}
             >
               <div className="icon-facebook text-white text-2xl"></div>
             </a>
@@ -988,7 +982,7 @@ function App() {
               onImageClick={handleImageClick}
               userLocation={userLocation}
               userAddress={userAddress}
-              onPreviousRestaurant={handlePreviousRestaurant}
+              onPreviousRestaurant={handlePreviousClick}
             />
           </div>
 

@@ -120,7 +120,7 @@ function LocationManager({
                 >
                   <span>{getLocationButtonText('home')}</span>
                 </button>
-                
+
                 {/* 公司按鈕 */}
                 <button
                   onClick={() => onLocationButton('office')}
@@ -128,6 +128,48 @@ function LocationManager({
                   title={getLocationButtonTip('office')}
                 >
                   <span>{getLocationButtonText('office')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 民宿導航區塊 */}
+            <div className="mb-4">
+              <div className="flex gap-2">
+                {/* 設定民宿為起點按鈕 */}
+                <button
+                  onClick={async () => {
+                    if (window.useHomeBaseAsLocation) {
+                      try {
+                        const homeBaseLocation = await window.useHomeBaseAsLocation();
+                        if (homeBaseLocation && onLocationButton) {
+                          // 使用民宿位置作為當前位置
+                          onLocationButton('homebase', homeBaseLocation);
+                        }
+                      } catch (error) {
+                        console.error('❌ 設定民宿起點失敗:', error);
+                        alert('設定民宿起點失敗，請稍後再試');
+                      }
+                    }
+                  }}
+                  className="flex-1 text-white px-3 py-2 rounded text-sm transition-colors bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-1"
+                  title="將民宿設為搜尋起點位置"
+                >
+                  <div className="icon-home text-sm"></div>
+                  <span>設為起點</span>
+                </button>
+
+                {/* 一鍵導航回民宿按鈕 */}
+                <button
+                  onClick={() => {
+                    if (window.navigateToHomeBase) {
+                      window.navigateToHomeBase();
+                    }
+                  }}
+                  className="flex-1 text-white px-3 py-2 rounded text-sm transition-colors bg-green-600 hover:bg-green-700 flex items-center justify-center gap-1"
+                  title="🚗 一鍵導航回民宿 (開啟 Google Maps)"
+                >
+                  <div className="icon-navigation text-sm"></div>
+                  <span>🏠 回民宿</span>
                 </button>
               </div>
             </div>

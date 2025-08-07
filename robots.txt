@@ -1,0 +1,29 @@
+# robots.txt for 甲崩喔 Restaurant Roulette
+# 舞鶴台南民宿 - 台南美食輪盤
+
+User-agent: *
+Allow: /
+
+# 優先索引重要頁面
+Allow: /index.html
+Allow: /assets/image/banner.jpg
+
+# 不需要索引的開發和測試文件
+Disallow: /test/
+Disallow: /_local/
+Disallow: /_docs/
+Disallow: /_todo*/
+Disallow: /_ignore/
+Disallow: /services/
+Disallow: /trickle/
+Disallow: /node_modules/
+
+# 不索引臨時文件和日誌
+Disallow: /*.log
+Disallow: /nul
+
+# 網站地圖位置
+Sitemap: https://eat.tribe.org.tw/sitemap.xml
+
+# 爬取延遲（禮貌性設定）
+Crawl-delay: 1
