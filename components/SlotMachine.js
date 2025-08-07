@@ -70,8 +70,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         newImage: newRestaurant?.image
       });
 
-      if (isSliding || isSpinning) {
-        console.log('❌ [SlotMachine] 滑動轉場被阻止:', { isSliding, isSpinning });
+      // 🛡️ 協調機制：防止動畫衝突
+      if (isSliding) {
+        console.log('❌ [SlotMachine] 滑動轉場被阻止: 已在滑動中');
+        return;
+      }
+      
+      if (isSpinning) {
+        console.log('❌ [SlotMachine] 滑動轉場被阻止: 輪盤動畫進行中');
         return;
       }
 

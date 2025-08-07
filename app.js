@@ -705,61 +705,71 @@ function App() {
     const handleSpin = async (isAutoSpin = false) => {
       if (isSpinning) return;
 
-      console.log('🎮 開始餐廳搜索，立即啟動輪盤動畫...', { selectedMealTime, isAutoSpin });
-      
-      // ========================================
-      // 新邏輯：立即啟動動畫，無條件
-      // ========================================
-      setIsSpinning(true);
-      setCurrentRestaurant(null);
+      console.log('🎮 開始餐廳搜索...', { selectedMealTime, isAutoSpin });
       setSpinError(null);
 
       try {
         // ========================================
-        // 並行執行：動畫運行的同時搜索餐廳
+        // 簡化邏輯：檢查是否有可用快取
         // ========================================
-        console.log('🔍 搜索餐廳中，用戶位置:', userLocation);
+        const cachedRestaurants = window.getAvailableRestaurantsFromCache ? 
+          window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
         
-        // 計算實際搜索半徑並更新搜索設定
-        const actualRadius = baseUnit * unitMultiplier;
-        if (window.updateSearchRadius) {
-          window.updateSearchRadius(actualRadius);
-        }
-        
-        // 調用餐廳搜索API（與動畫並行）
-        const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
-        
-        if (restaurant) {
-          // 重新計算營業狀態以支援多國語言
-          if (restaurant.operatingStatus && window.getBusinessStatus) {
-            try {
-              console.log('🌐 重新計算營業狀態支援語言:', selectedLanguage);
-            } catch (error) {
-              console.warn('⚠️ 重新計算營業狀態失敗:', error);
-            }
+        if (cachedRestaurants.length > 0) {
+          console.log(`⚡ 發現 ${cachedRestaurants.length} 家快取餐廳，直接滑動`);
+          // 直接從快取取得餐廳，觸發滑動轉場
+          const selectedRestaurant = cachedRestaurants[Math.floor(Math.random() * cachedRestaurants.length)];
+          
+          // 添加距離資訊
+          if (userLocation && window.calculateDistance) {
+            selectedRestaurant.distance = window.calculateDistance(
+              userLocation.lat, userLocation.lng,
+              selectedRestaurant.lat, selectedRestaurant.lng
+            );
           }
           
-          console.log('✅ 獲取餐廳成功，開始圖片預載入:', restaurant);
-          setCurrentRestaurant(restaurant);
+          // 更新歷史記錄
+          if (window.updateRestaurantHistory) {
+            window.updateRestaurantHistory(selectedRestaurant.id, 0);
+          }
           
-          // ========================================
-          // 圖片載入完成後立即結束動畫
-          // ========================================
-          preloadImageAndStopSpin(restaurant);
+          setCurrentRestaurant(selectedRestaurant);
+          console.log('🚀 快速顯示餐廳:', selectedRestaurant.name);
         } else {
-          throw new Error('無法找到符合條件的餐廳');
+          console.log('⏳ 無可用快取，啟動輪盤搜索新餐廳');
+          // 啟動輪盤動畫，搜索新餐廳
+          setIsSpinning(true);
+          setCurrentRestaurant(null);
+          
+          // 計算實際搜索半徑並更新搜索設定
+          const actualRadius = baseUnit * unitMultiplier;
+          if (window.updateSearchRadius) {
+            window.updateSearchRadius(actualRadius);
+          }
+          
+          // 調用餐廳搜索API（與動畫並行）
+          const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
+          
+          if (restaurant) {
+            console.log('✅ API獲取餐廳成功:', restaurant.name);
+            setCurrentRestaurant(restaurant);
+            // 圖片載入完成後結束動畫
+            preloadImageAndStopSpin(restaurant);
+          } else {
+            throw new Error('無法找到符合條件的餐廳');
+          }
         }
 
       } catch (error) {
         console.error('❌ 餐廳搜索發生錯誤:', error);
         setSpinError(error.message);
-        setIsSpinning(false); // 錯誤時立即停止動畫
+        setIsSpinning(false);
       }
     };
 
+
     /**
-     * 圖片預載入與動畫控制
-     * 載入完成後立即結束輪盤動畫，提供最佳用戶體驗
+     * 圖片預載入與動畫控制 - 僅用於輪盤動畫
      */
     const preloadImageAndStopSpin = (restaurant) => {
       if (restaurant.image) {
@@ -777,7 +787,6 @@ function App() {
         
         img.src = restaurant.image;
       } else {
-        // 沒有圖片的餐廳，給一個合理的動畫時間
         console.log('📝 無圖片餐廳，延遲結束動畫');
         setTimeout(() => setIsSpinning(false), 800);
       }

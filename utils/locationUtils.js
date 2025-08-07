@@ -1178,6 +1178,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
 // 全局函數用於計算距離
 window.calculateDistance = calculateDistance;
 window.getBusinessStatus = getBusinessStatus;
+window.getAvailableRestaurantsFromCache = getAvailableRestaurantsFromCache;
 window.clearRestaurantHistory = function() {
   try {
     localStorage.removeItem('restaurant_history');
