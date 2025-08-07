@@ -89,11 +89,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     }, [finalRestaurant, isSliding, isSpinning]);
 
     // 監聽finalRestaurant變化，觸發滑動轉場
-    const previousRestaurantId = React.useRef(finalRestaurant?.placeId);
+    const previousRestaurantId = React.useRef(finalRestaurant?.id || finalRestaurant?.placeId);
     const previousRestaurantImage = React.useRef(finalRestaurant?.image);
 
     React.useEffect(() => {
-      const currentId = finalRestaurant?.placeId;
+      const currentId = finalRestaurant?.id || finalRestaurant?.placeId;
       const currentImage = finalRestaurant?.image;
 
       console.log('🎯 [SlotMachine] 餐廳變化檢查:', {
@@ -124,7 +124,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       previousRestaurantId.current = currentId;
       previousRestaurantImage.current = currentImage;
-    }, [finalRestaurant?.placeId, finalRestaurant?.image, isSpinning, triggerSlideTransition]);
+    }, [finalRestaurant?.id, finalRestaurant?.placeId, finalRestaurant?.image, isSpinning, triggerSlideTransition]);
 
     // 🎯 動態偵測圖片數量 - 自動適應資料夾中的圖片
     const [slotImages, setSlotImages] = React.useState([
