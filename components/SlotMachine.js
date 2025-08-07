@@ -201,46 +201,46 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return detectedImages;
     }, []);
 
-    // 🎯 動態生成CSS動畫 - 保持相同的動畫曲線和時間，只改變位置計算
+    // 🎯 動態生成CSS動畫 - 修改為左右滑動動畫，與滑動轉場呼應
     const createDynamicAnimation = React.useCallback((imageCount) => {
-      const itemHeight = 256; // 每張圖片高度（h-64 = 256px）
+      const itemWidth = 256; // 每張圖片寬度（w-64 = 256px）
 
       // 🎯 使用原來的邏輯：slot圖片 + 前2張 + 餐廳圖片（保持相同效果）
       const totalImages = imageCount + 2 + 1;
-      const finalPosition = (totalImages - 1) * itemHeight; // 停在最後一張（餐廳圖片）
+      const finalPosition = (totalImages - 1) * itemWidth; // 停在最後一張（餐廳圖片）
 
       // 保持原來的70%位置計算方式
-      const midPosition = Math.floor((totalImages - 3) * itemHeight);
+      const midPosition = Math.floor((totalImages - 3) * itemWidth);
 
       // 🎯 快速動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
-      const fastScrollDistance = imageCount * itemHeight;
+      const fastScrollDistance = imageCount * itemWidth;
 
       console.log(`🎰 動態CSS計算: ${imageCount}張slot圖片 + 2張 + 1張餐廳 = ${totalImages}張總計`);
       console.log(`🎰 快速動畫距離: ${fastScrollDistance}px (${imageCount}張圖片)`);
       console.log(`🎰 70%位置: ${midPosition}px, 最終位置: ${finalPosition}px`);
 
-      // 動態創建CSS keyframes - 包含快速和慢速動畫
+      // 動態創建CSS keyframes - 改為左右滑動動畫
       const keyframes = `
         @keyframes scrollFastDynamic {
           0% {
-            transform: translateY(0);
+            transform: translateX(0);
           }
           100% {
-            transform: translateY(-${fastScrollDistance}px);
+            transform: translateX(-${fastScrollDistance}px);
           }
         }
 
         @keyframes scrollSlowStopDynamic {
           0% {
-            transform: translateY(0);
+            transform: translateX(0);
             animation-timing-function: ease-out;
           }
           70% {
-            transform: translateY(-${midPosition}px);
+            transform: translateX(-${midPosition}px);
             animation-timing-function: ease-in;
           }
           100% {
-            transform: translateY(-${finalPosition}px);
+            transform: translateX(-${finalPosition}px);
           }
         }
       `;
@@ -257,7 +257,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       style.textContent = keyframes;
       document.head.appendChild(style);
 
-      console.log('🎨 動態CSS動畫已生成（快速+慢速）');
+      console.log('🎨 動態CSS動畫已生成（左右滑動）');
     }, []);
 
     // 🎲 亂數排序函數 - 增加轉盤的隨機性
@@ -509,7 +509,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
 
             {/* 內容覆蓋層 */}
-            <div className={`flex flex-col items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
+            <div className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
               isSpinning ? getAnimationClass() : ''
             }`}>
               {isSpinning ? (
