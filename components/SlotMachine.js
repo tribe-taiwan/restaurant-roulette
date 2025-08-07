@@ -36,10 +36,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 滑動轉場函數
     const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
-      console.log('🔄 滑動轉場觸發檢查:', { isSliding, isSpinning, newRestaurant: newRestaurant?.name });
+      console.log('🔄 [SlotMachine] 滑動轉場觸發檢查:', {
+        isSliding,
+        isSpinning,
+        newRestaurant: newRestaurant?.name,
+        newImage: newRestaurant?.image
+      });
 
       if (isSliding || isSpinning) {
-        console.log('❌ 滑動轉場被阻止:', { isSliding, isSpinning });
+        console.log('❌ [SlotMachine] 滑動轉場被阻止:', { isSliding, isSpinning });
         return;
       }
 
@@ -56,15 +61,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const currentImg = getCurrentImageUrl();
       const newImg = getNewImageUrl();
 
-      console.log('🖼️ 圖片檢查:', { currentImg, newImg });
+      console.log('🖼️ [SlotMachine] 圖片檢查:', {
+        currentImg: currentImg ? currentImg.substring(0, 50) + '...' : null,
+        newImg: newImg ? newImg.substring(0, 50) + '...' : null,
+        same: currentImg === newImg
+      });
 
       // 只有當圖片不同時才執行滑動轉場
       if (currentImg === newImg) {
-        console.log('❌ 圖片相同，不執行滑動轉場');
+        console.log('❌ [SlotMachine] 圖片相同，不執行滑動轉場');
         return;
       }
 
-      console.log('✅ 開始滑動轉場動畫');
+      console.log('✅ [SlotMachine] 開始滑動轉場動畫');
       setCurrentImage(currentImg);
       setNextImage(newImg);
       setSlideDirection(direction);
@@ -72,7 +81,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       // 300ms後完成動畫
       setTimeout(() => {
-        console.log('✅ 滑動轉場動畫完成');
+        console.log('✅ [SlotMachine] 滑動轉場動畫完成');
         setIsSliding(false);
         setCurrentImage(null);
         setNextImage(null);
@@ -82,17 +91,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 監聽finalRestaurant變化，觸發滑動轉場
     const previousRestaurant = React.useRef(finalRestaurant);
     React.useEffect(() => {
-      console.log('🎯 餐廳變化檢查:', {
+      console.log('🎯 [SlotMachine] 餐廳變化檢查:', {
         previous: previousRestaurant.current?.name,
         current: finalRestaurant?.name,
-        isSpinning
+        isSpinning,
+        previousImage: previousRestaurant.current?.image,
+        currentImage: finalRestaurant?.image
       });
 
       if (previousRestaurant.current !== finalRestaurant && !isSpinning) {
-        console.log('✅ 觸發滑動轉場');
+        console.log('✅ [SlotMachine] 觸發滑動轉場');
         triggerSlideTransition(finalRestaurant, 'left');
       } else {
-        console.log('❌ 不觸發滑動轉場');
+        console.log('❌ [SlotMachine] 不觸發滑動轉場，原因:', {
+          sameRestaurant: previousRestaurant.current === finalRestaurant,
+          isSpinning
+        });
       }
       previousRestaurant.current = finalRestaurant;
     }, [finalRestaurant, isSpinning, triggerSlideTransition]);

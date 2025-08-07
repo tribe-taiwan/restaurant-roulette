@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單滑動轉場測試</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* 滑動轉場動畫 */
+        @keyframes slideInFromRight {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes slideInFromLeft {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div id="root">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold mb-4">簡單滑動轉場測試</h1>
+            <div class="text-lg">載入中...</div>
+        </div>
+    </div>
+
+    <!-- 載入主配置 -->
+    <script src="../utils/locationUtils.js"></script>
+    
+    <script type="text/babel">
+        const { useState, useCallback, useRef, useEffect } = React;
+
+        function SimpleSlideTest() {
+            // 滑動轉場狀態
+            const [isSliding, setIsSliding] = useState(false);
+            const [currentImage, setCurrentImage] = useState(null);
+            const [nextImage, setNextImage] = useState(null);
+            const [slideDirection, setSlideDirection] = useState('left');
+            
+            // 測試圖片
+            const testImages = [
+                'https://picsum.photos/400/300?random=1',
+                'https://picsum.photos/400/300?random=2',
+                'https://picsum.photos/400/300?random=3',
+                'https://picsum.photos/400/300?random=4',
+                'https://picsum.photos/400/300?random=5'
+            ];
+            
+            const [currentImageIndex, setCurrentImageIndex] = useState(0);
+            const [displayImage, setDisplayImage] = useState(testImages[0]);
+            const [finalRestaurant, setFinalRestaurant] = useState({
+                name: '測試餐廳 1',
+                image: testImages[0]
+            });
+
+            // 滑動轉場函數（複製自 SlotMachine.js）
+            const triggerSlideTransition = useCallback((newRestaurant, direction = 'left') => {
+                console.log('🔄 滑動轉場觸發檢查:', { isSliding, newRestaurant: newRestaurant?.name });
+                
+                if (isSliding) {
+                    console.log('❌ 滑動轉場被阻止:', { isSliding });
+                    return;
+                }
+
+                const getCurrentImageUrl = () => {
+                    if (finalRestaurant && finalRestaurant.image) return finalRestaurant.image;
+                    return null;
+                };
+
+                const getNewImageUrl = () => {
+                    if (newRestaurant && newRestaurant.image) return newRestaurant.image;
+                    return null;
+                };
+
+                const currentImg = getCurrentImageUrl();
+                const newImg = getNewImageUrl();
+
+                console.log('🖼️ 圖片檢查:', { currentImg, newImg });
+
+                // 只有當圖片不同時才執行滑動轉場
+                if (currentImg === newImg) {
+                    console.log('❌ 圖片相同，不執行滑動轉場');
+                    return;
+                }
+
+                console.log('✅ 開始滑動轉場動畫');
+                setCurrentImage(currentImg);
+                setNextImage(newImg);
+                setSlideDirection(direction);
+                setIsSliding(true);
+
+                // 300ms後完成動畫
+                setTimeout(() => {
+                    console.log('✅ 滑動轉場動畫完成');
+                    setIsSliding(false);
+                    setCurrentImage(null);
+                    setNextImage(null);
+                }, 300);
+            }, [finalRestaurant, isSliding]);
+
+            // 監聽finalRestaurant變化，觸發滑動轉場
+            const previousRestaurant = useRef(finalRestaurant);
+            useEffect(() => {
+                console.log('🎯 餐廳變化檢查:', { 
+                    previous: previousRestaurant.current?.name, 
+                    current: finalRestaurant?.name
+                });
+                
+                if (previousRestaurant.current !== finalRestaurant) {
+                    console.log('✅ 觸發滑動轉場');
+                    triggerSlideTransition(finalRestaurant, 'left');
+                } else {
+                    console.log('❌ 不觸發滑動轉場');
+                }
+                previousRestaurant.current = finalRestaurant;
+            }, [finalRestaurant, triggerSlideTransition]);
+
+            // 下一張圖片
+            const goToNextImage = () => {
+                const nextIndex = (currentImageIndex + 1) % testImages.length;
+                setCurrentImageIndex(nextIndex);
+                setFinalRestaurant({
+                    name: `測試餐廳 ${nextIndex + 1}`,
+                    image: testImages[nextIndex]
+                });
+            };
+
+            // 上一張圖片
+            const goToPrevImage = () => {
+                const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
+                setCurrentImageIndex(prevIndex);
+                setFinalRestaurant({
+                    name: `測試餐廳 ${prevIndex + 1}`,
+                    image: testImages[prevIndex]
+                });
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto">
+                    <h1 className="text-3xl font-bold text-center mb-8">簡單滑動轉場測試</h1>
+                    
+                    {/* 圖片顯示區域 */}
+                    <div className="relative w-full h-64 mb-6 rounded-lg overflow-hidden bg-gray-200">
+                        {/* 滑動轉場容器 */}
+                        {isSliding && (currentImage || nextImage) ? (
+                            <div className="absolute inset-0 overflow-hidden">
+                                {/* 當前圖片 - 滑出 */}
+                                {currentImage && (
+                                    <div 
+                                        className="absolute inset-0 w-full h-full transition-transform duration-300 ease-out"
+                                        style={{
+                                            backgroundImage: `url(${currentImage})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            transform: slideDirection === 'left' ? 'translateX(-100%)' : 'translateX(100%)',
+                                            zIndex: 1
+                                        }}
+                                    />
+                                )}
+                                {/* 下一張圖片 - 從右側滑入 */}
+                                {nextImage && (
+                                    <div 
+                                        className="absolute inset-0 w-full h-full"
+                                        style={{
+                                            backgroundImage: `url(${nextImage})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
+                                            animation: slideDirection === 'left' ? 'slideInFromRight 300ms ease-out forwards' : 'slideInFromLeft 300ms ease-out forwards',
+                                            zIndex: 2
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        ) : (
+                            /* 正常顯示狀態 */
+                            <div 
+                                className="absolute inset-0"
+                                style={{
+                                    backgroundImage: `url(${finalRestaurant.image})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center'
+                                }}
+                            />
+                        )}
+                        
+                        {/* 狀態指示器 */}
+                        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+                            {isSliding ? '滑動中...' : finalRestaurant.name}
+                        </div>
+                    </div>
+                    
+                    {/* 控制按鈕 */}
+                    <div className="flex justify-center gap-4">
+                        <button 
+                            onClick={goToPrevImage}
+                            disabled={isSliding}
+                            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            ← 上一張
+                        </button>
+                        <button 
+                            onClick={goToNextImage}
+                            disabled={isSliding}
+                            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            下一張 →
+                        </button>
+                    </div>
+                    
+                    {/* 說明 */}
+                    <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+                        <h3 className="font-bold mb-2">測試說明：</h3>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>點擊按鈕測試滑動轉場效果</li>
+                            <li>檢查瀏覽器控制台的調試信息</li>
+                            <li>滑動過程中按鈕會被禁用</li>
+                            <li>動畫時長為 300ms</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<SimpleSlideTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>
