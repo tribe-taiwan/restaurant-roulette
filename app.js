@@ -69,11 +69,26 @@ function App() {
 
     // 獲取當前主題配置
     const currentTheme = window.ThemeManager?.getCurrentTheme();
-    const brandName = currentTheme?.brand?.businessName || "Maizuru Tainan B&B";
+    const brandSubtitle = currentTheme?.brand?.subtitle || "舞鶴台南民宿";
+
+    // 根據主題動態生成翻譯
+    const getThemeTranslations = () => {
+      const isQisu = brandSubtitle === "柒宿";
+      return {
+        en: isQisu ? "Qisu Guesthouse" : "Maizuru Tainan B&B",
+        zh: brandSubtitle,
+        ja: isQisu ? "七宿ゲストハウス" : "まいづる台南民宿",
+        ko: isQisu ? "칠숙 게스트하우스" : "우허 타이난 민박",
+        vi: isQisu ? "Nhà nghỉ Thất Túc" : "Nhà nghỉ Vũ Hạc Đài Nam",
+        ms: isQisu ? "Rumah Tumpangan Qisu" : "Rumah Tumpangan Wuhe Tainan"
+      };
+    };
+
+    const themeTranslations = getThemeTranslations();
 
     const translations = {
       en: {
-        title: brandName,
+        title: themeTranslations.en,
         spinButton: "What to eat?",
         addCandidate: "Add Option",
         spinning: "Searching...",
@@ -122,7 +137,7 @@ function App() {
         hours: "hours"
       },
       zh: {
-        title: brandName,
+        title: themeTranslations.zh,
         spinButton: "甲崩喔",
         addCandidate: "加入候選",
         spinning: "正在搜尋...",
@@ -171,7 +186,7 @@ function App() {
         hours: "小時"
       },
       ja: {
-        title: "まいづる台南民宿",
+        title: themeTranslations.ja,
         spinButton: "何を食べる？",
         spinning: "レストランを探しています...",
         locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
@@ -211,7 +226,7 @@ function App() {
         hours: "時間"
       },
       ko: {
-        title: "우허 타이난 민박",
+        title: themeTranslations.ko,
         spinButton: "뭘 먹지?",
         spinning: "레스토랑을 찾고 있습니다...",
         locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
@@ -251,7 +266,7 @@ function App() {
         hours: "시간"
       },
       vi: {
-        title: "Nhà nghỉ Vũ Hạc Đài Nam",
+        title: themeTranslations.vi,
         spinButton: "Ăn gì đây?",
         spinning: "Đang tìm nhà hàng...",
         locationError: "Vui lòng cho phép truy cập vị trí để tìm nhà hàng gần đây.",
@@ -291,7 +306,7 @@ function App() {
         hours: "giờ"
       },
       ms: {
-        title: "Rumah Tumpangan Wuhe Tainan",
+        title: themeTranslations.ms,
         spinButton: "Makan apa?",
         spinning: "Mencari restoran...",
         locationError: "Sila benarkan akses lokasi untuk mencari restoran berdekatan.",
@@ -892,8 +907,22 @@ function App() {
           {/* 半透明遮罩 */}
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           
-          {/* 語言選擇器 - 置中顯示 */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+          {/* 主標題區域 - 居中顯示 */}
+          <div className="relative z-20 text-center text-white">
+            {/* 主標題 */}
+            <h1 className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg">
+              {t.title}
+            </h1>
+            {/* 副標題（非中文時顯示） */}
+            {selectedLanguage !== 'zh' && brandSubtitle && (
+              <h3 className="text-lg md:text-xl opacity-90 drop-shadow-md">
+                {brandSubtitle}
+              </h3>
+            )}
+          </div>
+          
+          {/* 語言選擇器 - 右上角 */}
+          <div className="absolute top-4 right-4 z-30">
             <LanguageSelector 
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
@@ -910,11 +939,11 @@ function App() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
-                title={`${currentTheme?.brand?.businessName || '民宿'} 官網`}
+                title={`${currentTheme?.brand?.subtitle || '民宿'} 官網`}
               >
                 <img
                   src={currentTheme.images.bnbLogo}
-                  alt={currentTheme?.brand?.businessName || '民宿 Logo'}
+                  alt={`${currentTheme?.brand?.subtitle || '民宿'} Logo`}
                   className="w-full h-full object-contain rounded-lg"
                 />
               </a>
@@ -956,13 +985,6 @@ function App() {
             >
               <div className="icon-facebook text-white text-2xl"></div>
             </a>
-          </div>
-          
-          {/* 標題內容 */}
-          <div className="relative z-10 text-center">
-            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-lg">
-              {t.title}
-            </h1>
           </div>
         </div>
 

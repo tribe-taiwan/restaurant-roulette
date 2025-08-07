@@ -6,11 +6,7 @@ window.THEME_CONFIGS = {
   maizuru: {
     // 基本品牌資訊
     brand: {
-      name: "甲崩喔 Restaurant Roulette",
-      subtitle: "台南美食輪盤",
-      businessName: "舞鶴台南民宿",
-      slogan: "隨機發現台南附近的美食餐廳，使用有趣的老虎機介面探索在地美味！",
-      description: "舞鶴台南民宿推薦！隨機發現台南附近的美食餐廳，支援多語言和精準定位功能。"
+      subtitle: "舞鶴台南民宿"
     },
 
     // 民宿位置資訊（作為導航起點）
@@ -38,7 +34,6 @@ window.THEME_CONFIGS = {
     images: {
       banner: "./assets/image/banner.jpg",
       bnbLogo: "./assets/image/maizuru-logo.jpg", // 民宿專屬 logo (需要準備)
-      bookingLogo: "./assets/image/logo.png", // 訂房平台 logo
       favicon: "./assets/image/favicon.ico"
     },
 
@@ -46,15 +41,18 @@ window.THEME_CONFIGS = {
     socialMedia: {
       booking: {
         url: "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html",
-        title: "在 Booking.com 預訂"
+        title: "在 Booking.com 預訂",
+        logo: "./assets/image/logo.png"
       },
       instagram: {
         url: "https://www.instagram.com/tainanbnb_maizuru/",
-        title: "關注我們的 Instagram"
+        title: "關注我們的 Instagram",
+        logo: "./assets/image/Instagram-Logo.png"
       },
       facebook: {
         url: "https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW",
-        title: "關注我們的 Facebook"
+        title: "關注我們的 Facebook",
+        logo: "./assets/image/Facebook-logo.png"
       }
     },
 
@@ -71,17 +69,13 @@ window.THEME_CONFIGS = {
   // 柒宿民宿主題
   qisu: {
     brand: {
-      name: "柒宿",
-      subtitle: "妳台南的家",
-      businessName: "柒宿",
-      slogan: "在古都台南探索在地美食，品味府城的文化與美味！",
-      description: "柒宿推薦！探索台南最棒的在地美食和特色小吃。"
+      subtitle: "柒宿"
     },
 
     homeBase: {
       name: "柒宿",
       address: "700台南市中西區西門路二段300巷8號",
-      phone: "+886-6-xxx-xxxx",
+      phone: "+886-976-722-208",
       bookingUrl: "https://www.booking-owlnest.com/qisu"
     },
 
@@ -100,22 +94,24 @@ window.THEME_CONFIGS = {
     images: {
       banner: "./assets/themes/qisu/banner.jpg",
       bnbLogo: "./assets/themes/qisu/logo.jpg", // 民宿專屬 logo
-      bookingLogo: "./assets/image/booking-logo.png", // 訂房平台 logo
       favicon: "./assets/themes/qisu/favicon.ico"
     },
 
     socialMedia: {
       booking: {
         url: "https://www.booking-owlnest.com/qisu",
-        title: "在 Booking.com 預訂柒宿"
+        title: "在 Booking.com 預訂柒宿",
+        logo: "./assets/image/booking-logo.png"
       },
       instagram: {
         url: "https://www.instagram.com/qisu_bnb/",
-        title: "關注柒宿 Instagram"
+        title: "關注柒宿 Instagram",
+        logo: "./assets/image/Instagram-Logo.png"
       },
       facebook: {
         url: "https://www.facebook.com/qisu.bnb/",
-        title: "關注柒宿 Facebook"
+        title: "關注柒宿 Facebook",
+        logo: "./assets/image/Facebook-logo.png"
       }
     },
 
@@ -131,17 +127,13 @@ window.THEME_CONFIGS = {
   // 舞鶴民宿主題 (另一個版本)
   maizuru: {
     brand: {
-      name: "舞鶴台南民宿",
-      subtitle: "檜木民宿",
-      businessName: "舞鶴台南民宿",
-      slogan: "在台南古都探索最道地的府城美食和傳統小吃！",
-      description: "舞鶴民宿推薦！探索台南地區的傳統美食和在地小吃。"
+      subtitle: "舞鶴台南民宿"
     },
 
     homeBase: {
       name: "舞鶴台南民宿",
       address: "臺南市中西區海安路二段296巷20號",
-      phone: "+886-6-xxx-xxxx",
+      phone: "+886-955-674-211",
       bookingUrl: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"
     },
 
@@ -160,22 +152,24 @@ window.THEME_CONFIGS = {
     images: {
       banner: "./assets/themes/maizuru/banner.jpg",
       bnbLogo: "./assets/themes/maizuru/logo.jpg", // 民宿專屬 logo
-      bookingLogo: "./assets/image/booking-logo.png", // 訂房平台 logo
       favicon: "./assets/themes/maizuru/favicon.ico"
     },
 
     socialMedia: {
       booking: {
         url: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751",
-        title: "在 Owlting 預訂舞鶴民宿"
+        title: "在 Owlting 預訂舞鶴民宿",
+        logo: "./assets/image/booking-logo.png"
       },
       instagram: {
         url: "https://www.instagram.com/maizuru_bnb/",
-        title: "關注舞鶴民宿 Instagram"
+        title: "關注舞鶴民宿 Instagram",
+        logo: "./assets/image/Instagram-Logo.png"
       },
       facebook: {
         url: "https://www.facebook.com/maizuru.bnb/",
-        title: "關注舞鶴民宿 Facebook"
+        title: "關注舞鶴民宿 Facebook",
+        logo: "./assets/image/Facebook-logo.png"
       }
     },
 

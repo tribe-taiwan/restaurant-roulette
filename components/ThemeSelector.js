@@ -11,7 +11,7 @@ function ThemeSelector({ currentTheme, onThemeChange, isVisible = false }) {
 
   const getThemeDisplayName = (themeName) => {
     const theme = themeConfigs[themeName];
-    return theme ? `${theme.brand.businessName} (${themeName})` : themeName;
+    return theme ? `${theme.brand.subtitle} (${themeName})` : themeName;
   };
 
   const handleThemeSelect = (themeName) => {
@@ -72,10 +72,10 @@ function ThemeSelector({ currentTheme, onThemeChange, isVisible = false }) {
                       
                       <div className="flex-1">
                         <div className={`text-sm font-medium ${isActive ? 'text-blue-700' : 'text-gray-900'}`}>
-                          {theme?.brand?.businessName || themeName}
+                          {theme?.brand?.subtitle || themeName}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {theme?.brand?.name || '主題名稱'}
+                          {theme?.brand?.subtitle || '主題名稱'}
                         </div>
                       </div>
                       
