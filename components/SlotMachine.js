@@ -680,3 +680,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     return null;
   }
 }
+
+// 註冊組件到全局
+window.SlotMachine = SlotMachine;
