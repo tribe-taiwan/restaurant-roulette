@@ -295,12 +295,14 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
   
   // 'current'表示只顯示現在營業中的餐廳，優先使用Google API的isOpen()方法
   if (selectedMealTime === 'current') {
-    // 使用 Google 推薦的 isOpen() 方法
+
+
+    // 使用新的 Google Places API 的 isOpen() 方法
     if (openingHours && typeof openingHours.isOpen === 'function') {
       try {
         const isOpenNow = openingHours.isOpen();
-        console.log('🕐 使用 Google 推薦的 isOpen() 方法結果:', isOpenNow);
-        
+        console.log('🕐 使用 Google Places API isOpen() 方法結果:', isOpenNow);
+
         // 如果營業中，檢查20分鐘緩衝區
         if (isOpenNow) {
           const minutesUntilClose = calculateMinutesUntilClose(openingHours);
@@ -309,14 +311,13 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
             return false;
           }
         }
-        
+
         return isOpenNow;
       } catch (error) {
-        console.warn('⚠️ Google isOpen() API 調用失敗，回退到 periods 計算:', error);
-        // 當 Google isOpen() API 調用失敗時，回退到手動計算邏輯
+        console.warn('⚠️ Google Places API isOpen() 調用失敗，回退到 periods 計算:', error);
       }
     } else {
-      console.log('⚠️ 沒有 Google isOpen() 方法，使用 periods 手動計算');
+      console.log('🔄 Google Places API isOpen() 方法不可用，使用 periods 手動計算營業狀態');
     }
     
     // 回退邏輯：使用 periods 手動計算當前營業狀態
@@ -325,18 +326,14 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
       
-      console.log(`📅 檢查營業時間: 今天=${currentDay}, 當前時間=${currentTime}`);
-      
       // 檢查今天的營業時段
       for (const period of openingHours.periods) {
         if (!period.open) continue;
-        
+
         // 檢查是否為今天的營業時段
         if (period.open.day === currentDay) {
           const openTime = parseInt(period.open.time || '0000');
           const closeTime = period.close ? parseInt(period.close.time || '2359') : 2359;
-          
-          console.log(`🕐 營業時段: ${openTime}-${closeTime}`);
           
           // 處理跨夜營業 (例如: 2200-0200)
           if (closeTime < openTime) {

@@ -54,7 +54,11 @@ function App() {
     const [isInitialLoad, setIsInitialLoad] = React.useState(true); // 追蹤是否為初次載入
     const [lastKnownLocation, setLastKnownLocation] = React.useState(null); // 儲存上一次成功的定位
     const [locationError, setLocationError] = React.useState(null); // 儲存定位錯誤訊息
-    
+
+    // 滑動轉場相關狀態
+    const [triggerSlideTransition, setTriggerSlideTransition] = React.useState(null);
+    const previousRestaurantRef = React.useRef(currentRestaurant);
+
     // 地址校正相關狀態
     const [addressInput, setAddressInput] = React.useState('');
     const [savedLocations, setSavedLocations] = React.useState([]);
@@ -835,6 +839,24 @@ function App() {
       }
     };
 
+    // 處理滑動轉場觸發
+    const handleTriggerSlideTransition = React.useCallback((slideTransitionFn) => {
+      setTriggerSlideTransition(() => slideTransitionFn);
+    }, []);
+
+    // 監聽餐廳變化，觸發滑動轉場
+    React.useEffect(() => {
+      if (triggerSlideTransition && previousRestaurantRef.current && currentRestaurant &&
+          previousRestaurantRef.current !== currentRestaurant && !isSpinning) {
+        console.log('🔄 [App] 觸發滑動轉場:', {
+          previous: previousRestaurantRef.current?.name,
+          current: currentRestaurant?.name
+        });
+        triggerSlideTransition(currentRestaurant, 'left');
+      }
+      previousRestaurantRef.current = currentRestaurant;
+    }, [currentRestaurant, triggerSlideTransition, isSpinning]);
+
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
         
@@ -933,7 +955,7 @@ function App() {
 
           {/* Slot Machine */}
           <div className="flex justify-center mb-8">
-            <SlotMachine 
+            <SlotMachine
               isSpinning={isSpinning}
               onSpin={handleSpin}
               onAddCandidate={handleAddCandidate}
@@ -946,6 +968,7 @@ function App() {
               userLocation={userLocation}
               userAddress={userAddress}
               onPreviousRestaurant={handlePreviousClick}
+              onTriggerSlideTransition={handleTriggerSlideTransition}
             />
           </div>
 

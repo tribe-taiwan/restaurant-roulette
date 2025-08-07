@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition }) {
   try {
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
@@ -128,43 +128,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [finalRestaurant?.image]);
 
-    // 監聽finalRestaurant變化，觸發滑動轉場
-    const previousRestaurantId = React.useRef(finalRestaurant?.id || finalRestaurant?.placeId);
-    const previousRestaurantImage = React.useRef(finalRestaurant?.image);
+    // 儲存上一個餐廳的引用，用於滑動轉場時的圖片比較
+    const previousRestaurant = React.useRef(finalRestaurant);
 
+    // 暴露滑動轉場函數給父組件
     React.useEffect(() => {
-      const currentId = finalRestaurant?.id || finalRestaurant?.placeId;
-      const currentImage = finalRestaurant?.image;
-
-      console.log('🎯 [SlotMachine] 餐廳變化檢查:', {
-        previousName: previousRestaurantId.current ? 'has previous' : 'no previous',
-        currentName: finalRestaurant?.name,
-        isSpinning,
-        previousId: previousRestaurantId.current,
-        currentId: currentId,
-        previousImage: previousRestaurantImage.current ? 'has image' : 'no image',
-        currentImage: currentImage ? 'has image' : 'no image',
-        idChanged: previousRestaurantId.current !== currentId,
-        imageChanged: previousRestaurantImage.current !== currentImage
-      });
-
-      // 檢查餐廳 ID 是否改變（更可靠的檢查方式）
-      if (previousRestaurantId.current !== currentId && !isSpinning && currentId) {
-        console.log('✅ [SlotMachine] 觸發滑動轉場 (餐廳ID變化)');
-        triggerSlideTransition(finalRestaurant, 'left');
-      } else {
-        console.log('❌ [SlotMachine] 不觸發滑動轉場，原因:', {
-          sameId: previousRestaurantId.current === currentId,
-          isSpinning,
-          hasCurrentId: !!currentId,
-          previousId: previousRestaurantId.current,
-          currentId: currentId
-        });
+      if (onTriggerSlideTransition) {
+        onTriggerSlideTransition(triggerSlideTransition);
       }
-
-      previousRestaurantId.current = currentId;
-      previousRestaurantImage.current = currentImage;
-    }, [finalRestaurant?.id, finalRestaurant?.placeId, finalRestaurant?.image, isSpinning, triggerSlideTransition]);
+    }, [triggerSlideTransition, onTriggerSlideTransition]);
 
     // 🎯 動態偵測圖片數量 - 自動適應資料夾中的圖片
     const [slotImages, setSlotImages] = React.useState([
