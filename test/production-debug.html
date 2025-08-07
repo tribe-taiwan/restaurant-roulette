@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生產檔調試</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div id="root">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold mb-4">生產檔調試</h1>
+            <div id="status" class="text-lg">載入中...</div>
+        </div>
+    </div>
+
+    <!-- 載入主配置 -->
+    <script src="../utils/locationUtils.js"></script>
+
+    <script>
+        console.log('🔍 開始生產檔調試...');
+
+        // 捕獲所有錯誤
+        window.addEventListener('error', (e) => {
+            console.error('❌ 全局錯誤:', e.error);
+            document.getElementById('status').innerHTML += `<div class="text-red-600">錯誤: ${e.error.message}</div>`;
+        });
+
+        // 載入本地 API Key
+        console.log('📡 載入本地 API Key...');
+        fetch('../_local/.api_key')
+            .then(response => response.text())
+            .then(apiKey => {
+                if (window.GOOGLE_PLACES_CONFIG) {
+                    window.GOOGLE_PLACES_CONFIG.API_KEY = apiKey.trim();
+                    console.log('✅ 測試頁面：本地 API Key 已載入');
+                } else {
+                    console.error('❌ GOOGLE_PLACES_CONFIG 未定義');
+                }
+            })
+            .catch(error => {
+                console.error('❌ 測試頁面：無法讀取 .api_key 檔案:', error);
+            });
+
+        // 等待API Key載入完成
+        async function waitForAPIKey() {
+            let attempts = 0;
+            while (attempts < 20) {
+                if (window.GOOGLE_PLACES_CONFIG &&
+                    window.GOOGLE_PLACES_CONFIG.API_KEY &&
+                    !window.GOOGLE_PLACES_CONFIG.API_KEY.includes('%%')) {
+                    console.log('✅ API Key已就緒:', window.GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8) + 'xxxxxxxx');
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 200));
+                attempts++;
+            }
+            throw new Error('API Key載入超時');
+        }
+
+        // 模擬生產環境的全局函數
+        window.getPriceLabels = () => ({
+            zh: { 1: '便宜', 2: '中等', 3: '昂貴', 4: '很貴' },
+            en: { 1: 'Cheap', 2: 'Moderate', 3: 'Expensive', 4: 'Very Expensive' }
+        });
+
+        window.renderStars = (rating) => {
+            if (!rating) return null;
+            const stars = [];
+            for (let i = 1; i <= 5; i++) {
+                stars.push({
+                    key: i,
+                    className: i <= rating ? 'text-yellow-400' : 'text-gray-300',
+                    symbol: '★'
+                });
+            }
+            return stars;
+        };
+
+        window.getDirectionsUrl = (restaurant, userLocation, userAddress, language) => {
+            return `https://www.google.com/maps/dir/?api=1&destination=${restaurant.name}`;
+        };
+
+        // 主測試函數
+        async function runTest() {
+            try {
+                // 等待 API Key 載入
+                await waitForAPIKey();
+
+                // 測試載入 SlotMachine.js
+                const response = await fetch('/components/SlotMachine.js');
+                console.log('📡 SlotMachine.js 響應狀態:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const code = await response.text();
+                console.log('📄 SlotMachine.js 載入成功，大小:', code.length);
+
+                // 檢查代碼內容
+                const hasSlideStates = code.includes('isSliding') && code.includes('currentImage');
+                const hasSlideFunction = code.includes('triggerSlideTransition');
+                const hasSlideJSX = code.includes('滑動轉場容器');
+
+                console.log('🔍 代碼檢查:');
+                console.log('  滑動狀態:', hasSlideStates);
+                console.log('  滑動函數:', hasSlideFunction);
+                console.log('  滑動JSX:', hasSlideJSX);
+                
+                // 嘗試用 Babel 轉換
+                try {
+                    console.log('🔄 開始 Babel 轉換...');
+                    const transformed = Babel.transform(code, {
+                        presets: ['react']
+                    });
+                    console.log('✅ Babel 轉換成功');
+                    
+                    // 執行轉換後的代碼
+                    console.log('🚀 執行組件代碼...');
+                    eval(transformed.code);
+                    
+                    if (typeof window.SlotMachine === 'function') {
+                        console.log('✅ SlotMachine 組件已定義');
+                        
+                        // 測試組件實例化
+                        try {
+                            const testProps = {
+                                isSpinning: false,
+                                onSpin: () => console.log('Spin clicked'),
+                                onAddCandidate: () => console.log('Add candidate'),
+                                translations: { spinButton: '開始搜尋', spinning: '搜尋中...' },
+                                finalRestaurant: {
+                                    name: '測試餐廳',
+                                    image: 'https://picsum.photos/400/300?random=1'
+                                },
+                                candidateList: [],
+                                language: 'zh',
+                                onClearList: () => console.log('Clear list'),
+                                onImageClick: () => console.log('Image clicked'),
+                                userLocation: { lat: 22.9908, lng: 120.2133 },
+                                userAddress: '台南市',
+                                onPreviousRestaurant: () => console.log('Previous restaurant')
+                            };
+                            
+                            console.log('🧪 測試組件渲染...');
+                            const element = React.createElement(window.SlotMachine, testProps);
+                            ReactDOM.render(element, document.getElementById('root'));
+                            
+                            console.log('✅ 組件渲染成功');
+                            
+                            // 測試滑動轉場
+                            setTimeout(() => {
+                                console.log('🔄 測試滑動轉場...');
+                                // 模擬餐廳變化 - 使用不同的圖片
+                                const newProps = {
+                                    ...testProps,
+                                    finalRestaurant: {
+                                        name: '新餐廳',
+                                        image: 'https://picsum.photos/400/300?random=99'  // 使用不同的隨機圖片
+                                    }
+                                };
+                                const newElement = React.createElement(window.SlotMachine, newProps);
+                                ReactDOM.render(newElement, document.getElementById('root'));
+                                console.log('🎯 滑動轉場測試完成');
+
+                                // 再次測試滑動轉場
+                                setTimeout(() => {
+                                    console.log('🔄 第二次滑動轉場測試...');
+                                    const thirdProps = {
+                                        ...testProps,
+                                        finalRestaurant: {
+                                            name: '第三家餐廳',
+                                            image: 'https://picsum.photos/400/300?random=88'  // 又一個不同的圖片
+                                        }
+                                    };
+                                    const thirdElement = React.createElement(window.SlotMachine, thirdProps);
+                                    ReactDOM.render(thirdElement, document.getElementById('root'));
+                                    console.log('🎯 第二次滑動轉場測試完成');
+                                }, 2000);
+                            }, 2000);
+                            
+                        } catch (renderError) {
+                            console.error('❌ 組件渲染失敗:', renderError);
+                            document.getElementById('root').innerHTML = `
+                                <div class="text-center">
+                                    <h1 class="text-2xl font-bold mb-4 text-red-600">❌ 組件渲染失敗</h1>
+                                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                        <strong>錯誤:</strong> ${renderError.message}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                    } else {
+                        throw new Error('SlotMachine 組件未定義');
+                    }
+                    
+                } catch (babelError) {
+                    console.error('❌ Babel 轉換失敗:', babelError);
+                    document.getElementById('root').innerHTML = `
+                        <div class="text-center">
+                            <h1 class="text-2xl font-bold mb-4 text-red-600">❌ Babel 轉換失敗</h1>
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                <strong>錯誤:</strong> ${babelError.message}<br>
+                                <strong>行號:</strong> ${babelError.loc ? babelError.loc.line : '未知'}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ 測試失敗:', error);
+                document.getElementById('root').innerHTML = `
+                    <div class="text-center">
+                        <h1 class="text-2xl font-bold mb-4 text-red-600">❌ 測試失敗</h1>
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <strong>錯誤:</strong> ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 啟動測試
+        runTest();
+    </script>
+</body>
+</html>
