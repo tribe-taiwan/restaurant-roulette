@@ -62,6 +62,14 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
               ))}
             </div>
           )}
+          
+          {/* 點擊外部關閉選單 */}
+          {isOpen && (
+            <div 
+              className="fixed inset-0 z-10" 
+              onClick={() => setIsOpen(false)}
+            ></div>
+          )}
         </div>
       </div>
     );
