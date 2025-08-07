@@ -60,6 +60,7 @@
             const [currentImage, setCurrentImage] = useState(null);
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
+            const [isPreloading, setIsPreloading] = useState(false);
             
             // 測試圖片
             const testImages = [
@@ -73,21 +74,59 @@
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
             const [displayImage, setDisplayImage] = useState(testImages[0]);
 
-            // 滑動轉場函數
-            const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
-                if (isSliding) return;
-                
+            // 圖片預載入函數
+            const preloadImage = (url) => {
+                return new Promise((resolve, reject) => {
+                    if (!url) {
+                        resolve(null);
+                        return;
+                    }
+
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log('✅ 圖片預載入成功:', url);
+                        resolve(img);
+                    };
+                    img.onerror = (error) => {
+                        console.warn('⚠️ 圖片預載入失敗:', url, error);
+                        reject(error);
+                    };
+                    img.src = url;
+
+                    // 設置超時
+                    setTimeout(() => {
+                        reject(new Error('圖片載入超時'));
+                    }, 5000);
+                });
+            };
+
+            // 滑動轉場函數（帶預載入）
+            const triggerSlideTransition = useCallback(async (newImageUrl, direction = 'left') => {
+                if (isSliding || isPreloading) return;
+
                 const currentImg = displayImage;
                 const newImg = newImageUrl;
-                
-                // 只有當圖片不同時才執行滑動轉場
-                if (currentImg === newImg) return;
-                
+
+                // 開始預載入新圖片
+                if (newImg) {
+                    console.log('⏳ 開始預載入新圖片...');
+                    setIsPreloading(true);
+
+                    try {
+                        await preloadImage(newImg);
+                        console.log('✅ 圖片預載入完成，開始滑動動畫');
+                    } catch (error) {
+                        console.warn('⚠️ 圖片預載入失敗，繼續執行動畫:', error.message);
+                    } finally {
+                        setIsPreloading(false);
+                    }
+                }
+
                 setCurrentImage(currentImg);
                 setNextImage(newImg);
                 setSlideDirection(direction);
                 setIsSliding(true);
-                
+
                 // 300ms後完成動畫並更新顯示圖片
                 setTimeout(() => {
                     setIsSliding(false);
@@ -95,7 +134,7 @@
                     setNextImage(null);
                     setDisplayImage(newImg);
                 }, 300);
-            }, [displayImage, isSliding]);
+            }, [displayImage, isSliding, isPreloading]);
 
             // 下一張圖片
             const goToNextImage = () => {
@@ -160,7 +199,17 @@
                                 }}
                             />
                         )}
-                        
+
+                        {/* 圖片預載入指示器 */}
+                        {isPreloading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
+                                <div className="bg-white bg-opacity-90 rounded-lg px-4 py-2 flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                                    <span className="text-sm text-gray-700">載入圖片中...</span>
+                                </div>
+                            </div>
+                        )}
+
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
                             {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
@@ -171,14 +220,14 @@
                     <div className="flex justify-center gap-4">
                         <button
                             onClick={goToPrevImage}
-                            disabled={isSliding}
+                            disabled={isSliding || isPreloading}
                             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             ← 上一張
                         </button>
                         <button
                             onClick={goToNextImage}
-                            disabled={isSliding}
+                            disabled={isSliding || isPreloading}
                             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             下一張 →
