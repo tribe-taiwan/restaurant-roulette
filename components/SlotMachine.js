@@ -63,15 +63,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       console.log('🖼️ [SlotMachine] 圖片檢查:', {
         currentImg: currentImg ? currentImg.substring(0, 50) + '...' : null,
-        newImg: newImg ? newImg.substring(0, 50) + '...' : null,
-        same: currentImg === newImg
+        newImg: newImg ? newImg.substring(0, 50) + '...' : null
       });
-
-      // 只有當圖片不同時才執行滑動轉場
-      if (currentImg === newImg) {
-        console.log('❌ [SlotMachine] 圖片相同，不執行滑動轉場');
-        return;
-      }
 
       console.log('✅ [SlotMachine] 開始滑動轉場動畫');
       setCurrentImage(currentImg);
