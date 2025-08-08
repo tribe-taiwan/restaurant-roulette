@@ -84,13 +84,19 @@
                         return;
                     }
 
+                    // 檢查是否已經預載入
+                    if (preloadedImages.has(url)) {
+                        resolve(preloadedImages.get(url));
+                        return;
+                    }
+
                     const img = new Image();
                     img.onload = () => {
-                        console.log('✅ 圖片預載入成功:', url);
+                        // 更新預載入池
+                        setPreloadedImages(prev => new Map(prev).set(url, img));
                         resolve(img);
                     };
                     img.onerror = (error) => {
-                        console.warn('⚠️ 圖片預載入失敗:', url, error);
                         reject(error);
                     };
                     img.src = url;
@@ -102,78 +108,70 @@
                 });
             };
 
-            // 滑動窗口預載入管理
-            const managePreloadWindow = useCallback(async (centerIndex) => {
-                const windowSize = 5; // 預載入窗口大小
-                const cleanupThreshold = 3; // 超過3張才清理
+            // 預載入池管理 - 維持5張圖片
+            const managePreloadPool = useCallback(async (currentIndex) => {
+                console.log(`🔄 管理預載入池，當前索引: ${currentIndex}`);
 
-                console.log(`🔄 管理預載入窗口，中心索引: ${centerIndex}`);
-
-                // 計算需要預載入的範圍
-                const startIndex = Math.max(0, centerIndex - Math.floor(windowSize / 2));
-                const endIndex = Math.min(testImages.length - 1, centerIndex + Math.floor(windowSize / 2));
-
-                const newPreloadedImages = new Map(preloadedImages);
-
-                // 預載入窗口內的圖片
-                for (let i = startIndex; i <= endIndex; i++) {
-                    const url = testImages[i];
-                    if (!newPreloadedImages.has(url)) {
-                        try {
-                            console.log(`⏳ 預載入新圖片 [${i}]:`, url);
-                            const img = await preloadImage(url);
-                            newPreloadedImages.set(url, img);
-                            console.log(`✅ 圖片 [${i}] 預載入完成`);
-                        } catch (error) {
-                            console.warn(`❌ 圖片 [${i}] 預載入失敗:`, error.message);
+                setPreloadedImages(prevPool => {
+                    const newPool = new Map();
+                    
+                    // 計算需要預載入的5張圖片範圍
+                    // 當前圖片前後各2張，總共5張
+                    for (let offset = -2; offset <= 2; offset++) {
+                        const index = currentIndex + offset;
+                        
+                        // 處理循環索引
+                        let actualIndex;
+                        if (index < 0) {
+                            actualIndex = testImages.length + index;
+                        } else if (index >= testImages.length) {
+                            actualIndex = index - testImages.length;
+                        } else {
+                            actualIndex = index;
+                        }
+                        
+                        const url = testImages[actualIndex];
+                        
+                        // 保留已存在的圖片或預載入新圖片
+                        if (prevPool.has(url)) {
+                            newPool.set(url, prevPool.get(url));
+                            console.log(`♻️ 保留已預載入圖片 [${actualIndex}]`);
+                        } else {
+                            // 標記需要預載入，但不等待
+                            preloadImage(url).then(img => {
+                                console.log(`✅ 新圖片 [${actualIndex}] 預載入完成`);
+                                setPreloadedImages(current => new Map(current).set(url, img));
+                            }).catch(error => {
+                                console.warn(`❌ 圖片 [${actualIndex}] 預載入失敗:`, error.message);
+                            });
+                            console.log(`⏳ 開始預載入新圖片 [${actualIndex}]`);
                         }
                     }
-                }
+                    
+                    console.log(`📊 預載入池更新 - 保留: ${newPool.size}張, 清除: ${prevPool.size - newPool.size}張`);
+                    return newPool;
+                });
+            }, [testImages]);
 
-                // 清理超出範圍的圖片（超過閾值才清理）
-                const imagesToRemove = [];
-                for (const [url] of newPreloadedImages) {
-                    const imageIndex = testImages.indexOf(url);
-                    if (imageIndex !== -1) {
-                        const distance = Math.abs(imageIndex - centerIndex);
-                        if (distance > Math.floor(windowSize / 2) + cleanupThreshold) {
-                            imagesToRemove.push(url);
-                        }
-                    }
-                }
-
-                if (imagesToRemove.length > 0) {
-                    console.log(`🧹 清理 ${imagesToRemove.length} 張超出範圍的圖片:`, imagesToRemove);
-                    imagesToRemove.forEach(url => newPreloadedImages.delete(url));
-                }
-
-                setPreloadedImages(newPreloadedImages);
-                console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
-            }, [preloadedImages, testImages]);
-
-            // 簡單預載入：只預載入前後各1張
+            // 初始預載入：先載第1張，然後管理預載入池
             useEffect(() => {
-                const preloadNearbyImages = async () => {
-                    const imagesToPreload = [
-                        testImages[Math.max(0, currentImageIndex - 1)],
-                        testImages[currentImageIndex],
-                        testImages[Math.min(testImages.length - 1, currentImageIndex + 1)]
-                    ];
+                const initializePreloading = async () => {
+                    console.log('🚀 初始化預載入...');
 
-                    for (const url of imagesToPreload) {
-                        if (url && !preloadedImages.has(url)) {
-                            try {
-                                await preloadImage(url);
-                                console.log('✅ 預載入完成:', url);
-                            } catch (error) {
-                                console.log('❌ 預載入失敗:', url);
-                            }
-                        }
+                    // 1. 立即預載入當前圖片
+                    try {
+                        await preloadImage(testImages[0]);
+                        console.log('✅ 第1張圖片立即預載完成');
+                    } catch (error) {
+                        console.log('❌ 第1張圖片預載失敗:', error);
                     }
+
+                    // 2. 初始化預載入池（前後2張，共5張）
+                    managePreloadPool(0);
                 };
 
-                preloadNearbyImages();
-            }, [currentImageIndex]);
+                initializePreloading();
+            }, []); // 只在組件載入時執行一次
 
             // 滑動轉場函數
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
@@ -203,26 +201,26 @@
                 const nextImageUrl = testImages[nextIndex];
 
                 console.log(`🎯 點擊下一張: ${currentImageIndex} → ${nextIndex}`);
-                console.log(`目標圖片: ${nextImageUrl}`);
-                console.log(`是否已預載入: ${preloadedImages.has(nextImageUrl)}`);
 
                 // 先開始滑動動畫
                 triggerSlideTransition(nextImageUrl, 'left');
 
-                // 然後更新索引
+                // 然後更新索引並管理預載入池
                 setCurrentImageIndex(nextIndex);
+                managePreloadPool(nextIndex);
             };
 
             // 上一張圖片
             const goToPrevImage = () => {
                 const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
-                console.log(`🎯 用戶點擊上一張: ${currentImageIndex} → ${prevIndex}`);
+                console.log(`🎯 點擊上一張: ${currentImageIndex} → ${prevIndex}`);
 
-                // 先開始滑動動畫，避免被預載入過程干擾
+                // 先開始滑動動畫
                 triggerSlideTransition(testImages[prevIndex], 'right');
 
-                // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
+                // 然後更新索引並管理預載入池
                 setCurrentImageIndex(prevIndex);
+                managePreloadPool(prevIndex);
             };
 
             return (
