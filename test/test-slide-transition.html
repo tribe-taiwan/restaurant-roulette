@@ -61,17 +61,19 @@
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
 
-            // 測試圖片
-            const testImages = [
-                'https://picsum.photos/400/300?random=1',
-                'https://picsum.photos/400/300?random=2',
-                'https://picsum.photos/400/300?random=3',
-                'https://picsum.photos/400/300?random=4',
-                'https://picsum.photos/400/300?random=5'
-            ];
+            // 動態生成圖片URL的函數
+            const generateImageUrl = (index) => {
+                // 使用不同的隨機種子確保每張圖片都不同
+                return `https://picsum.photos/400/300?random=${index + 1000}`;
+            };
 
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
-            const [displayImage, setDisplayImage] = useState(testImages[0]);
+            const [displayImage, setDisplayImage] = useState(generateImageUrl(0));
+
+            // 動態獲取圖片URL
+            const getImageUrl = (index) => {
+                return generateImageUrl(index);
+            };
 
             // 預載入緩存池
             const [preloadedImages, setPreloadedImages] = useState(new Map());
@@ -102,22 +104,22 @@
                 });
             };
 
-            // 滑動窗口預載入管理
+            // 滑動窗口預載入管理（支持無限滑動）
             const managePreloadWindow = useCallback(async (centerIndex) => {
                 const windowSize = 5; // 預載入窗口大小
-                const cleanupThreshold = 3; // 超過3張才清理
+                const cleanupThreshold = 8; // 超過8張距離才清理
 
                 console.log(`🔄 管理預載入窗口，中心索引: ${centerIndex}`);
 
-                // 計算需要預載入的範圍
-                const startIndex = Math.max(0, centerIndex - Math.floor(windowSize / 2));
-                const endIndex = Math.min(testImages.length - 1, centerIndex + Math.floor(windowSize / 2));
+                // 計算需要預載入的範圍（支持負數索引）
+                const startIndex = centerIndex - Math.floor(windowSize / 2);
+                const endIndex = centerIndex + Math.floor(windowSize / 2);
 
                 const newPreloadedImages = new Map(preloadedImages);
 
                 // 預載入窗口內的圖片
                 for (let i = startIndex; i <= endIndex; i++) {
-                    const url = testImages[i];
+                    const url = getImageUrl(i);
                     if (!newPreloadedImages.has(url)) {
                         try {
                             console.log(`⏳ 預載入新圖片 [${i}]:`, url);
@@ -130,13 +132,15 @@
                     }
                 }
 
-                // 清理超出範圍的圖片（超過閾值才清理）
+                // 清理超出範圍的圖片（基於索引距離）
                 const imagesToRemove = [];
                 for (const [url] of newPreloadedImages) {
-                    const imageIndex = testImages.indexOf(url);
-                    if (imageIndex !== -1) {
+                    // 從URL中提取索引
+                    const match = url.match(/random=(\d+)/);
+                    if (match) {
+                        const imageIndex = parseInt(match[1]) - 1000; // 減去偏移量
                         const distance = Math.abs(imageIndex - centerIndex);
-                        if (distance > Math.floor(windowSize / 2) + cleanupThreshold) {
+                        if (distance > cleanupThreshold) {
                             imagesToRemove.push(url);
                         }
                     }
@@ -149,7 +153,7 @@
 
                 setPreloadedImages(newPreloadedImages);
                 console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
-            }, [preloadedImages, testImages]);
+            }, [preloadedImages, getImageUrl]);
 
             // 初始預載入
             useEffect(() => {
@@ -204,25 +208,27 @@
                 }, 300);
             }, [displayImage, isSliding, preloadedImages]);
 
-            // 下一張圖片
+            // 下一張圖片（無限滑動）
             const goToNextImage = () => {
-                const nextIndex = (currentImageIndex + 1) % testImages.length;
+                const nextIndex = currentImageIndex + 1;
+                const nextImageUrl = getImageUrl(nextIndex);
                 console.log(`🎯 用戶點擊下一張: ${currentImageIndex} → ${nextIndex}`);
 
                 // 先開始滑動動畫，避免被預載入過程干擾
-                triggerSlideTransition(testImages[nextIndex], 'left');
+                triggerSlideTransition(nextImageUrl, 'left');
 
                 // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
                 setCurrentImageIndex(nextIndex);
             };
 
-            // 上一張圖片
+            // 上一張圖片（支持負數索引）
             const goToPrevImage = () => {
-                const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
+                const prevIndex = currentImageIndex - 1;
+                const prevImageUrl = getImageUrl(prevIndex);
                 console.log(`🎯 用戶點擊上一張: ${currentImageIndex} → ${prevIndex}`);
 
                 // 先開始滑動動畫，避免被預載入過程干擾
-                triggerSlideTransition(testImages[prevIndex], 'right');
+                triggerSlideTransition(prevImageUrl, 'right');
 
                 // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
                 setCurrentImageIndex(prevIndex);
@@ -280,7 +286,7 @@
 
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                            {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
+                            {isSliding ? '滑動中...' : `圖片索引: ${currentImageIndex}`}
                         </div>
 
                         {/* 預載入狀態指示器 */}
@@ -314,13 +320,14 @@
                     
                     {/* 說明 */}
                     <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                        <h3 className="font-bold mb-2">滑動窗口預載入測試：</h3>
+                        <h3 className="font-bold mb-2">無限滑動預載入測試：</h3>
                         <ul className="list-disc list-inside space-y-1 text-sm">
                             <li>點擊「下一張」按鈕測試左滑效果（新圖片從右側滑入）</li>
                             <li>點擊「上一張」按鈕測試右滑效果（新圖片從左側滑入）</li>
+                            <li><strong>無限滑動</strong>：模擬真實情況，可以無限往前或往後滑動，每張都是新圖片</li>
                             <li><strong>預載入策略</strong>：維持當前圖片前後各2張的預載入窗口（共5張）</li>
                             <li><strong>動態管理</strong>：切換圖片時自動預載入新範圍，超過8張距離才清理記憶體</li>
-                            <li><strong>狀態顯示</strong>：右上角顯示預載入池大小，左下角顯示當前圖片狀態</li>
+                            <li><strong>狀態顯示</strong>：左上角顯示當前索引，右上角顯示預載入池大小</li>
                             <li>動畫時長為 300ms，使用 ease-out 緩動函數</li>
                         </ul>
                     </div>
