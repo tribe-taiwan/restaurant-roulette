@@ -102,31 +102,65 @@
                 });
             };
 
-            // 背景預載入所有圖片
-            useEffect(() => {
-                console.log('🔄 開始背景預載入所有圖片...');
+            // 滑動窗口預載入管理
+            const managePreloadWindow = useCallback(async (centerIndex) => {
+                const windowSize = 5; // 預載入窗口大小
+                const cleanupThreshold = 3; // 超過3張才清理
 
-                const preloadAllImages = async () => {
-                    const newPreloadedImages = new Map();
+                console.log(`🔄 管理預載入窗口，中心索引: ${centerIndex}`);
 
-                    for (let i = 0; i < testImages.length; i++) {
-                        const url = testImages[i];
+                // 計算需要預載入的範圍
+                const startIndex = Math.max(0, centerIndex - Math.floor(windowSize / 2));
+                const endIndex = Math.min(testImages.length - 1, centerIndex + Math.floor(windowSize / 2));
+
+                const newPreloadedImages = new Map(preloadedImages);
+
+                // 預載入窗口內的圖片
+                for (let i = startIndex; i <= endIndex; i++) {
+                    const url = testImages[i];
+                    if (!newPreloadedImages.has(url)) {
                         try {
-                            console.log(`⏳ 預載入圖片 ${i + 1}/${testImages.length}:`, url);
+                            console.log(`⏳ 預載入新圖片 [${i}]:`, url);
                             const img = await preloadImage(url);
                             newPreloadedImages.set(url, img);
-                            console.log(`✅ 圖片 ${i + 1}/${testImages.length} 預載入完成`);
+                            console.log(`✅ 圖片 [${i}] 預載入完成`);
                         } catch (error) {
-                            console.warn(`❌ 圖片 ${i + 1}/${testImages.length} 預載入失敗:`, error.message);
+                            console.warn(`❌ 圖片 [${i}] 預載入失敗:`, error.message);
                         }
                     }
+                }
 
-                    setPreloadedImages(newPreloadedImages);
-                    console.log('🎉 所有圖片預載入完成！緩存池大小:', newPreloadedImages.size);
-                };
+                // 清理超出範圍的圖片（超過閾值才清理）
+                const imagesToRemove = [];
+                for (const [url] of newPreloadedImages) {
+                    const imageIndex = testImages.indexOf(url);
+                    if (imageIndex !== -1) {
+                        const distance = Math.abs(imageIndex - centerIndex);
+                        if (distance > Math.floor(windowSize / 2) + cleanupThreshold) {
+                            imagesToRemove.push(url);
+                        }
+                    }
+                }
 
-                preloadAllImages();
+                if (imagesToRemove.length > 0) {
+                    console.log(`🧹 清理 ${imagesToRemove.length} 張超出範圍的圖片:`, imagesToRemove);
+                    imagesToRemove.forEach(url => newPreloadedImages.delete(url));
+                }
+
+                setPreloadedImages(newPreloadedImages);
+                console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
+            }, [preloadedImages, testImages]);
+
+            // 初始預載入
+            useEffect(() => {
+                console.log('🚀 初始化預載入窗口...');
+                managePreloadWindow(currentImageIndex);
             }, []);
+
+            // 當圖片索引改變時更新預載入窗口
+            useEffect(() => {
+                managePreloadWindow(currentImageIndex);
+            }, [currentImageIndex, managePreloadWindow]);
 
             // 滑動轉場函數（使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
@@ -227,7 +261,12 @@
 
                         {/* 預載入狀態指示器 */}
                         <div className="absolute top-4 right-4 bg-blue-600 bg-opacity-80 text-white px-3 py-1 rounded text-sm">
-                            預載入: {preloadedImages.size}/{testImages.length}
+                            預載入池: {preloadedImages.size}張
+                        </div>
+
+                        {/* 預載入詳細狀態 */}
+                        <div className="absolute bottom-4 left-4 bg-green-600 bg-opacity-80 text-white px-3 py-1 rounded text-xs">
+                            {preloadedImages.has(displayImage) ? '✅ 當前圖片已預載' : '⚠️ 當前圖片未預載'}
                         </div>
                     </div>
                     
@@ -251,11 +290,13 @@
                     
                     {/* 說明 */}
                     <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                        <h3 className="font-bold mb-2">測試說明：</h3>
+                        <h3 className="font-bold mb-2">滑動窗口預載入測試：</h3>
                         <ul className="list-disc list-inside space-y-1 text-sm">
                             <li>點擊「下一張」按鈕測試左滑效果（新圖片從右側滑入）</li>
                             <li>點擊「上一張」按鈕測試右滑效果（新圖片從左側滑入）</li>
-                            <li>滑動過程中按鈕會被禁用，防止重複觸發</li>
+                            <li><strong>預載入策略</strong>：維持當前圖片前後各2張的預載入窗口（共5張）</li>
+                            <li><strong>動態管理</strong>：切換圖片時自動預載入新範圍，超過8張距離才清理記憶體</li>
+                            <li><strong>狀態顯示</strong>：右上角顯示預載入池大小，左下角顯示當前圖片狀態</li>
                             <li>動畫時長為 300ms，使用 ease-out 緩動函數</li>
                         </ul>
                     </div>
