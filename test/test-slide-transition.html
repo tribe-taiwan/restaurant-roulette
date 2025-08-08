@@ -60,7 +60,6 @@
             const [currentImage, setCurrentImage] = useState(null);
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
-            const [isPreloading, setIsPreloading] = useState(false);
             
             // 測試圖片
             const testImages = [
@@ -100,27 +99,12 @@
                 });
             };
 
-            // 滑動轉場函數（帶預載入）
-            const triggerSlideTransition = useCallback(async (newImageUrl, direction = 'left') => {
-                if (isSliding || isPreloading) return;
+            // 滑動轉場函數
+            const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
+                if (isSliding) return;
 
                 const currentImg = displayImage;
                 const newImg = newImageUrl;
-
-                // 開始預載入新圖片
-                if (newImg) {
-                    console.log('⏳ 開始預載入新圖片...');
-                    setIsPreloading(true);
-
-                    try {
-                        await preloadImage(newImg);
-                        console.log('✅ 圖片預載入完成，開始滑動動畫');
-                    } catch (error) {
-                        console.warn('⚠️ 圖片預載入失敗，繼續執行動畫:', error.message);
-                    } finally {
-                        setIsPreloading(false);
-                    }
-                }
 
                 setCurrentImage(currentImg);
                 setNextImage(newImg);
@@ -134,7 +118,7 @@
                     setNextImage(null);
                     setDisplayImage(newImg);
                 }, 300);
-            }, [displayImage, isSliding, isPreloading]);
+            }, [displayImage, isSliding]);
 
             // 下一張圖片
             const goToNextImage = () => {
@@ -200,16 +184,6 @@
                             />
                         )}
 
-                        {/* 圖片預載入指示器 */}
-                        {isPreloading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
-                                <div className="bg-white bg-opacity-90 rounded-lg px-4 py-2 flex items-center space-x-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
-                                    <span className="text-sm text-gray-700">載入圖片中...</span>
-                                </div>
-                            </div>
-                        )}
-
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
                             {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
@@ -220,14 +194,14 @@
                     <div className="flex justify-center gap-4">
                         <button
                             onClick={goToPrevImage}
-                            disabled={isSliding || isPreloading}
+                            disabled={isSliding}
                             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             ← 上一張
                         </button>
                         <button
                             onClick={goToNextImage}
-                            disabled={isSliding || isPreloading}
+                            disabled={isSliding}
                             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             下一張 →
