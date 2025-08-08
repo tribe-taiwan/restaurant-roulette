@@ -104,6 +104,9 @@
                 });
             };
 
+            // 使用 ref 來避免依賴問題
+            const preloadedImagesRef = useRef(new Map());
+
             // 滑動窗口預載入管理（支持無限滑動）
             const managePreloadWindow = useCallback(async (centerIndex) => {
                 const windowSize = 5; // 預載入窗口大小
@@ -115,7 +118,8 @@
                 const startIndex = centerIndex - Math.floor(windowSize / 2);
                 const endIndex = centerIndex + Math.floor(windowSize / 2);
 
-                const newPreloadedImages = new Map(preloadedImages);
+                const currentPreloaded = preloadedImagesRef.current;
+                const newPreloadedImages = new Map(currentPreloaded);
 
                 // 預載入窗口內的圖片
                 for (let i = startIndex; i <= endIndex; i++) {
@@ -151,9 +155,11 @@
                     imagesToRemove.forEach(url => newPreloadedImages.delete(url));
                 }
 
+                // 更新 ref 和 state
+                preloadedImagesRef.current = newPreloadedImages;
                 setPreloadedImages(newPreloadedImages);
                 console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
-            }, [preloadedImages, getImageUrl]);
+            }, []);
 
             // 初始預載入
             useEffect(() => {
@@ -170,15 +176,13 @@
                     console.log(`⏸️ 滑動中，延遲預載入管理: ${currentImageIndex}`);
                     // 滑動結束後再執行預載入管理
                     const timer = setTimeout(() => {
-                        if (!isSliding) {
-                            console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
-                            managePreloadWindow(currentImageIndex);
-                        }
+                        console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
+                        managePreloadWindow(currentImageIndex);
                     }, 350); // 比滑動動畫稍長一點
 
                     return () => clearTimeout(timer);
                 }
-            }, [currentImageIndex, managePreloadWindow, isSliding]);
+            }, [currentImageIndex, isSliding]); // 移除 managePreloadWindow 依賴，避免無限循環
 
             // 滑動轉場函數（使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
