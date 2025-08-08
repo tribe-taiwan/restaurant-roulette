@@ -128,7 +128,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                 backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
               }}
             />
-            <div className="relative z-20 absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center z-20">
               <div className="text-center text-white">
                 <h1 className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg">
                   {t?.title || '甲崩喔'}
@@ -161,7 +161,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
-              <div className="relative z-20 absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center z-20">
                 <div className="text-center text-white">
                   <h1 className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg">
                     {t?.title || '甲崩喔'}
@@ -192,7 +192,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${nextThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
-              <div className="relative z-20 absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center z-20">
                 <div className="text-center text-white">
                   <h1 className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg">
                     {t?.title || '甲崩喔'}
