@@ -848,9 +848,8 @@ function App() {
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
         
-        {/* Hero 區塊 - 延伸到視窗邊緣 */}
-        <div
-          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat group cursor-pointer"
+        {/* Hero Banner - 直接實現 */}
+        <div className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat group cursor-pointer rounded-lg overflow-hidden"
           style={{
             backgroundImage: `url('${currentTheme?.images?.banner || './assets/image/banner.jpg'}')`
           }}
@@ -862,14 +861,14 @@ function App() {
             const touchStart = parseFloat(e.currentTarget.dataset.touchStart);
             const touchEnd = e.changedTouches[0].clientX;
             const distance = touchStart - touchEnd;
-            
+
             if (Math.abs(distance) > 50) {
               const availableThemes = window.ThemeManager?.getAvailableThemes() || [];
               if (availableThemes.length > 1) {
                 const currentThemeId = window.ThemeManager?.getCurrentTheme()?.id || availableThemes[0];
                 const currentIndex = availableThemes.indexOf(currentThemeId);
-                const nextIndex = distance > 0 
-                  ? (currentIndex + 1) % availableThemes.length 
+                const nextIndex = distance > 0
+                  ? (currentIndex + 1) % availableThemes.length
                   : currentIndex <= 0 ? availableThemes.length - 1 : currentIndex - 1;
                 window.ThemeManager?.loadTheme(availableThemes[nextIndex]);
               }
@@ -878,35 +877,32 @@ function App() {
         >
           {/* 半透明遮罩 */}
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          
+
           {/* 主標題區域 - 居中顯示 */}
           <div className="relative z-20 text-center text-white">
-            {/* 主標題 */}
             <h1 className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg">
               {t.title}
             </h1>
-            {/* 副標題（非中文時顯示） */}
             {selectedLanguage !== 'zh' && brandSubtitle && (
               <h3 className="text-lg md:text-xl opacity-90 drop-shadow-md">
                 {brandSubtitle}
               </h3>
             )}
           </div>
-          
+
           {/* 語言選擇器 - 右上角 */}
           <div className="absolute top-4 right-4 z-30">
-            <LanguageSelector 
+            <LanguageSelector
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
             />
           </div>
-          
+
           {/* 主題切換箭頭 - 只在有多個主題時顯示 */}
           {window.ThemeManager?.getAvailableThemes()?.length > 1 && (
             <>
-              {/* 左箭頭 */}
-              <div 
+              <div
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -920,9 +916,8 @@ function App() {
               >
                 <div className="icon-chevron-left text-white text-6xl drop-shadow-lg"></div>
               </div>
-              
-              {/* 右箭頭 */}
-              <div 
+
+              <div
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -938,10 +933,9 @@ function App() {
               </div>
             </>
           )}
-          
-          {/* Social Media Icons - Right Side */}
+
+          {/* 社交媒體圖標 - 右下角 */}
           <div className="absolute bottom-4 right-4 z-20 flex gap-2">
-            {/* 民宿 Logo */}
             {currentTheme?.images?.bnbLogo && (
               <a
                 href={currentTheme?.homeBase?.officialWebsite || "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"}
@@ -958,7 +952,6 @@ function App() {
               </a>
             )}
 
-            {/* Booking 圖標 - 訂房平台 */}
             <a
               href={currentTheme?.socialMedia?.booking?.url || "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"}
               target="_blank"
@@ -973,7 +966,6 @@ function App() {
               />
             </a>
 
-            {/* Instagram 圖標 */}
             <a
               href={currentTheme?.socialMedia?.instagram?.url || "https://www.instagram.com/tainanbnb_maizuru/"}
               target="_blank"
@@ -984,7 +976,6 @@ function App() {
               <div className="icon-instagram text-white text-2xl"></div>
             </a>
 
-            {/* Facebook 圖標 */}
             <a
               href={currentTheme?.socialMedia?.facebook?.url || "https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW"}
               target="_blank"

@@ -365,6 +365,7 @@ function ThemeSwitcher({
 
     // 載入狀態
     if (isLoading) {
+      console.log('🔄 ThemeSwitcher 仍在載入中，isLoading:', isLoading);
       return (
         <div className={`${containerHeight} ${className} flex items-center justify-center bg-gray-900 text-white rounded-lg`}>
           <div className="flex items-center gap-3">
@@ -374,6 +375,13 @@ function ThemeSwitcher({
         </div>
       );
     }
+
+    console.log('🎨 ThemeSwitcher 渲染狀態:', {
+      isLoading,
+      themesCount: themes.length,
+      currentThemeIndex,
+      showFullHero
+    });
 
     // 沒有載入到主題 - 顯示後備 Banner
     if (themes.length === 0) {
