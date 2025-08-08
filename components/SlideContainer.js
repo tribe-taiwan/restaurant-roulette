@@ -19,7 +19,16 @@ function SlideContainer({
   children
 }) {
   
-  // 使用通用滑動導航 Hook
+  // 檢查依賴並使用通用滑動導航 Hook
+  if (!window.useSlideNavigation) {
+    console.error('❌ SlideContainer 錯誤：window.useSlideNavigation 未定義');
+    return (
+      <div className={`${containerHeight} ${className} flex items-center justify-center bg-red-100 rounded-lg`}>
+        <div className="text-red-600">滑動組件載入失敗：缺少 slideNavigationHook</div>
+      </div>
+    );
+  }
+
   const {
     isSliding,
     slideDirection,

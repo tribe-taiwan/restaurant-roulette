@@ -28,13 +28,25 @@ function ThemeSwitcher({
     // 從現有的 ThemeManager 獲取主題配置
     const loadAvailableThemes = React.useCallback(() => {
       console.log('🔍 載入可用主題配置...');
-      
-      if (!window.ThemeManager || !window.THEME_CONFIGS) {
-        console.warn('ThemeManager 或 THEME_CONFIGS 未初始化');
+
+      // 增強的依賴檢查，包含詳細錯誤信息
+      if (!window.ThemeManager) {
+        console.error('❌ ThemeSwitcher 錯誤：window.ThemeManager 未定義');
+        return [];
+      }
+
+      if (!window.THEME_CONFIGS) {
+        console.error('❌ ThemeSwitcher 錯誤：window.THEME_CONFIGS 未定義');
+        return [];
+      }
+
+      if (typeof window.ThemeManager.getAvailableThemes !== 'function') {
+        console.error('❌ ThemeSwitcher 錯誤：ThemeManager.getAvailableThemes 不是函數');
         return [];
       }
 
       const availableThemes = window.ThemeManager.getAvailableThemes();
+      console.log('✅ 可用主題列表:', availableThemes);
       const themeData = [];
 
       availableThemes.forEach(themeName => {
@@ -71,34 +83,50 @@ function ThemeSwitcher({
       return displayNames[themeName] || themeName;
     };
 
-    // 初始化主題載入
+    // 初始化主題載入（帶重試機制）
     React.useEffect(() => {
       console.log('🔄 ThemeSwitcher 初始化開始...');
-      try {
-        const themeData = loadAvailableThemes();
-        console.log('📦 載入的主題數據:', themeData);
-        
-        if (themeData.length > 0) {
-          setThemes(themeData);
-          
-          // 設定初始主題索引
-          let initialIndex = 0;
-          if (initialTheme) {
-            const foundIndex = themeData.findIndex(t => t.id === initialTheme);
-            if (foundIndex >= 0) {
-              initialIndex = foundIndex;
+
+      let retryCount = 0;
+      const maxRetries = 5;
+
+      const initializeWithRetry = () => {
+        try {
+          const themeData = loadAvailableThemes();
+          console.log('📦 載入的主題數據:', themeData);
+
+          if (themeData.length > 0) {
+            setThemes(themeData);
+
+            // 設定初始主題索引
+            let initialIndex = 0;
+            if (initialTheme) {
+              const foundIndex = themeData.findIndex(t => t.id === initialTheme);
+              if (foundIndex >= 0) {
+                initialIndex = foundIndex;
+              }
+            }
+
+            setCurrentThemeIndex(initialIndex);
+            console.log(`✅ ThemeSwitcher 初始化完成，共載入 ${themeData.length} 個主題`);
+            setIsLoading(false);
+          } else {
+            retryCount++;
+            if (retryCount <= maxRetries) {
+              console.log(`⚠️ 沒有載入到任何主題，第 ${retryCount} 次重試 (${maxRetries - retryCount} 次剩餘)`);
+              setTimeout(initializeWithRetry, 100 * retryCount); // 遞增延遲
+            } else {
+              console.error('❌ 達到最大重試次數，ThemeSwitcher 初始化失敗');
+              setIsLoading(false);
             }
           }
-          
-          setCurrentThemeIndex(initialIndex);
-          console.log(`✅ ThemeSwitcher 初始化完成，共載入 ${themeData.length} 個主題`);
-        } else {
-          console.log('❌ 沒有載入到任何主題');
+        } catch (error) {
+          console.error('❌ ThemeSwitcher 初始化錯誤:', error);
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error('❌ ThemeSwitcher 初始化錯誤:', error);
-      }
-      setIsLoading(false);
+      };
+
+      initializeWithRetry();
     }, [loadAvailableThemes, initialTheme]);
 
     // 監聽主題變更事件，確保組件與 ThemeManager 同步

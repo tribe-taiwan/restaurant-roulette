@@ -126,5 +126,8 @@ function useSlideNavigation({
   };
 }
 
-// 註冊到全局
+// 註冊到全局，確保在 React 組件載入前可用
 window.useSlideNavigation = useSlideNavigation;
+
+// 調試信息
+console.log('✅ slideNavigationHook.js 已載入，window.useSlideNavigation 可用');
