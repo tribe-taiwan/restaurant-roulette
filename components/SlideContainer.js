@@ -77,43 +77,29 @@ function SlideContainer({
       className={`group relative overflow-hidden ${containerHeight} ${className}`}
       {...touchHandlers}
     >
-      {/* 滑動轉場容器 */}
-      {isSliding && shouldShowNavigation ? (
-        <div className="absolute inset-0 overflow-hidden">
-          {/* 當前項目 - 滑出 */}
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              transform: 'translateX(0)',
-              animation: slideDirection === 'left' 
-                ? `slideOutToLeft ${animationDuration}ms ease-out forwards`
-                : `slideOutToRight ${animationDuration}ms ease-out forwards`,
-              zIndex: 1
-            }}
-          >
+      {/* 滑動轉場容器 - 連續滑動效果 */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* 雙圖滑動容器 */}
+        <div
+          className="absolute inset-0 flex transition-transform duration-300 ease-out"
+          style={{
+            width: '200%', // 容納兩個項目
+            transform: isSliding 
+              ? (slideDirection === 'left' ? 'translateX(-50%)' : 'translateX(0)')
+              : 'translateX(0)'
+          }}
+        >
+          {/* 當前項目 */}
+          <div className="w-1/2 h-full relative">
             {renderCurrentItem()}
           </div>
           
-          {/* 下一個項目 - 滑入 */}
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
-              animation: slideDirection === 'left' 
-                ? `slideInFromRight ${animationDuration}ms ease-out forwards`
-                : `slideInFromLeft ${animationDuration}ms ease-out forwards`,
-              zIndex: 2
-            }}
-          >
+          {/* 下一個項目 */}
+          <div className="w-1/2 h-full relative">
             {renderNextItem()}
           </div>
         </div>
-      ) : (
-        /* 正常顯示狀態 */
-        <div className="absolute inset-0">
-          {renderCurrentItem()}
-        </div>
-      )}
+      </div>
 
       {/* 左側導航箭頭 */}
       {shouldShowNavigation && showArrows && canSlidePrevious && (

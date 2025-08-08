@@ -159,6 +159,26 @@
             }
         }
 
+        /* 連續滑動動畫 - 整個容器向左滑動 */
+        @keyframes slideToLeft {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* 連續滑動動畫 - 整個容器向右滑動 */
+        @keyframes slideToRight {
+            0% {
+                transform: translateX(-50%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
 
         /* 滑桿樣式 */
         .slider {
@@ -236,7 +256,7 @@
     <script src="utils/commonUtils.js"></script>
     <script src="config/themes.js"></script>
     <script src="utils/homeBaseUtils.js"></script>
-    <script type="text/babel" src="utils/slideNavigationHook.js"></script>
+    <script src="utils/slideNavigationHook.js"></script>
     <script src="_local/local-api.js"></script>
     <script type="text/babel" src="hooks/useRestaurantHistory.js"></script>
     <script type="text/babel" src="components/LanguageSelector.js"></script>
