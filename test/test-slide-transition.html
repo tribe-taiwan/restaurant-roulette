@@ -61,18 +61,22 @@
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
 
+            // 測試圖片
+            const testImages = [
+                'https://picsum.photos/400/300?random=1',
+                'https://picsum.photos/400/300?random=2',
+                'https://picsum.photos/400/300?random=3',
+                'https://picsum.photos/400/300?random=4',
+                'https://picsum.photos/400/300?random=5'
+            ];
+
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
+            const [displayImage, setDisplayImage] = useState(testImages[0]);
 
-            // 簡單的圖片URL生成
-            const getImageUrl = (index) => `https://picsum.photos/400/300?random=${index + 1000}`;
+            // 預載入緩存池
+            const [preloadedImages, setPreloadedImages] = useState(new Map());
 
-            const [displayImage, setDisplayImage] = useState(getImageUrl(0));
-
-            // 簡單的預載入緩存
-            const imageCache = useRef(new Map());
-            const [cacheSize, setCacheSize] = useState(0);
-
-            // 圖片預載入函數 - 強制瀏覽器緩存
+            // 圖片預載入函數
             const preloadImage = (url) => {
                 return new Promise((resolve, reject) => {
                     if (!url) {
@@ -80,28 +84,15 @@
                         return;
                     }
 
-                    // 檢查是否已經預載入
-                    if (preloadedImagesRef.current.has(url)) {
-                        console.log('🎯 圖片已在緩存中:', url);
-                        resolve(preloadedImagesRef.current.get(url));
-                        return;
-                    }
-
                     const img = new Image();
-                    img.crossOrigin = 'anonymous'; // 避免 CORS 問題
-
                     img.onload = () => {
                         console.log('✅ 圖片預載入成功:', url);
-                        // 存儲到緩存
-                        preloadedImagesRef.current.set(url, img);
                         resolve(img);
                     };
-
                     img.onerror = (error) => {
                         console.warn('⚠️ 圖片預載入失敗:', url, error);
                         reject(error);
                     };
-
                     img.src = url;
 
                     // 設置超時
@@ -111,26 +102,22 @@
                 });
             };
 
-            // 使用 ref 來避免依賴問題
-            const preloadedImagesRef = useRef(new Map());
-
-            // 滑動窗口預載入管理（支持無限滑動）
+            // 滑動窗口預載入管理
             const managePreloadWindow = useCallback(async (centerIndex) => {
                 const windowSize = 5; // 預載入窗口大小
-                const cleanupThreshold = 8; // 超過8張距離才清理
+                const cleanupThreshold = 3; // 超過3張才清理
 
                 console.log(`🔄 管理預載入窗口，中心索引: ${centerIndex}`);
 
-                // 計算需要預載入的範圍（支持負數索引）
-                const startIndex = centerIndex - Math.floor(windowSize / 2);
-                const endIndex = centerIndex + Math.floor(windowSize / 2);
+                // 計算需要預載入的範圍
+                const startIndex = Math.max(0, centerIndex - Math.floor(windowSize / 2));
+                const endIndex = Math.min(testImages.length - 1, centerIndex + Math.floor(windowSize / 2));
 
-                const currentPreloaded = preloadedImagesRef.current;
-                const newPreloadedImages = new Map(currentPreloaded);
+                const newPreloadedImages = new Map(preloadedImages);
 
                 // 預載入窗口內的圖片
                 for (let i = startIndex; i <= endIndex; i++) {
-                    const url = getImageUrl(i);
+                    const url = testImages[i];
                     if (!newPreloadedImages.has(url)) {
                         try {
                             console.log(`⏳ 預載入新圖片 [${i}]:`, url);
@@ -143,15 +130,13 @@
                     }
                 }
 
-                // 清理超出範圍的圖片（基於索引距離）
+                // 清理超出範圍的圖片（超過閾值才清理）
                 const imagesToRemove = [];
                 for (const [url] of newPreloadedImages) {
-                    // 從URL中提取索引
-                    const match = url.match(/random=(\d+)/);
-                    if (match) {
-                        const imageIndex = parseInt(match[1]) - 1000; // 減去偏移量
+                    const imageIndex = testImages.indexOf(url);
+                    if (imageIndex !== -1) {
                         const distance = Math.abs(imageIndex - centerIndex);
-                        if (distance > cleanupThreshold) {
+                        if (distance > Math.floor(windowSize / 2) + cleanupThreshold) {
                             imagesToRemove.push(url);
                         }
                     }
@@ -162,11 +147,9 @@
                     imagesToRemove.forEach(url => newPreloadedImages.delete(url));
                 }
 
-                // 更新 ref 和 state
-                preloadedImagesRef.current = newPreloadedImages;
                 setPreloadedImages(newPreloadedImages);
                 console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
-            }, []);
+            }, [preloadedImages, testImages]);
 
             // 初始預載入
             useEffect(() => {
@@ -183,15 +166,17 @@
                     console.log(`⏸️ 滑動中，延遲預載入管理: ${currentImageIndex}`);
                     // 滑動結束後再執行預載入管理
                     const timer = setTimeout(() => {
-                        console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
-                        managePreloadWindow(currentImageIndex);
+                        if (!isSliding) {
+                            console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
+                            managePreloadWindow(currentImageIndex);
+                        }
                     }, 350); // 比滑動動畫稍長一點
 
                     return () => clearTimeout(timer);
                 }
-            }, [currentImageIndex, isSliding]); // 移除 managePreloadWindow 依賴，避免無限循環
+            }, [currentImageIndex, managePreloadWindow, isSliding]);
 
-            // 滑動轉場函數（確保使用預載入緩存）
+            // 滑動轉場函數（使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
                 if (isSliding) return;
 
@@ -199,57 +184,56 @@
                 const newImg = newImageUrl;
 
                 // 檢查圖片是否已預載入
-                const isPreloaded = preloadedImagesRef.current.has(newImg);
-                console.log('🔍 滑動轉場檢查:');
-                console.log('  目標圖片:', newImg);
-                console.log('  是否已預載入:', isPreloaded);
-                console.log('  緩存大小:', preloadedImagesRef.current.size);
-
-                if (!isPreloaded) {
-                    console.log('❌ 圖片未預載入！立即預載入...');
-                    // 如果沒有預載入，立即預載入
-                    preloadImage(newImg).then(() => {
-                        console.log('🚀 緊急預載入完成，開始滑動');
-                        startSlideAnimation();
-                    }).catch(() => {
-                        console.log('⚠️ 緊急預載入失敗，仍然開始滑動');
-                        startSlideAnimation();
-                    });
+                if (preloadedImages.has(newImg)) {
+                    console.log('🚀 使用預載入圖片，立即開始滑動:', newImg);
                 } else {
-                    console.log('✅ 圖片已預載入，立即開始滑動');
-                    startSlideAnimation();
+                    console.log('⚠️ 圖片未預載入，但仍然開始滑動:', newImg);
                 }
 
-                function startSlideAnimation() {
-                    setCurrentImage(currentImg);
-                    setNextImage(newImg);
-                    setSlideDirection(direction);
-                    setIsSliding(true);
+                setCurrentImage(currentImg);
+                setNextImage(newImg);
+                setSlideDirection(direction);
+                setIsSliding(true);
 
-                    // 300ms後完成動畫並更新顯示圖片
+                // 300ms後完成動畫並更新顯示圖片
+                setTimeout(() => {
+                    console.log('🏁 動畫結束，更新displayImage為:', newImg);
+                    console.log('🔍 檢查最終圖片是否會出現灰色畫面...');
+
+                    setIsSliding(false);
+                    setCurrentImage(null);
+                    setNextImage(null);
+                    setDisplayImage(newImg);
+
+                    // 檢查最終圖片的載入狀態
                     setTimeout(() => {
-                        setIsSliding(false);
-                        setCurrentImage(null);
-                        setNextImage(null);
-                        setDisplayImage(newImg);
-                    }, 300);
-                }
-            }, [displayImage, isSliding]);
+                        const finalImg = new Image();
+                        finalImg.onload = () => console.log('✅ 最終圖片載入成功，應該沒有灰色畫面');
+                        finalImg.onerror = () => console.log('❌ 最終圖片載入失敗，這就是灰色畫面的原因！');
+                        finalImg.src = newImg;
+                    }, 50);
+                }, 300);
+            }, [displayImage, isSliding, preloadedImages]);
 
-            // 下一張圖片（無限滑動）
+            // 下一張圖片
             const goToNextImage = () => {
-                const nextIndex = currentImageIndex + 1;
-                const nextImageUrl = getImageUrl(nextIndex);
-                console.log(`🎯 用戶點擊下一張: ${currentImageIndex} → ${nextIndex}`);
-                console.log(`📋 生成的圖片URL: ${nextImageUrl}`);
-                console.log(`🔍 當前預載入池狀態:`, Array.from(preloadedImages.keys()));
+                const nextIndex = (currentImageIndex + 1) % testImages.length;
+                const nextImageUrl = testImages[nextIndex];
 
-                // 檢查目標圖片是否已預載入
-                if (preloadedImages.has(nextImageUrl)) {
-                    console.log('✅ 目標圖片已預載入，可以安全滑動');
-                } else {
-                    console.log('⚠️ 目標圖片未預載入，可能出現灰色畫面');
-                }
+                console.log('🔥 === 點擊下一張詳細分析 ===');
+                console.log('當前索引:', currentImageIndex);
+                console.log('下一個索引:', nextIndex);
+                console.log('當前顯示圖片:', displayImage);
+                console.log('目標圖片URL:', nextImageUrl);
+                console.log('預載入池大小:', preloadedImages.size);
+                console.log('預載入池內容:', Array.from(preloadedImages.keys()));
+                console.log('目標圖片是否已預載入:', preloadedImages.has(nextImageUrl));
+
+                // 檢查瀏覽器緩存狀態
+                const testImg = new Image();
+                testImg.onload = () => console.log('✅ 瀏覽器緩存檢查: 圖片可立即載入');
+                testImg.onerror = () => console.log('❌ 瀏覽器緩存檢查: 圖片載入失敗');
+                testImg.src = nextImageUrl;
 
                 // 先開始滑動動畫，避免被預載入過程干擾
                 triggerSlideTransition(nextImageUrl, 'left');
@@ -258,14 +242,13 @@
                 setCurrentImageIndex(nextIndex);
             };
 
-            // 上一張圖片（支持負數索引）
+            // 上一張圖片
             const goToPrevImage = () => {
-                const prevIndex = currentImageIndex - 1;
-                const prevImageUrl = getImageUrl(prevIndex);
+                const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
                 console.log(`🎯 用戶點擊上一張: ${currentImageIndex} → ${prevIndex}`);
 
                 // 先開始滑動動畫，避免被預載入過程干擾
-                triggerSlideTransition(prevImageUrl, 'right');
+                triggerSlideTransition(testImages[prevIndex], 'right');
 
                 // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
                 setCurrentImageIndex(prevIndex);
@@ -323,7 +306,7 @@
 
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                            {isSliding ? '滑動中...' : `圖片索引: ${currentImageIndex}`}
+                            {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
                         </div>
 
                         {/* 預載入狀態指示器 */}
@@ -357,14 +340,13 @@
                     
                     {/* 說明 */}
                     <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                        <h3 className="font-bold mb-2">無限滑動預載入測試：</h3>
+                        <h3 className="font-bold mb-2">滑動窗口預載入測試：</h3>
                         <ul className="list-disc list-inside space-y-1 text-sm">
                             <li>點擊「下一張」按鈕測試左滑效果（新圖片從右側滑入）</li>
                             <li>點擊「上一張」按鈕測試右滑效果（新圖片從左側滑入）</li>
-                            <li><strong>無限滑動</strong>：模擬真實情況，可以無限往前或往後滑動，每張都是新圖片</li>
                             <li><strong>預載入策略</strong>：維持當前圖片前後各2張的預載入窗口（共5張）</li>
                             <li><strong>動態管理</strong>：切換圖片時自動預載入新範圍，超過8張距離才清理記憶體</li>
-                            <li><strong>狀態顯示</strong>：左上角顯示當前索引，右上角顯示預載入池大小</li>
+                            <li><strong>狀態顯示</strong>：右上角顯示預載入池大小，左下角顯示當前圖片狀態</li>
                             <li>動畫時長為 300ms，使用 ease-out 緩動函數</li>
                         </ul>
                     </div>
