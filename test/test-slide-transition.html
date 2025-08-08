@@ -157,10 +157,24 @@
                 managePreloadWindow(currentImageIndex);
             }, []);
 
-            // 當圖片索引改變時更新預載入窗口
+            // 當圖片索引改變時更新預載入窗口（避免在滑動時干擾）
             useEffect(() => {
-                managePreloadWindow(currentImageIndex);
-            }, [currentImageIndex, managePreloadWindow]);
+                if (!isSliding) {
+                    console.log(`📋 索引變更觸發預載入管理: ${currentImageIndex}`);
+                    managePreloadWindow(currentImageIndex);
+                } else {
+                    console.log(`⏸️ 滑動中，延遲預載入管理: ${currentImageIndex}`);
+                    // 滑動結束後再執行預載入管理
+                    const timer = setTimeout(() => {
+                        if (!isSliding) {
+                            console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
+                            managePreloadWindow(currentImageIndex);
+                        }
+                    }, 350); // 比滑動動畫稍長一點
+
+                    return () => clearTimeout(timer);
+                }
+            }, [currentImageIndex, managePreloadWindow, isSliding]);
 
             // 滑動轉場函數（使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
@@ -193,15 +207,25 @@
             // 下一張圖片
             const goToNextImage = () => {
                 const nextIndex = (currentImageIndex + 1) % testImages.length;
-                setCurrentImageIndex(nextIndex);
+                console.log(`🎯 用戶點擊下一張: ${currentImageIndex} → ${nextIndex}`);
+
+                // 先開始滑動動畫，避免被預載入過程干擾
                 triggerSlideTransition(testImages[nextIndex], 'left');
+
+                // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
+                setCurrentImageIndex(nextIndex);
             };
 
             // 上一張圖片
             const goToPrevImage = () => {
                 const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
-                setCurrentImageIndex(prevIndex);
+                console.log(`🎯 用戶點擊上一張: ${currentImageIndex} → ${prevIndex}`);
+
+                // 先開始滑動動畫，避免被預載入過程干擾
                 triggerSlideTransition(testImages[prevIndex], 'right');
+
+                // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
+                setCurrentImageIndex(prevIndex);
             };
 
             return (
