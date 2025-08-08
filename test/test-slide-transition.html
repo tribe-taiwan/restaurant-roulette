@@ -60,7 +60,7 @@
             const [currentImage, setCurrentImage] = useState(null);
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
-            
+
             // 測試圖片
             const testImages = [
                 'https://picsum.photos/400/300?random=1',
@@ -69,9 +69,12 @@
                 'https://picsum.photos/400/300?random=4',
                 'https://picsum.photos/400/300?random=5'
             ];
-            
+
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
             const [displayImage, setDisplayImage] = useState(testImages[0]);
+
+            // 預載入緩存池
+            const [preloadedImages, setPreloadedImages] = useState(new Map());
 
             // 圖片預載入函數
             const preloadImage = (url) => {
@@ -99,12 +102,45 @@
                 });
             };
 
-            // 滑動轉場函數
+            // 背景預載入所有圖片
+            useEffect(() => {
+                console.log('🔄 開始背景預載入所有圖片...');
+
+                const preloadAllImages = async () => {
+                    const newPreloadedImages = new Map();
+
+                    for (let i = 0; i < testImages.length; i++) {
+                        const url = testImages[i];
+                        try {
+                            console.log(`⏳ 預載入圖片 ${i + 1}/${testImages.length}:`, url);
+                            const img = await preloadImage(url);
+                            newPreloadedImages.set(url, img);
+                            console.log(`✅ 圖片 ${i + 1}/${testImages.length} 預載入完成`);
+                        } catch (error) {
+                            console.warn(`❌ 圖片 ${i + 1}/${testImages.length} 預載入失敗:`, error.message);
+                        }
+                    }
+
+                    setPreloadedImages(newPreloadedImages);
+                    console.log('🎉 所有圖片預載入完成！緩存池大小:', newPreloadedImages.size);
+                };
+
+                preloadAllImages();
+            }, []);
+
+            // 滑動轉場函數（使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
                 if (isSliding) return;
 
                 const currentImg = displayImage;
                 const newImg = newImageUrl;
+
+                // 檢查圖片是否已預載入
+                if (preloadedImages.has(newImg)) {
+                    console.log('🚀 使用預載入圖片，立即開始滑動:', newImg);
+                } else {
+                    console.log('⚠️ 圖片未預載入，但仍然開始滑動:', newImg);
+                }
 
                 setCurrentImage(currentImg);
                 setNextImage(newImg);
@@ -118,7 +154,7 @@
                     setNextImage(null);
                     setDisplayImage(newImg);
                 }, 300);
-            }, [displayImage, isSliding]);
+            }, [displayImage, isSliding, preloadedImages]);
 
             // 下一張圖片
             const goToNextImage = () => {
@@ -187,6 +223,11 @@
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
                             {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
+                        </div>
+
+                        {/* 預載入狀態指示器 */}
+                        <div className="absolute top-4 right-4 bg-blue-600 bg-opacity-80 text-white px-3 py-1 rounded text-sm">
+                            預載入: {preloadedImages.size}/{testImages.length}
                         </div>
                     </div>
                     
