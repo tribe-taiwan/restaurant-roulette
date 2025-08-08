@@ -151,67 +151,49 @@
                 console.log(`📊 預載入池狀態 - 大小: ${newPreloadedImages.size}, 窗口: [${startIndex}-${endIndex}]`);
             }, [preloadedImages, testImages]);
 
-            // 初始預載入
+            // 簡單預載入：只預載入前後各1張
             useEffect(() => {
-                console.log('🚀 初始化預載入窗口...');
-                managePreloadWindow(currentImageIndex);
-            }, []);
+                const preloadNearbyImages = async () => {
+                    const imagesToPreload = [
+                        testImages[Math.max(0, currentImageIndex - 1)],
+                        testImages[currentImageIndex],
+                        testImages[Math.min(testImages.length - 1, currentImageIndex + 1)]
+                    ];
 
-            // 當圖片索引改變時更新預載入窗口（避免在滑動時干擾）
-            useEffect(() => {
-                if (!isSliding) {
-                    console.log(`📋 索引變更觸發預載入管理: ${currentImageIndex}`);
-                    managePreloadWindow(currentImageIndex);
-                } else {
-                    console.log(`⏸️ 滑動中，延遲預載入管理: ${currentImageIndex}`);
-                    // 滑動結束後再執行預載入管理
-                    const timer = setTimeout(() => {
-                        if (!isSliding) {
-                            console.log(`⏰ 延遲執行預載入管理: ${currentImageIndex}`);
-                            managePreloadWindow(currentImageIndex);
+                    for (const url of imagesToPreload) {
+                        if (url && !preloadedImages.has(url)) {
+                            try {
+                                await preloadImage(url);
+                                console.log('✅ 預載入完成:', url);
+                            } catch (error) {
+                                console.log('❌ 預載入失敗:', url);
+                            }
                         }
-                    }, 350); // 比滑動動畫稍長一點
+                    }
+                };
 
-                    return () => clearTimeout(timer);
-                }
-            }, [currentImageIndex, managePreloadWindow, isSliding]);
+                preloadNearbyImages();
+            }, [currentImageIndex]);
 
-            // 滑動轉場函數（使用預載入緩存）
+            // 滑動轉場函數
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
                 if (isSliding) return;
 
-                const currentImg = displayImage;
-                const newImg = newImageUrl;
+                console.log(`🔄 開始滑動到: ${newImageUrl}`);
+                console.log(`預載入狀態: ${preloadedImages.has(newImageUrl) ? '✅已預載入' : '❌未預載入'}`);
 
-                // 檢查圖片是否已預載入
-                if (preloadedImages.has(newImg)) {
-                    console.log('🚀 使用預載入圖片，立即開始滑動:', newImg);
-                } else {
-                    console.log('⚠️ 圖片未預載入，但仍然開始滑動:', newImg);
-                }
-
-                setCurrentImage(currentImg);
-                setNextImage(newImg);
+                setCurrentImage(displayImage);
+                setNextImage(newImageUrl);
                 setSlideDirection(direction);
                 setIsSliding(true);
 
-                // 300ms後完成動畫並更新顯示圖片
+                // 300ms後完成動畫
                 setTimeout(() => {
-                    console.log('🏁 動畫結束，更新displayImage為:', newImg);
-                    console.log('🔍 檢查最終圖片是否會出現灰色畫面...');
-
                     setIsSliding(false);
                     setCurrentImage(null);
                     setNextImage(null);
-                    setDisplayImage(newImg);
-
-                    // 檢查最終圖片的載入狀態
-                    setTimeout(() => {
-                        const finalImg = new Image();
-                        finalImg.onload = () => console.log('✅ 最終圖片載入成功，應該沒有灰色畫面');
-                        finalImg.onerror = () => console.log('❌ 最終圖片載入失敗，這就是灰色畫面的原因！');
-                        finalImg.src = newImg;
-                    }, 50);
+                    setDisplayImage(newImageUrl);
+                    console.log(`🏁 滑動完成，新圖片: ${newImageUrl}`);
                 }, 300);
             }, [displayImage, isSliding, preloadedImages]);
 
@@ -220,25 +202,14 @@
                 const nextIndex = (currentImageIndex + 1) % testImages.length;
                 const nextImageUrl = testImages[nextIndex];
 
-                console.log('🔥 === 點擊下一張詳細分析 ===');
-                console.log('當前索引:', currentImageIndex);
-                console.log('下一個索引:', nextIndex);
-                console.log('當前顯示圖片:', displayImage);
-                console.log('目標圖片URL:', nextImageUrl);
-                console.log('預載入池大小:', preloadedImages.size);
-                console.log('預載入池內容:', Array.from(preloadedImages.keys()));
-                console.log('目標圖片是否已預載入:', preloadedImages.has(nextImageUrl));
+                console.log(`🎯 點擊下一張: ${currentImageIndex} → ${nextIndex}`);
+                console.log(`目標圖片: ${nextImageUrl}`);
+                console.log(`是否已預載入: ${preloadedImages.has(nextImageUrl)}`);
 
-                // 檢查瀏覽器緩存狀態
-                const testImg = new Image();
-                testImg.onload = () => console.log('✅ 瀏覽器緩存檢查: 圖片可立即載入');
-                testImg.onerror = () => console.log('❌ 瀏覽器緩存檢查: 圖片載入失敗');
-                testImg.src = nextImageUrl;
-
-                // 先開始滑動動畫，避免被預載入過程干擾
+                // 先開始滑動動畫
                 triggerSlideTransition(nextImageUrl, 'left');
 
-                // 然後更新索引（這會觸發預載入，但不會影響當前動畫）
+                // 然後更新索引
                 setCurrentImageIndex(nextIndex);
             };
 
