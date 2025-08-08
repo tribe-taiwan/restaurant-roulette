@@ -12,9 +12,9 @@ window.THEME_CONFIGS = {
     // 民宿位置資訊（作為導航起點）
     homeBase: {
       name: "舞鶴台南民宿",
-      address: "台南市中西區", // 實際地址待確認
-      phone: "+886-6-xxx-xxxx",
-      bookingUrl: "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"
+      address: "台南市中西區海安路二段296巷20號", // 實際地址待確認
+      phone: "+886-955-674-211",
+      officialWebsite: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"
     },
 
     // 配色方案
@@ -41,7 +41,7 @@ window.THEME_CONFIGS = {
     socialMedia: {
       booking: {
         url: "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html",
-        title: "在 Booking.com 預訂",
+        title: "在 Owlting 預訂舞鶴民宿",
         logo: "./assets/image/logo.png"
       },
       instagram: {
@@ -76,7 +76,7 @@ window.THEME_CONFIGS = {
       name: "柒宿",
       address: "700台南市中西區西門路二段300巷8號",
       phone: "+886-976-722-208",
-      bookingUrl: "https://www.booking-owlnest.com/qisu"
+      officialWebsite: "https://www.booking-owlnest.com/qisu"
     },
 
     colors: {
@@ -99,8 +99,8 @@ window.THEME_CONFIGS = {
 
     socialMedia: {
       booking: {
-        url: "https://www.booking-owlnest.com/qisu",
-        title: "在 Booking.com 預訂柒宿",
+        url: "https://tw.trip.com/hotels/tainan-hotel-detail-124450348/mulu/",
+        title: "在 trip.com 預訂柒宿",
         logo: "./assets/image/booking-logo.png"
       },
       instagram: {
@@ -124,17 +124,17 @@ window.THEME_CONFIGS = {
     }
   },
 
-  // 鬆宿輕旅主題
-  songBNB: {
+  // 台南沐旅主題
+  muluInn: {
     brand: {
-      subtitle: "鬆宿輕旅"
+      subtitle: "台南沐旅"
     },
 
     homeBase: {
-      name: "鬆宿輕旅",
-      address: "台南市中西區",
-      phone: "+886-6-xxx-xxxx",
-      bookingUrl: "https://www.booking.com/"
+      name: "台南沐旅",
+      address: "台南市中西區美學街52號",
+      phone: "+886-968-022-270",
+      officialWebsite: "https://www.booking-owlnest.com/muluinn"
     },
 
     colors: {
@@ -150,35 +150,35 @@ window.THEME_CONFIGS = {
     },
 
     images: {
-      banner: "./assets/themes/songBNB/banner.jpg",
-      bnbLogo: "./assets/themes/songBNB/logo.jpg",
-      favicon: "./assets/themes/songBNB/favicon.ico"
+      banner: "./assets/themes/muluInn/banner.jpg",
+      bnbLogo: "./assets/themes/muluInn/logo.jpg",
+      favicon: "./assets/themes/muluInn/favicon.ico"
     },
 
     socialMedia: {
       booking: {
-        url: "https://www.booking.com/",
-        title: "在 Booking.com 預訂鬆宿輕旅",
+        url: "https://tw.trip.com/hotels/tainan-hotel-detail-124450348/mulu/",
+        title: "在 trip.com 預訂台南沐旅",
         logo: "./assets/image/booking-logo.png"
       },
       instagram: {
-        url: "https://www.instagram.com/songbnb_bnb/",
-        title: "關注鬆宿輕旅 Instagram",
+        url: "https://www.instagram.com/mulu.inn/",
+        title: "關注台南沐旅 Instagram",
         logo: "./assets/image/Instagram-Logo.png"
       },
       facebook: {
-        url: "https://www.facebook.com/songbnb.bnb/",
-        title: "關注鬆宿輕旅 Facebook",
+        url: "https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E6%B2%90%E6%97%85%E6%B0%91%E5%AE%BFmu-inn-100086380783531/?locale=zh_TW",
+        title: "關注台南沐旅 Facebook",
         logo: "./assets/image/Facebook-logo.png"
       }
     },
 
     seo: {
-      title: "鬆宿輕旅美食探索 - 台南美食輪盤 | 鬆宿輕旅",
-      description: "鬆宿輕旅推薦！在綠意盎然的環境中探索台南在地美食和自然風味。",
-      keywords: "台南美食, 輕旅行, 鬆宿輕旅, 台南民宿, 美食輪盤, 自然風味",
-      ogImage: "https://example.com/songBNB/banner.jpg",
-      ogUrl: "https://example.com/songBNB/"
+      title: "台南沐旅美食探索 - 台南美食輪盤 | 台南沐旅",
+      description: "台南沐旅推薦！在綠意盎然的環境中探索台南在地美食和自然風味。",
+      keywords: "台南美食, 輕旅行, 台南沐旅, 台南民宿, 美食輪盤, 自然風味",
+      ogImage: "https://example.com/muluInn/banner.jpg",
+      ogUrl: "https://example.com/muluInn/"
     }
   }
 };

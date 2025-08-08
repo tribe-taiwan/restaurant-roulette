@@ -944,7 +944,7 @@ function App() {
             {/* 民宿 Logo */}
             {currentTheme?.images?.bnbLogo && (
               <a
-                href={currentTheme?.socialMedia?.booking?.url || "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"}
+                href={currentTheme?.homeBase?.officialWebsite || "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"

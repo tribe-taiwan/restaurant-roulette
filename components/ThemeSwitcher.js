@@ -22,6 +22,8 @@ function ThemeSwitcher({
     const [themes, setThemes] = React.useState([]);
     const [currentThemeIndex, setCurrentThemeIndex] = React.useState(0);
     const [isLoading, setIsLoading] = React.useState(true);
+    // 新增：跟踪 ThemeManager 的當前主題，確保按鈕使用正確的連結
+    const [activeTheme, setActiveTheme] = React.useState(null);
 
     // 從現有的 ThemeManager 獲取主題配置
     const loadAvailableThemes = React.useCallback(() => {
@@ -61,7 +63,7 @@ function ThemeSwitcher({
       const displayNames = {
         'maizuru': '舞鶴民宿',
         'qisu': '柒宿', 
-        'songBNB': '鬆宿輕旅',
+        'muluInn': '台南沐旅',
         'mountain': '山景民宿',
         'forest': '森林小屋',
         'cityview': '城市景觀'
@@ -98,6 +100,55 @@ function ThemeSwitcher({
       }
       setIsLoading(false);
     }, [loadAvailableThemes, initialTheme]);
+
+    // 監聽主題變更事件，確保組件與 ThemeManager 同步
+    React.useEffect(() => {
+      const handleThemeChanged = (event) => {
+        const { themeId, theme } = event.detail;
+        console.log('🔄 ThemeSwitcher 收到主題變更事件:', themeId);
+
+        // 更新當前主題索引以匹配新主題
+        const newIndex = themes.findIndex(t => t.id === themeId);
+        if (newIndex >= 0 && newIndex !== currentThemeIndex) {
+          console.log(`📍 更新主題索引: ${currentThemeIndex} -> ${newIndex}`);
+          setCurrentThemeIndex(newIndex);
+        }
+
+        // 更新活動主題數據，確保按鈕使用正確的連結
+        if (theme) {
+          setActiveTheme(theme);
+          console.log('📍 更新活動主題數據:', theme);
+        }
+      };
+
+      // 初始化時獲取當前主題
+      const initActiveTheme = () => {
+        if (window.ThemeManager) {
+          const currentTheme = window.ThemeManager.getCurrentTheme();
+          if (currentTheme) {
+            setActiveTheme(currentTheme);
+            console.log('📍 初始化活動主題:', currentTheme);
+            console.log('📍 官網連結:', currentTheme?.homeBase?.officialWebsite);
+            console.log('📍 訂房連結:', currentTheme?.socialMedia?.booking?.url);
+          } else {
+            console.warn('⚠️ ThemeManager.getCurrentTheme() 返回 null');
+          }
+        } else {
+          console.warn('⚠️ ThemeManager 未載入');
+        }
+      };
+
+      // 立即嘗試初始化
+      initActiveTheme();
+
+      // 如果 ThemeManager 還沒準備好，延遲初始化
+      if (!activeTheme) {
+        setTimeout(initActiveTheme, 100);
+      }
+
+      window.addEventListener('themeChanged', handleThemeChanged);
+      return () => window.removeEventListener('themeChanged', handleThemeChanged);
+    }, [themes, currentThemeIndex]);
 
     // 應用主題
     const applyTheme = React.useCallback((theme) => {
@@ -170,41 +221,63 @@ function ThemeSwitcher({
               
               {/* Social Media Icons - Right Side */}
               <div className="absolute bottom-4 right-4 z-20 flex gap-2">
-                {/* 民宿 Logo */}
-                {theme.logoImage && (
-                  <a
-                    href={theme.config?.socialMedia?.booking?.url || "https://www.booking.com/"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
-                    title={`${theme.displayName} 官網`}
-                  >
-                    <img
-                      src={theme.logoImage}
-                      alt={`${theme.displayName} Logo`}
-                      className="w-full h-full object-contain rounded-lg"
-                    />
-                  </a>
-                )}
+                {/* 民宿 Logo - 官網連結 */}
+                {theme.logoImage && (() => {
+                  // 直接從 ThemeManager 獲取當前主題的官網連結
+                  const currentTheme = window.ThemeManager?.getCurrentTheme();
+                  const officialWebsite = currentTheme?.homeBase?.officialWebsite;
 
-                {/* Booking 圖標 */}
-                <a
-                  href={theme.config?.socialMedia?.booking?.url || "https://www.booking.com/"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
-                  title="線上訂房"
-                >
-                  <img
-                    src="./assets/image/booking-logo.png"
-                    alt="線上訂房"
-                    className="w-full h-full object-contain"
-                  />
-                </a>
+                  return (
+                    <a
+                      href={officialWebsite || "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+                      title={`${theme.displayName} 官網`}
+                      onClick={() => {
+                        console.log('🔍 第一個按鈕（民宿官網）:');
+                        console.log('官網連結:', officialWebsite);
+                      }}
+                    >
+                      <img
+                        src={theme.logoImage}
+                        alt={`${theme.displayName} Logo`}
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    </a>
+                  );
+                })()}
+
+                {/* 訂房圖標 - 訂房連結 */}
+                {(() => {
+                  // 直接從 ThemeManager 獲取當前主題的訂房連結
+                  const currentTheme = window.ThemeManager?.getCurrentTheme();
+                  const bookingUrl = currentTheme?.socialMedia?.booking?.url;
+
+                  return (
+                    <a
+                      href={bookingUrl || "https://www.booking.com/"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+                      title="線上訂房"
+                      onClick={() => {
+                        console.log('🔍 第二個按鈕（訂房）:');
+                        console.log('訂房連結:', bookingUrl);
+                      }}
+                    >
+                      <img
+                        src="./assets/image/booking-logo.png"
+                        alt="線上訂房"
+                        className="w-full h-full object-contain"
+                      />
+                    </a>
+                  );
+                })()}
 
                 {/* Instagram 圖標 */}
                 <a
-                  href={theme.config?.socialMedia?.instagram?.url || "https://www.instagram.com/"}
+                  href={activeTheme?.socialMedia?.instagram?.url || "https://www.instagram.com/"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
@@ -215,7 +288,7 @@ function ThemeSwitcher({
 
                 {/* Facebook 圖標 */}
                 <a
-                  href={theme.config?.socialMedia?.facebook?.url || "https://www.facebook.com/"}
+                  href={activeTheme?.socialMedia?.facebook?.url || "https://www.facebook.com/"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
