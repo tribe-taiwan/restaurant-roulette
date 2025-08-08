@@ -61,17 +61,13 @@
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
 
-            // 測試圖片
-            const testImages = [
-                'https://picsum.photos/400/300?random=1',
-                'https://picsum.photos/400/300?random=2',
-                'https://picsum.photos/400/300?random=3',
-                'https://picsum.photos/400/300?random=4',
-                'https://picsum.photos/400/300?random=5'
-            ];
+            // 無限圖片生成函數
+            const getImageUrl = (index) => {
+                return `https://picsum.photos/400/300?random=${index + 1}`;
+            };
 
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
-            const [displayImage, setDisplayImage] = useState(testImages[0]);
+            const [displayImage, setDisplayImage] = useState(getImageUrl(0));
 
             // 預載入緩存池
             const [preloadedImages, setPreloadedImages] = useState(new Map());
@@ -108,50 +104,49 @@
                 });
             };
 
-            // 預載入池管理 - 維持5張圖片
+            // 預載入池管理 - 無限新圖片，維持5張
             const managePreloadPool = useCallback(async (currentIndex) => {
                 console.log(`🔄 管理預載入池，當前索引: ${currentIndex}`);
 
                 setPreloadedImages(prevPool => {
                     const newPool = new Map();
                     
-                    // 計算需要預載入的5張圖片範圍
-                    // 當前圖片前後各2張，總共5張
+                    // 無限滑動：當前圖片前後各2張，總共5張
+                    // 往前顯示過的圖片：currentIndex-2, currentIndex-1
+                    // 當前圖片：currentIndex
+                    // 往後新圖片：currentIndex+1, currentIndex+2
                     for (let offset = -2; offset <= 2; offset++) {
                         const index = currentIndex + offset;
                         
-                        // 處理循環索引
-                        let actualIndex;
+                        // 負數索引（< 0）跳過，因為不存在
                         if (index < 0) {
-                            actualIndex = testImages.length + index;
-                        } else if (index >= testImages.length) {
-                            actualIndex = index - testImages.length;
-                        } else {
-                            actualIndex = index;
+                            console.log(`⏭️ 跳過負數索引 ${index}`);
+                            continue;
                         }
                         
-                        const url = testImages[actualIndex];
+                        const url = getImageUrl(index);
                         
                         // 保留已存在的圖片或預載入新圖片
                         if (prevPool.has(url)) {
                             newPool.set(url, prevPool.get(url));
-                            console.log(`♻️ 保留已預載入圖片 [${actualIndex}]`);
+                            console.log(`♻️ 保留已預載入圖片 [${index}]`);
                         } else {
                             // 標記需要預載入，但不等待
                             preloadImage(url).then(img => {
-                                console.log(`✅ 新圖片 [${actualIndex}] 預載入完成`);
+                                console.log(`✅ 新圖片 [${index}] 預載入完成`);
                                 setPreloadedImages(current => new Map(current).set(url, img));
                             }).catch(error => {
-                                console.warn(`❌ 圖片 [${actualIndex}] 預載入失敗:`, error.message);
+                                console.warn(`❌ 圖片 [${index}] 預載入失敗:`, error.message);
                             });
-                            console.log(`⏳ 開始預載入新圖片 [${actualIndex}]`);
+                            console.log(`⏳ 開始預載入新圖片 [${index}]`);
                         }
                     }
                     
                     console.log(`📊 預載入池更新 - 保留: ${newPool.size}張, 清除: ${prevPool.size - newPool.size}張`);
+                    console.log(`📋 當前範圍: [${Math.max(0, currentIndex-2)} 到 ${currentIndex+2}]`);
                     return newPool;
                 });
-            }, [testImages]);
+            }, []);
 
             // 初始預載入：先載第1張，然後管理預載入池
             useEffect(() => {
@@ -160,13 +155,13 @@
 
                     // 1. 立即預載入當前圖片
                     try {
-                        await preloadImage(testImages[0]);
+                        await preloadImage(getImageUrl(0));
                         console.log('✅ 第1張圖片立即預載完成');
                     } catch (error) {
                         console.log('❌ 第1張圖片預載失敗:', error);
                     }
 
-                    // 2. 初始化預載入池（前後2張，共5張）
+                    // 2. 初始化預載入池（從索引0開始的5張）
                     managePreloadPool(0);
                 };
 
@@ -195,10 +190,10 @@
                 }, 300);
             }, [displayImage, isSliding, preloadedImages]);
 
-            // 下一張圖片
+            // 下一張圖片（無限新圖片）
             const goToNextImage = () => {
-                const nextIndex = (currentImageIndex + 1) % testImages.length;
-                const nextImageUrl = testImages[nextIndex];
+                const nextIndex = currentImageIndex + 1;
+                const nextImageUrl = getImageUrl(nextIndex);
 
                 console.log(`🎯 點擊下一張: ${currentImageIndex} → ${nextIndex}`);
 
@@ -210,13 +205,20 @@
                 managePreloadPool(nextIndex);
             };
 
-            // 上一張圖片
+            // 上一張圖片（無法回到負數索引）
             const goToPrevImage = () => {
-                const prevIndex = (currentImageIndex - 1 + testImages.length) % testImages.length;
+                if (currentImageIndex <= 0) {
+                    console.log('⚠️ 已經是第一張圖片，無法再往前');
+                    return;
+                }
+                
+                const prevIndex = currentImageIndex - 1;
+                const prevImageUrl = getImageUrl(prevIndex);
+                
                 console.log(`🎯 點擊上一張: ${currentImageIndex} → ${prevIndex}`);
 
                 // 先開始滑動動畫
-                triggerSlideTransition(testImages[prevIndex], 'right');
+                triggerSlideTransition(prevImageUrl, 'right');
 
                 // 然後更新索引並管理預載入池
                 setCurrentImageIndex(prevIndex);
@@ -275,7 +277,7 @@
 
                         {/* 狀態指示器 */}
                         <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                            {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1}/${testImages.length}`}
+                            {isSliding ? '滑動中...' : `圖片 ${currentImageIndex + 1} (無限)`}
                         </div>
 
                         {/* 預載入狀態指示器 */}
@@ -293,7 +295,7 @@
                     <div className="flex justify-center gap-4">
                         <button
                             onClick={goToPrevImage}
-                            disabled={isSliding}
+                            disabled={isSliding || currentImageIndex <= 0}
                             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             ← 上一張
