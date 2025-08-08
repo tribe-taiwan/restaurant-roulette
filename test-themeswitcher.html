@@ -59,6 +59,7 @@
 
     <!-- 載入必要的腳本 -->
     <script src="config/themes.js"></script>
+    <script type="text/babel" src="utils/slideNavigationHook.js"></script>
     <script type="text/babel" src="components/SlideContainer.js"></script>
     <script type="text/babel" src="components/ThemeSwitcher.js"></script>
 
@@ -77,7 +78,8 @@
                         'window.THEME_CONFIGS': typeof window.THEME_CONFIGS !== 'undefined',
                         'window.ThemeManager': typeof window.ThemeManager !== 'undefined',
                         'window.ThemeSwitcher': typeof window.ThemeSwitcher !== 'undefined',
-                        'window.SlideContainer': typeof window.SlideContainer !== 'undefined'
+                        'window.SlideContainer': typeof window.SlideContainer !== 'undefined',
+                        'window.useSlideNavigation': typeof window.useSlideNavigation !== 'undefined'
                     };
                     
                     const debugText = Object.entries(checks)

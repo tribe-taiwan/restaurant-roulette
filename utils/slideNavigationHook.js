@@ -1,16 +1,17 @@
 /**
  * 通用滑動導航 Hook
  * 可重用於老虎機、主題切換等需要左右滑動的組件
+ * 注意：這個函數必須在 React 組件內部使用
  */
-function useSlideNavigation({ 
-  itemCount, 
-  currentIndex = 0, 
-  onIndexChange, 
-  autoLoop = true, 
+function useSlideNavigation({
+  itemCount,
+  currentIndex = 0,
+  onIndexChange,
+  autoLoop = true,
   animationDuration = 300,
   swipeThreshold = 50,
   enableKeyboard = true,
-  enableTouch = true 
+  enableTouch = true
 }) {
   const [isSliding, setIsSliding] = React.useState(false);
   const [slideDirection, setSlideDirection] = React.useState('left');
