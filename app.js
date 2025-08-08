@@ -132,10 +132,6 @@ function App() {
         autoLocationTip: "Use GPS for automatic location",
         manualLocationTip: "Locate based on entered address",
         // 餐廳資訊
-        viewRoute: "View Route & Navigation",
-        address: "Address",
-        phone: "Phone",
-        businessHours: "Business Hours",
         openingIn: "Opening in",
         hours: "hours"
       },
@@ -180,10 +176,6 @@ function App() {
         autoLocationTip: "使用GPS自動定位",
         manualLocationTip: "根據輸入地址進行定位",
         // 餐廳資訊
-        viewRoute: "查看路線與導航",
-        address: "地址",
-        phone: "電話",
-        businessHours: "營業時間",
         openingIn: "還有多久開業",
         hours: "小時"
       },
@@ -219,10 +211,6 @@ function App() {
         pleaseEnterHomeAddress: "まず自宅の住所を入力してください",
         pleaseEnterOfficeAddress: "まず会社の住所を入力してください",
         // 餐廳資訊
-        viewRoute: "ルートとナビゲーション",
-        address: "住所",
-        phone: "電話",
-        businessHours: "営業時間",
         openingIn: "開業まで",
         hours: "時間"
       },
@@ -258,10 +246,6 @@ function App() {
         pleaseEnterHomeAddress: "먼저 집 주소를 입력해주세요",
         pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
         // 餐廳資訊
-        viewRoute: "경로 및 내비게이션 보기",
-        address: "주소",
-        phone: "전화",
-        businessHours: "영업시간",
         openingIn: "개업까지 남은 시간",
         hours: "시간"
       },
@@ -297,10 +281,6 @@ function App() {
         pleaseEnterHomeAddress: "Vui lòng nhập địa chỉ nhà trước",
         pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
         // 餐廳資訊
-        viewRoute: "Xem Đường đi và Điều hướng",
-        address: "Địa chỉ",
-        phone: "Điện thoại",
-        businessHours: "Giờ mở cửa",
         openingIn: "Mở cửa sau",
         hours: "giờ"
       },
@@ -336,10 +316,6 @@ function App() {
         pleaseEnterHomeAddress: "Sila masukkan alamat rumah terlebih dahulu",
         pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
         // 餐廳資訊
-        viewRoute: "Lihat Laluan dan Navigasi",
-        address: "Alamat",
-        phone: "Telefon",
-        businessHours: "Waktu Operasi",
         openingIn: "Buka dalam",
         hours: "jam"
       }
