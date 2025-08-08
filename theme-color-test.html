@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主題顏色測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color, #1a1a2e);
+            color: var(--text-primary, #fff);
+            transition: all 0.3s ease;
+        }
+        .theme-test {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid var(--primary-color, #ff6b35);
+            border-radius: 12px;
+            background: var(--surface-color, #16213e);
+        }
+        .color-box {
+            display: inline-block;
+            width: 80px;
+            height: 60px;
+            margin: 5px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .color-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        .primary { background: var(--primary-color); }
+        .secondary { background: var(--secondary-color); }
+        .accent { background: var(--accent-color); }
+        .success { background: var(--success-color); }
+        .warning { background: var(--warning-color); }
+        button {
+            background: var(--primary-color);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <h1>主題顏色測試 🎨</h1>
+    
+    <div class="theme-test">
+        <h2>當前主題: <span id="current-theme">載入中...</span></h2>
+        
+        <div style="margin: 20px 0;">
+            <h3>配色展示:</h3>
+            <div class="color-box primary"><div class="color-label">Primary</div></div>
+            <div class="color-box secondary"><div class="color-label">Secondary</div></div>
+            <div class="color-box accent"><div class="color-label">Accent</div></div>
+            <div class="color-box success"><div class="color-label">Success</div></div>
+            <div class="color-box warning"><div class="color-label">Warning</div></div>
+        </div>
+        
+        <div>
+            <h3>主題切換按鈕:</h3>
+            <button onclick="switchTheme('maizuru')">舞鶴民宿 (日本黑白紅金)</button>
+            <button onclick="switchTheme('qisu')">柒宿 (海藍色系)</button>
+            <button onclick="switchTheme('songBNB')">鬆宿輕旅 (森林綠系)</button>
+        </div>
+        
+        <div id="color-values" style="margin-top: 20px; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script src="config/themes.js"></script>
+    <script>
+        // 初始化主題系統
+        if (window.ThemeManager) {
+            window.ThemeManager.init();
+            updateDisplay();
+        }
+
+        function switchTheme(themeName) {
+            if (window.ThemeManager) {
+                window.ThemeManager.loadTheme(themeName);
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            const currentTheme = window.ThemeManager?.getCurrentTheme();
+            const currentThemeId = window.ThemeManager?.getCurrentThemeId();
+            
+            // 更新主題名稱顯示
+            document.getElementById('current-theme').textContent = 
+                currentTheme?.brand?.subtitle || currentThemeId || '未知';
+
+            // 顯示當前的 CSS 變數值
+            const colorValues = document.getElementById('color-values');
+            if (colorValues && currentTheme?.colors) {
+                const colors = currentTheme.colors;
+                colorValues.innerHTML = `
+                    <strong>當前配色值:</strong><br>
+                    Primary: ${colors.primary}<br>
+                    Secondary: ${colors.secondary}<br>
+                    Accent: ${colors.accent}<br>
+                    Background: ${colors.background}<br>
+                    Surface: ${colors.surface}<br>
+                    Success: ${colors.success}<br>
+                    Warning: ${colors.warning}
+                `;
+            }
+        }
+
+        // 監聽主題變更事件
+        window.addEventListener('themeChanged', function(event) {
+            console.log('主題已變更:', event.detail);
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>

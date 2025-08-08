@@ -19,22 +19,22 @@ window.THEME_CONFIGS = {
 
     // 配色方案
     colors: {
-      primary: "#ff6b35",      // 橘紅色
-      secondary: "#f7931e",    // 橘色
-      accent: "#ffd23f",       // 黃色
-      background: "#1a1a2e",   // 深藍色
-      surface: "#16213e",      // 藍灰色
+      primary: "#dc143c",      // 日本紅
+      secondary: "#000000",    // 黑色
+      accent: "#ffd700",       // 金色
+      background: "#1a1a1a",   // 深黑色
+      surface: "#2d2d2d",      // 深灰色
       textPrimary: "#ffffff",  // 白色
-      textSecondary: "#e5e5e5", // 淺灰色
-      success: "#4caf50",      // 綠色
-      warning: "#ff9800"       // 橘色警告
+      textSecondary: "#f5f5f5", // 淺白色
+      success: "#dc143c",      // 日本紅
+      warning: "#ffd700"       // 金色
     },
 
     // 圖片資源
     images: {
-      banner: "./assets/image/banner.jpg",
-      bnbLogo: "./assets/image/maizuru-logo.jpg", // 民宿專屬 logo (需要準備)
-      favicon: "./assets/image/favicon.ico"
+      banner: "./assets/themes/maizuru/banner.jpg",
+      bnbLogo: "./assets/themes/maizuru/logo.jpg",
+      favicon: "./assets/themes/maizuru/favicon.ico"
     },
 
     // 社交媒體連結
@@ -124,61 +124,61 @@ window.THEME_CONFIGS = {
     }
   },
 
-  // 舞鶴民宿主題 (另一個版本)
-  maizuru: {
+  // 鬆宿輕旅主題
+  songBNB: {
     brand: {
-      subtitle: "舞鶴台南民宿"
+      subtitle: "鬆宿輕旅"
     },
 
     homeBase: {
-      name: "舞鶴台南民宿",
-      address: "臺南市中西區海安路二段296巷20號",
-      phone: "+886-955-674-211",
-      bookingUrl: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"
+      name: "鬆宿輕旅",
+      address: "台南市中西區",
+      phone: "+886-6-xxx-xxxx",
+      bookingUrl: "https://www.booking.com/"
     },
 
     colors: {
-      primary: "#dc143c",      // 日本紅
-      secondary: "#000000",    // 黑色
-      accent: "#ffd700",       // 金色
-      background: "#1a1a1a",   // 深黑色
-      surface: "#2d2d2d",      // 深灰色
-      textPrimary: "#ffffff",  // 白色
-      textSecondary: "#f5f5f5", // 淺白色
-      success: "#dc143c",      // 日本紅
-      warning: "#ffd700"       // 金色
+      primary: "#2d8659",      // 森林綠
+      secondary: "#4a7c59",    // 深綠色
+      accent: "#f0d97d",       // 淺黃色（陽光）
+      background: "#1a2f23",   // 深森林綠
+      surface: "#2d3e2f",      // 中森林綠
+      textPrimary: "#ffffff",
+      textSecondary: "#e8f5e8",
+      success: "#52c41a",      // 亮綠色
+      warning: "#faad14"       // 橘黃色
     },
 
     images: {
-      banner: "./assets/themes/maizuru/banner.jpg",
-      bnbLogo: "./assets/themes/maizuru/logo.jpg", // 民宿專屬 logo
-      favicon: "./assets/themes/maizuru/favicon.ico"
+      banner: "./assets/themes/songBNB/banner.jpg",
+      bnbLogo: "./assets/themes/songBNB/logo.jpg",
+      favicon: "./assets/themes/songBNB/favicon.ico"
     },
 
     socialMedia: {
       booking: {
-        url: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751",
-        title: "在 Owlting 預訂舞鶴民宿",
+        url: "https://www.booking.com/",
+        title: "在 Booking.com 預訂鬆宿輕旅",
         logo: "./assets/image/booking-logo.png"
       },
       instagram: {
-        url: "https://www.instagram.com/maizuru_bnb/",
-        title: "關注舞鶴民宿 Instagram",
+        url: "https://www.instagram.com/songbnb_bnb/",
+        title: "關注鬆宿輕旅 Instagram",
         logo: "./assets/image/Instagram-Logo.png"
       },
       facebook: {
-        url: "https://www.facebook.com/maizuru.bnb/",
-        title: "關注舞鶴民宿 Facebook",
+        url: "https://www.facebook.com/songbnb.bnb/",
+        title: "關注鬆宿輕旅 Facebook",
         logo: "./assets/image/Facebook-logo.png"
       }
     },
 
     seo: {
-      title: "舞鶴美食探索 - 台南美食輪盤 | 舞鶴民宿",
-      description: "舞鶴民宿推薦！探索台南地區的傳統美食和在地小吃，在古都品味府城文化。",
-      keywords: "台南美食, 府城小吃, 傳統美食, 舞鶴民宿, 台南民宿, 美食輪盤",
-      ogImage: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751/banner.jpg",
-      ogUrl: "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"
+      title: "鬆宿輕旅美食探索 - 台南美食輪盤 | 鬆宿輕旅",
+      description: "鬆宿輕旅推薦！在綠意盎然的環境中探索台南在地美食和自然風味。",
+      keywords: "台南美食, 輕旅行, 鬆宿輕旅, 台南民宿, 美食輪盤, 自然風味",
+      ogImage: "https://example.com/songBNB/banner.jpg",
+      ogUrl: "https://example.com/songBNB/"
     }
   }
 };
@@ -208,9 +208,14 @@ window.ThemeManager = {
       theme = window.THEME_CONFIGS[themeName];
     }
     
-    this.currentTheme = theme;
+    this.currentTheme = { ...theme, id: themeName };
     this.applyTheme(theme);
     console.log(`✅ 已載入主題: ${themeName}`, theme);
+    
+    // 觸發主題變更事件，讓 React 組件重新渲染
+    window.dispatchEvent(new CustomEvent('themeChanged', { 
+      detail: { themeId: themeName, theme: this.currentTheme } 
+    }));
   },
   
   // 應用主題設定
@@ -282,7 +287,12 @@ window.ThemeManager = {
   
   // 獲取當前主題配置
   getCurrentTheme: function() {
-    return this.currentTheme;
+    return this.currentTheme || window.THEME_CONFIGS[window.DEFAULT_THEME];
+  },
+  
+  // 獲取當前主題 ID
+  getCurrentThemeId: function() {
+    return this.currentTheme?.id || window.DEFAULT_THEME;
   },
   
   // 獲取可用主題列表

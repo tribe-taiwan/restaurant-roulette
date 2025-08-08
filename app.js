@@ -71,9 +71,27 @@ function App() {
       isInitialLoad
     );
 
-    // 獲取當前主題配置
-    const currentTheme = window.ThemeManager?.getCurrentTheme();
+    // 主題狀態管理
+    const [currentTheme, setCurrentTheme] = React.useState(null);
     const brandSubtitle = currentTheme?.brand?.subtitle || "舞鶴台南民宿";
+    
+    // 監聽主題變更事件
+    React.useEffect(() => {
+      const handleThemeChange = (event) => {
+        setCurrentTheme(event.detail.theme);
+      };
+      
+      window.addEventListener('themeChanged', handleThemeChange);
+      
+      // 初始設定主題
+      if (window.ThemeManager) {
+        setCurrentTheme(window.ThemeManager.getCurrentTheme());
+      }
+      
+      return () => {
+        window.removeEventListener('themeChanged', handleThemeChange);
+      };
+    }, []);
 
     // 根據主題動態生成翻譯
     const getThemeTranslations = () => {
@@ -832,9 +850,30 @@ function App() {
         
         {/* Hero 區塊 - 延伸到視窗邊緣 */}
         <div
-          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat"
+          className="relative w-full min-h-[300px] flex items-center justify-center mb-8 bg-cover bg-center bg-no-repeat group cursor-pointer"
           style={{
             backgroundImage: `url('${currentTheme?.images?.banner || './assets/image/banner.jpg'}')`
+          }}
+          onTouchStart={(e) => {
+            const touchStart = e.targetTouches[0].clientX;
+            e.currentTarget.dataset.touchStart = touchStart;
+          }}
+          onTouchEnd={(e) => {
+            const touchStart = parseFloat(e.currentTarget.dataset.touchStart);
+            const touchEnd = e.changedTouches[0].clientX;
+            const distance = touchStart - touchEnd;
+            
+            if (Math.abs(distance) > 50) {
+              const availableThemes = window.ThemeManager?.getAvailableThemes() || [];
+              if (availableThemes.length > 1) {
+                const currentThemeId = window.ThemeManager?.getCurrentTheme()?.id || availableThemes[0];
+                const currentIndex = availableThemes.indexOf(currentThemeId);
+                const nextIndex = distance > 0 
+                  ? (currentIndex + 1) % availableThemes.length 
+                  : currentIndex <= 0 ? availableThemes.length - 1 : currentIndex - 1;
+                window.ThemeManager?.loadTheme(availableThemes[nextIndex]);
+              }
+            }
           }}
         >
           {/* 半透明遮罩 */}
@@ -862,6 +901,43 @@ function App() {
               userLocation={userLocation}
             />
           </div>
+          
+          {/* 主題切換箭頭 - 只在有多個主題時顯示 */}
+          {window.ThemeManager?.getAvailableThemes()?.length > 1 && (
+            <>
+              {/* 左箭頭 */}
+              <div 
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const availableThemes = window.ThemeManager.getAvailableThemes();
+                  const currentThemeId = window.ThemeManager.getCurrentTheme()?.id || availableThemes[0];
+                  const currentIndex = availableThemes.indexOf(currentThemeId);
+                  const prevIndex = currentIndex <= 0 ? availableThemes.length - 1 : currentIndex - 1;
+                  window.ThemeManager.loadTheme(availableThemes[prevIndex]);
+                }}
+                title="上一個主題"
+              >
+                <div className="icon-chevron-left text-white text-6xl drop-shadow-lg"></div>
+              </div>
+              
+              {/* 右箭頭 */}
+              <div 
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const availableThemes = window.ThemeManager.getAvailableThemes();
+                  const currentThemeId = window.ThemeManager.getCurrentTheme()?.id || availableThemes[0];
+                  const currentIndex = availableThemes.indexOf(currentThemeId);
+                  const nextIndex = (currentIndex + 1) % availableThemes.length;
+                  window.ThemeManager.loadTheme(availableThemes[nextIndex]);
+                }}
+                title="下一個主題"
+              >
+                <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
+              </div>
+            </>
+          )}
           
           {/* Social Media Icons - Right Side */}
           <div className="absolute bottom-4 right-4 z-20 flex gap-2">
