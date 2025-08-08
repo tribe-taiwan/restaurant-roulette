@@ -133,7 +133,6 @@ function App() {
         manualLocationTip: "Locate based on entered address",
         // 餐廳資訊
         viewRoute: "View Route & Navigation",
-        viewWebsite: "View Website",
         address: "Address",
         phone: "Phone",
         businessHours: "Business Hours",
@@ -182,7 +181,6 @@ function App() {
         manualLocationTip: "根據輸入地址進行定位",
         // 餐廳資訊
         viewRoute: "查看路線與導航",
-        viewWebsite: "查看網站",
         address: "地址",
         phone: "電話",
         businessHours: "營業時間",
@@ -222,7 +220,6 @@ function App() {
         pleaseEnterOfficeAddress: "まず会社の住所を入力してください",
         // 餐廳資訊
         viewRoute: "ルートとナビゲーション",
-        viewWebsite: "ウェブサイトを見る",
         address: "住所",
         phone: "電話",
         businessHours: "営業時間",
@@ -262,7 +259,6 @@ function App() {
         pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
         // 餐廳資訊
         viewRoute: "경로 및 내비게이션 보기",
-        viewWebsite: "웹사이트 보기",
         address: "주소",
         phone: "전화",
         businessHours: "영업시간",
@@ -302,7 +298,6 @@ function App() {
         pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
         // 餐廳資訊
         viewRoute: "Xem Đường đi và Điều hướng",
-        viewWebsite: "Xem Trang web",
         address: "Địa chỉ",
         phone: "Điện thoại",
         businessHours: "Giờ mở cửa",
@@ -342,7 +337,6 @@ function App() {
         pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
         // 餐廳資訊
         viewRoute: "Lihat Laluan dan Navigasi",
-        viewWebsite: "Lihat Laman Web",
         address: "Alamat",
         phone: "Telefon",
         businessHours: "Waktu Operasi",

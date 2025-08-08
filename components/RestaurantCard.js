@@ -135,8 +135,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                 >
                   {/* 將 hover 效果改為 group-hover */}
                   <div className="icon-globe text-xl"></div>
-                  {/* 將文字從 title 移到這裡，並套用樣式 */}
-                  <span className="font-semibold">{getTranslation('viewWebsite')}</span>
+                  {/* 移除文字，只保留圖示 */}
                 </a>
               )}
             </div>
