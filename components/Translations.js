@@ -1,0 +1,263 @@
+// 翻譯模組 - 從 app.js 提取出來
+// 處理多語言翻譯和主題相關翻譯
+
+/**
+ * 根據主題動態生成翻譯
+ * @param {string} brandSubtitle - 品牌副標題
+ * @returns {object} 主題翻譯對象
+ */
+function getThemeTranslations(brandSubtitle = "舞鶴台南民宿") {
+  const isQisu = brandSubtitle === "柒宿";
+  return {
+    en: isQisu ? "Qisu Guesthouse" : "Maizuru Tainan B&B",
+    zh: brandSubtitle,
+    ja: isQisu ? "七宿ゲストハウス" : "まいづる台南民宿",
+    ko: isQisu ? "칠숙 게스트하우스" : "우허 타이난 민박",
+    vi: isQisu ? "Nhà nghỉ Thất Túc" : "Nhà nghỉ Vũ Hạc Đài Nam",
+    ms: isQisu ? "Rumah Tumpangan Qisu" : "Rumah Tumpangan Wuhe Tainan"
+  };
+}
+
+/**
+ * 創建完整的翻譯對象
+ * @param {string} brandSubtitle - 品牌副標題
+ * @returns {object} 完整的翻譯對象
+ */
+function createTranslations(brandSubtitle) {
+  const themeTranslations = getThemeTranslations(brandSubtitle);
+  
+  return {
+    en: {
+      title: themeTranslations.en,
+      spinButton: "What to eat?",
+      addCandidate: "Add Option",
+      spinning: "Searching...",
+      locationError: "Please allow location access to find nearby restaurants.",
+      locationLoading: "Getting your location...",
+      relocateButton: "Auto Locate",
+      spinErrorPrefix: "Error: ",
+      apiSearching: "Searching nearby restaurants...",
+      radiusLabel: "Search radius:",
+      radiusKm: "km",
+      locationSuccess: "Location found",
+      locationDetected: "Located at",
+      addressLoading: "Getting address...",
+      addressError: "Address unavailable",
+      breakfast: "Breakfast",
+      lunch: "Lunch",
+      dinner: "Dinner",
+      enterAddress: "Enter address then click Specify Location",
+      locateHere: "Manual Location",
+      autoLocation: "Auto Location",
+      home: "Home",
+      office: "Office",
+      saveText: "Save",
+      homeNotSet: "Home Not Set",
+      officeNotSet: "Office Not Set", 
+      saveHome: "Save Home",
+      saveOffice: "Save Office",
+      located: "Located",
+      pleaseEnterHomeAddress: "Please enter your home address first",
+      pleaseEnterOfficeAddress: "Please enter your office address first",
+      // Tooltip 文字
+      useHomeTip: "Use saved home location",
+      useOfficeTip: "Use saved office location",
+      saveHomeTip: "Save current input as home location",
+      saveOfficeTip: "Save current input as office location",
+      enterAddressTip: "Please enter address first",
+      autoLocationTip: "Use GPS for automatic location",
+      manualLocationTip: "Locate based on entered address",
+      // 餐廳資訊
+      openingIn: "Opening in",
+      hours: "hours"
+    },
+    zh: {
+      title: themeTranslations.zh,
+      spinButton: "甲崩喔",
+      addCandidate: "加入候選",
+      spinning: "正在搜尋...",
+      locationError: "請允許位置訪問以獲取附近餐廳。",
+      locationLoading: "正在獲取您的位置...",
+      relocateButton: "自動定位",
+      spinErrorPrefix: "錯誤：",
+      apiSearching: "正在搜索附近餐廳...",
+      radiusLabel: "範圍：",
+      radiusKm: "公里",
+      locationSuccess: "定位成功",
+      locationDetected: "當前位置",
+      addressLoading: "正在獲取地址...",
+      addressError: "地址無法取得",
+      breakfast: "早餐",
+      lunch: "午餐",
+      dinner: "晚餐",
+      enterAddress: "輸入地點名稱或地址",
+      locateHere: "手動定位",
+      autoLocation: "自動定位",
+      home: "住家",
+      office: "公司",
+      saveText: "儲存",
+      homeNotSet: "住家未設定",
+      officeNotSet: "公司未設定",
+      saveHome: "儲存住家",
+      saveOffice: "儲存公司",
+      located: "已定位",
+      pleaseEnterHomeAddress: "請先輸入住家地址",
+      pleaseEnterOfficeAddress: "請先輸入公司地址",
+      // Tooltip 文字
+      useHomeTip: "使用已儲存的住家位置",
+      useOfficeTip: "使用已儲存的公司位置",
+      saveHomeTip: "將當前輸入儲存為住家位置",
+      saveOfficeTip: "將當前輸入儲存為公司位置",
+      enterAddressTip: "請先輸入地址",
+      autoLocationTip: "使用GPS自動定位",
+      manualLocationTip: "根據輸入地址進行定位",
+      // 餐廳資訊
+      openingIn: "還有多久開業",
+      hours: "小時"
+    },
+    ja: {
+      title: themeTranslations.ja,
+      spinButton: "何を食べる？",
+      spinning: "レストランを探しています...",
+      locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
+      locationLoading: "位置情報を取得しています...",
+      relocateButton: "再位置取得",
+      spinErrorPrefix: "エラー：",
+      apiSearching: "近くのレストランを検索しています...",
+      radiusLabel: "検索範囲：",
+      radiusKm: "km",
+      locationSuccess: "位置情報取得成功",
+      locationDetected: "現在地",
+      addressLoading: "住所を取得しています...",
+      addressError: "住所が取得できません",
+      breakfast: "朝食",
+      lunch: "昼食",
+      dinner: "夕食",
+      enterAddress: "住所を入力して位置を修正",
+      locateHere: "手動位置設定",
+      autoLocation: "自動位置取得",
+      home: "自宅",
+      office: "オフィス",
+      saveText: "保存",
+      homeNotSet: "自宅未設定",
+      officeNotSet: "オフィス未設定",
+      saveHome: "自宅を保存",
+      saveOffice: "オフィスを保存",
+      located: "位置設定完了",
+      pleaseEnterHomeAddress: "まず自宅の住所を入力してください",
+      pleaseEnterOfficeAddress: "まず会社の住所を入力してください",
+      // 餐廳資訊
+      openingIn: "開業まで",
+      hours: "時間"
+    },
+    ko: {
+      title: themeTranslations.ko,
+      spinButton: "뭘 먹지?",
+      spinning: "레스토랑을 찾고 있습니다...",
+      locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
+      locationLoading: "위치를 가져오는 중...",
+      relocateButton: "재위치",
+      spinErrorPrefix: "오류: ",
+      apiSearching: "근처 레스토랑을 검색 중...",
+      radiusLabel: "검색 범위:",
+      radiusKm: "km",
+      locationSuccess: "위치 찾기 성공",
+      locationDetected: "현재 위치",
+      addressLoading: "주소를 가져오는 중...",
+      addressError: "주소를 사용할 수 없음",
+      breakfast: "아침식사",
+      lunch: "점심식사",
+      dinner: "저녁식사",
+      enterAddress: "위치를 수정할 주소 입력",
+      locateHere: "수동 위치설정",
+      autoLocation: "자동 위치찾기",
+      home: "집",
+      office: "사무실",
+      saveText: "저장",
+      homeNotSet: "집 미설정",
+      officeNotSet: "사무실 미설정",
+      saveHome: "집 저장",
+      saveOffice: "사무실 저장",
+      located: "위치설정 완료",
+      pleaseEnterHomeAddress: "먼저 집 주소를 입력해주세요",
+      pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
+      // 餐廳資訊
+      openingIn: "개업까지 남은 시간",
+      hours: "시간"
+    },
+    vi: {
+      title: themeTranslations.vi,
+      spinButton: "Ăn gì đây?",
+      spinning: "Đang tìm nhà hàng...",
+      locationError: "Vui lòng cho phép truy cập vị trí để tìm nhà hàng gần đây.",
+      locationLoading: "Đang lấy vị trí của bạn...",
+      relocateButton: "Định vị lại",
+      spinErrorPrefix: "Lỗi: ",
+      apiSearching: "Đang tìm nhà hàng gần đây...",
+      radiusLabel: "Bán kính tìm kiếm:",
+      radiusKm: "km",
+      locationSuccess: "Đã tìm thấy vị trí",
+      locationDetected: "Vị trí hiện tại",
+      addressLoading: "Đang lấy địa chỉ...",
+      addressError: "Địa chỉ không có sẵn",
+      breakfast: "Bữa sáng",
+      lunch: "Bữa trưa",
+      dinner: "Bữa tối",
+      enterAddress: "Nhập địa chỉ để chỉnh sửa vị trí",
+      locateHere: "Định vị thủ công",
+      autoLocation: "Định vị tự động",
+      home: "Nhà",
+      office: "Văn phòng",
+      saveText: "Lưu",
+      homeNotSet: "Chưa thiết lập nhà",
+      officeNotSet: "Chưa thiết lập văn phòng",
+      saveHome: "Lưu nhà",
+      saveOffice: "Lưu văn phòng",
+      located: "Đã định vị",
+      pleaseEnterHomeAddress: "Vui lòng nhập địa chỉ nhà trước",
+      pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
+      // 餐廳資訊
+      openingIn: "Mở cửa sau",
+      hours: "giờ"
+    },
+    ms: {
+      title: themeTranslations.ms,
+      spinButton: "Makan apa?",
+      spinning: "Mencari restoran...",
+      locationError: "Sila benarkan akses lokasi untuk mencari restoran berdekatan.",
+      locationLoading: "Mendapatkan lokasi anda...",
+      relocateButton: "Lokasi semula",
+      spinErrorPrefix: "Ralat: ",
+      apiSearching: "Mencari restoran berdekatan...",
+      radiusLabel: "Radius carian:",
+      radiusKm: "km",
+      locationSuccess: "Lokasi dijumpai",
+      locationDetected: "Lokasi semasa",
+      addressLoading: "Mendapatkan alamat...",
+      addressError: "Alamat tidak tersedia",
+      breakfast: "Sarapan",
+      lunch: "Makan tengah hari",
+      dinner: "Makan malam",
+      enterAddress: "Masukkan alamat untuk betulkan lokasi",
+      locateHere: "Lokasi manual",
+      autoLocation: "Lokasi automatik",
+      home: "Rumah",
+      office: "Pejabat",
+      saveText: "Simpan",
+      homeNotSet: "Rumah tidak ditetapkan",
+      officeNotSet: "Pejabat tidak ditetapkan",
+      saveHome: "Simpan rumah",
+      saveOffice: "Simpan pejabat",
+      located: "Sudah dikenal pasti",
+      pleaseEnterHomeAddress: "Sila masukkan alamat rumah terlebih dahulu",
+      pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
+      // 餐廳資訊
+      openingIn: "Buka dalam",
+      hours: "jam"
+    }
+  };
+}
+
+// 導出函數供其他模組使用
+window.getThemeTranslations = getThemeTranslations;
+window.createTranslations = createTranslations;

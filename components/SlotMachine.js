@@ -339,9 +339,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setAnimationPhase('fast');
           setFastAnimationLevel(1); // 重置為最快級別
 
-          // 🎲 快速循環時使用亂數排序的圖片，創造視覺豐富性
+          // 🎲 快速循環時使用亂數排序的圖片，減少視覺負擔
           const fastSequence = [];
-          for (let i = 0; i < 50; i++) {
+          for (let i = 0; i < 12; i++) { // 從50減少到12，避免眼花
             const shuffledSlots = shuffleArray(slotImages);
             fastSequence.push(...shuffledSlots);
           }
@@ -357,25 +357,34 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [isSpinning, finalRestaurant, shuffleArray]);
 
-    // 漸進式減速邏輯 - 每0.5秒增加動畫級別
+    // 漸進式減速邏輯 - 0.3秒後開始減速
     React.useEffect(() => {
-      let intervalId;
+      let timeoutIds = [];
 
       if (animationPhase === 'fast' && !finalRestaurant) {
-        intervalId = setInterval(() => {
-          setFastAnimationLevel(prevLevel => {
-            const nextLevel = Math.min(prevLevel + 1, 5); // 最多到級別5
-            return nextLevel;
-          });
-        }, 500); // 每0.5秒切換
+        // 第一級持續0.3秒（最快速度）
+        timeoutIds.push(setTimeout(() => {
+          setFastAnimationLevel(2);
+        }, 300));
+
+        // 之後每0.4秒切換到下一級
+        timeoutIds.push(setTimeout(() => {
+          setFastAnimationLevel(3);
+        }, 700));
+
+        timeoutIds.push(setTimeout(() => {
+          setFastAnimationLevel(4);
+        }, 1100));
+
+        timeoutIds.push(setTimeout(() => {
+          setFastAnimationLevel(5);
+        }, 1500));
       }
 
       return () => {
-        if (intervalId) {
-          clearInterval(intervalId);
-        }
+        timeoutIds.forEach(id => clearTimeout(id));
       };
-    }, [animationPhase, finalRestaurant, fastAnimationLevel]);
+    }, [animationPhase, finalRestaurant]);
 
     // 獲取當前動畫類別
     const getAnimationClass = () => {
