@@ -61,24 +61,18 @@
             const [nextImage, setNextImage] = useState(null);
             const [slideDirection, setSlideDirection] = useState('left');
 
-            // 動態生成圖片URL的函數
-            const generateImageUrl = (index) => {
-                // 使用不同的隨機種子確保每張圖片都不同
-                return `https://picsum.photos/400/300?random=${index + 1000}`;
-            };
-
             const [currentImageIndex, setCurrentImageIndex] = useState(0);
-            const [displayImage, setDisplayImage] = useState(generateImageUrl(0));
 
-            // 動態獲取圖片URL
-            const getImageUrl = (index) => {
-                return generateImageUrl(index);
-            };
+            // 簡單的圖片URL生成
+            const getImageUrl = (index) => `https://picsum.photos/400/300?random=${index + 1000}`;
 
-            // 預載入緩存池
-            const [preloadedImages, setPreloadedImages] = useState(new Map());
+            const [displayImage, setDisplayImage] = useState(getImageUrl(0));
 
-            // 圖片預載入函數
+            // 簡單的預載入緩存
+            const imageCache = useRef(new Map());
+            const [cacheSize, setCacheSize] = useState(0);
+
+            // 圖片預載入函數 - 強制瀏覽器緩存
             const preloadImage = (url) => {
                 return new Promise((resolve, reject) => {
                     if (!url) {
@@ -86,15 +80,28 @@
                         return;
                     }
 
+                    // 檢查是否已經預載入
+                    if (preloadedImagesRef.current.has(url)) {
+                        console.log('🎯 圖片已在緩存中:', url);
+                        resolve(preloadedImagesRef.current.get(url));
+                        return;
+                    }
+
                     const img = new Image();
+                    img.crossOrigin = 'anonymous'; // 避免 CORS 問題
+
                     img.onload = () => {
                         console.log('✅ 圖片預載入成功:', url);
+                        // 存儲到緩存
+                        preloadedImagesRef.current.set(url, img);
                         resolve(img);
                     };
+
                     img.onerror = (error) => {
                         console.warn('⚠️ 圖片預載入失敗:', url, error);
                         reject(error);
                     };
+
                     img.src = url;
 
                     // 設置超時
@@ -184,46 +191,50 @@
                 }
             }, [currentImageIndex, isSliding]); // 移除 managePreloadWindow 依賴，避免無限循環
 
-            // 滑動轉場函數（使用預載入緩存）
+            // 滑動轉場函數（確保使用預載入緩存）
             const triggerSlideTransition = useCallback((newImageUrl, direction = 'left') => {
                 if (isSliding) return;
 
                 const currentImg = displayImage;
                 const newImg = newImageUrl;
 
-                console.log('🔍 滑動轉場詳細信息:');
-                console.log('  當前圖片:', currentImg);
-                console.log('  目標圖片:', newImg);
-                console.log('  預載入池大小:', preloadedImages.size);
-                console.log('  預載入池內容:', Array.from(preloadedImages.keys()));
-
                 // 檢查圖片是否已預載入
-                if (preloadedImages.has(newImg)) {
-                    console.log('✅ 圖片已在預載入池中，立即開始滑動');
+                const isPreloaded = preloadedImagesRef.current.has(newImg);
+                console.log('🔍 滑動轉場檢查:');
+                console.log('  目標圖片:', newImg);
+                console.log('  是否已預載入:', isPreloaded);
+                console.log('  緩存大小:', preloadedImagesRef.current.size);
+
+                if (!isPreloaded) {
+                    console.log('❌ 圖片未預載入！立即預載入...');
+                    // 如果沒有預載入，立即預載入
+                    preloadImage(newImg).then(() => {
+                        console.log('🚀 緊急預載入完成，開始滑動');
+                        startSlideAnimation();
+                    }).catch(() => {
+                        console.log('⚠️ 緊急預載入失敗，仍然開始滑動');
+                        startSlideAnimation();
+                    });
                 } else {
-                    console.log('❌ 圖片不在預載入池中！這會導致灰色畫面');
-                    console.log('  檢查預載入池是否包含類似URL...');
-                    for (const [url] of preloadedImages) {
-                        if (url.includes(newImg.split('random=')[1])) {
-                            console.log('  找到類似URL:', url);
-                        }
-                    }
+                    console.log('✅ 圖片已預載入，立即開始滑動');
+                    startSlideAnimation();
                 }
 
-                setCurrentImage(currentImg);
-                setNextImage(newImg);
-                setSlideDirection(direction);
-                setIsSliding(true);
+                function startSlideAnimation() {
+                    setCurrentImage(currentImg);
+                    setNextImage(newImg);
+                    setSlideDirection(direction);
+                    setIsSliding(true);
 
-                // 300ms後完成動畫並更新顯示圖片
-                setTimeout(() => {
-                    console.log('🏁 動畫完成，更新顯示圖片為:', newImg);
-                    setIsSliding(false);
-                    setCurrentImage(null);
-                    setNextImage(null);
-                    setDisplayImage(newImg);
-                }, 300);
-            }, [displayImage, isSliding, preloadedImages]);
+                    // 300ms後完成動畫並更新顯示圖片
+                    setTimeout(() => {
+                        setIsSliding(false);
+                        setCurrentImage(null);
+                        setNextImage(null);
+                        setDisplayImage(newImg);
+                    }, 300);
+                }
+            }, [displayImage, isSliding]);
 
             // 下一張圖片（無限滑動）
             const goToNextImage = () => {
