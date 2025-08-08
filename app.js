@@ -326,6 +326,17 @@ function App() {
           }
           
           setCurrentRestaurant(selectedRestaurant);
+          
+          // 立即觸發預載入池管理 - 套用測試檔成功邏輯
+          if (triggerSlideTransition) {
+            // 通知SlotMachine立即管理預載入池
+            setTimeout(() => {
+              // 使用自定義事件通知SlotMachine立即更新預載入池
+              window.dispatchEvent(new CustomEvent('restaurantChanged', { 
+                detail: { restaurant: selectedRestaurant, history: restaurantHistory } 
+              }));
+            }, 0);
+          }
           // 移除快速顯示餐廳日誌
         } else {
           // 移除啟動輪盤搜索日誌
@@ -345,6 +356,14 @@ function App() {
           if (restaurant) {
             // 移除API獲取成功日誌
             setCurrentRestaurant(restaurant);
+            
+            // 立即觸發預載入池管理 - 套用測試檔成功邏輯
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('restaurantChanged', { 
+                detail: { restaurant: restaurant, history: restaurantHistory } 
+              }));
+            }, 0);
+            
             // 圖片載入完成後結束動畫
             preloadImageAndStopSpin(restaurant);
           } else {
@@ -419,10 +438,14 @@ function App() {
       }
     };
 
+    // 追蹤操作方向
+    const [navigationDirection, setNavigationDirection] = React.useState(null);
+
     // 處理回到上一家餐廳
     const handlePreviousClick = () => {
       const previousRestaurant = handlePreviousRestaurant();
       if (previousRestaurant) {
+        setNavigationDirection('previous'); // 標記為向後操作
         setCurrentRestaurant(previousRestaurant);
       }
     };
@@ -436,14 +459,30 @@ function App() {
     React.useEffect(() => {
       if (triggerSlideTransition && previousRestaurantRef.current && currentRestaurant &&
           previousRestaurantRef.current !== currentRestaurant && !isSpinning) {
-        console.log('🔄 [App] 觸發滑動轉場:', {
+        
+        // 根據操作方向決定滑動方向
+        let slideDirection = 'left'; // 預設向左（搜尋下一家，圖片向左滑動）
+        
+        if (navigationDirection === 'previous') {
+          slideDirection = 'right'; // 向右滑動表示回到上一家
+          console.log('🔄 [App] 觸發向後滑動轉場 (向右滑動)');
+        } else {
+          console.log('🔄 [App] 觸發向前滑動轉場 (向左滑動)');
+        }
+        
+        console.log('🔄 [App] 滑動轉場詳情:', {
           previous: previousRestaurantRef.current?.name,
-          current: currentRestaurant?.name
+          current: currentRestaurant?.name,
+          direction: slideDirection
         });
-        triggerSlideTransition(currentRestaurant, 'left');
+        
+        triggerSlideTransition(currentRestaurant, slideDirection);
+        
+        // 重置方向標記
+        setNavigationDirection(null);
       }
       previousRestaurantRef.current = currentRestaurant;
-    }, [currentRestaurant, triggerSlideTransition, isSpinning]);
+    }, [currentRestaurant, triggerSlideTransition, isSpinning, navigationDirection]);
 
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
@@ -478,6 +517,8 @@ function App() {
               userAddress={userAddress}
               onPreviousRestaurant={handlePreviousClick}
               onTriggerSlideTransition={handleTriggerSlideTransition}
+              restaurantHistory={restaurantHistory}
+              selectedMealTime={selectedMealTime}
             />
           </div>
 
