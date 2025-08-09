@@ -1143,7 +1143,12 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         return isOpen && notShown;
       });
 
-      // 移除篩選結果日誌
+      // 添加調試信息，當篩選後沒有餐廳時
+      if (availableRestaurants.length === 0 && restaurants.length > 0) {
+        const openCount = restaurants.filter(r => isRestaurantOpenInTimeSlot(r, selectedMealTime)).length;
+        const notShownCount = restaurants.filter(r => !history.shown_restaurants.includes(r.id)).length;
+        console.log(`🔍 搜索調試: 找到${restaurants.length}家餐廳，${openCount}家營業中，${notShownCount}家未顯示過，已顯示${history.shown_restaurants.length}家`);
+      }
 
       if (availableRestaurants.length > 0) {
         // 隨機選擇一家餐廳

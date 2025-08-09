@@ -96,28 +96,28 @@
 
         /* 動態生成的慢速動畫類別 1s 要大於 最慢的fast動畫 */
         .animate-scroll-slow-stop-dynamic {
-            animation: scrollSlowStopDynamic 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: scrollSlowStopDynamic 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         .animate-scroll-fast-dynamic-1 {
-            animation: scrollFastDynamic 0.3s linear infinite;
+            animation: scrollFastDynamic 0.6s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-2 {
-            animation: scrollFastDynamic 0.5s linear infinite;
+            animation: scrollFastDynamic 1.0s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-3 {
-            animation: scrollFastDynamic 0.7s linear infinite;
+            animation: scrollFastDynamic 1.4s linear infinite;
         }
 
         .animate-scroll-fast-dynamic-4 {
-            animation: scrollFastDynamic 0.9s linear infinite;
+            animation: scrollFastDynamic 1.8s linear infinite;
         }
 
-        /* 最慢的fast動畫 - 仍比slow模式(1s)快 */
+        /* 最慢的fast動畫 - 每張圖片顯示約0.4秒 */
         .animate-scroll-fast-dynamic-5 {
-            animation: scrollFastDynamic 0.95s linear infinite;
+            animation: scrollFastDynamic 2.4s linear infinite;
         }
 
         /* 注意：實際使用的動畫由 JavaScript 動態生成：scrollFastDynamic 和 scrollSlowStopDynamic */

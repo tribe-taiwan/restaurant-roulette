@@ -591,7 +591,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 🎲 快速循環時使用亂數排序的圖片，減少視覺負擔
           const fastSequence = [];
-          for (let i = 0; i < 12; i++) { // 從50減少到12，避免眼花
+          for (let i = 0; i < 3; i++) { // 避免眼花頭暈，從50進一步減少到1組都沒用
             const shuffledSlots = shuffleArray(slotImages);
             fastSequence.push(...shuffledSlots);
           }
@@ -846,7 +846,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   const isRestaurantImage = finalRestaurant && finalRestaurant.image && imageSrc === finalRestaurant.image;
 
                   return (
-                    <div key={index} className="w-full h-64 flex items-center justify-center flex-shrink-0">
+                    <div key={index} className="w-64 h-64 flex items-center justify-center flex-shrink-0">
                       <img
                         src={imageSrc}
                         alt={isRestaurantImage ? `restaurant-${finalRestaurant.name}` : `slot-${index}`}

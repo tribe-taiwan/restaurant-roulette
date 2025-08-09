@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老虎機動畫測試</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 動態生成的CSS動畫將插入這裡 */
+        .slot-container {
+            width: 256px;      /* 與生產版本相同：w-64 = 256px */
+            height: 256px;     /* 與生產版本相同：h-64 = 256px */
+            overflow: hidden !important;  /* 強制隱藏超出部分 */
+            border: 3px solid #fbbf24;
+            border-radius: 12px 12px 0 0;  /* 與生產版本相同的rounded-t-lg */
+            position: relative;
+            background: #000;  /* 黑色背景便於觀察 */
+            margin: 0 auto;    /* 置中 */
+        }
+        
+        .slot-strip {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            width: fit-content;  /* 讓容器適應所有圖片的寬度 */
+        }
+        
+        .slot-image {
+            width: 256px;    /* 與生產版本相同：w-64 = 256px */
+            height: 256px;   /* 與生產版本相同：h-64 = 256px */
+            flex-shrink: 0;  /* 防止圖片被壓縮 */
+            flex-grow: 0;    /* 防止圖片被拉伸 */
+            object-fit: cover;  /* 保持圖片比例，裁切填滿 */
+            display: block;  /* 確保圖片正確顯示 */
+        }
+        
+        /* 預設動畫樣式 */
+        .animate-slot {
+            animation: slotAnimation 1s linear infinite;
+        }
+        
+        @keyframes slotAnimation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-256px); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center text-yellow-400">🎰 老虎機動畫測試</h1>
+        
+        <!-- 控制面板 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- 左側：老虎機展示 -->
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <div id="slotContainer" class="slot-container">
+                        <div id="slotStrip" class="slot-strip">
+                            <!-- 圖片將動態載入 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <button id="toggleBtn" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded font-bold">
+                        🎰 開始轉動
+                    </button>
+                    
+                    <!-- 關鍵指標顯示 -->
+                    <div class="bg-purple-800 p-3 rounded-lg border border-purple-600">
+                        <div class="text-center">
+                            <div class="text-sm text-purple-200">⏱️ 每張圖片顯示時間</div>
+                            <div class="text-2xl font-bold text-purple-100" id="displayTimeIndicator">0.40s</div>
+                            <div class="text-xs text-purple-300">這是調整老虎機速度的關鍵指標</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 顏色編碼說明 -->
+                    <div class="text-xs text-gray-400">
+                        <span class="inline-block w-3 h-3 bg-red-500 rounded mr-1"></span>≤0.2s 太快　
+                        <span class="inline-block w-3 h-3 bg-yellow-500 rounded mr-1"></span>0.2-0.3s 快　
+                        <span class="inline-block w-3 h-3 bg-green-500 rounded mr-1"></span>0.3-0.5s 理想　
+                        <span class="inline-block w-3 h-3 bg-blue-500 rounded mr-1"></span>>0.5s 慢
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右側：參數調整 -->
+            <div>
+                <h2 class="text-xl font-bold mb-4">參數調整</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">動畫持續時間 (秒)</label>
+                        <input type="range" id="durationSlider" min="0.2" max="3" step="0.1" value="1" 
+                               class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center text-yellow-400" id="durationValue">1.0s</div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">動畫序列長度</label>
+                        <input type="range" id="imageCountSlider" min="3" max="20" step="1" value="8" 
+                               class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center text-yellow-400" id="imageCountValue">1.0秒內顯示8張</div>
+                        <div class="text-xs text-gray-400 mt-1">控制動畫序列中的圖片總數</div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">動畫函數</label>
+                        <select id="timingFunction" class="w-full p-2 bg-gray-700 rounded">
+                            <option value="linear">linear (等速)</option>
+                            <option value="ease">ease (緩動)</option>
+                            <option value="ease-in">ease-in (加速)</option>
+                            <option value="ease-out">ease-out (減速)</option>
+                            <option value="ease-in-out">ease-in-out (先加速後減速)</option>
+                        </select>
+                        <div class="text-xs text-gray-400 mt-1">控制動畫的速度變化曲線</div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">圖片寬度 (px) - 正方形</label>
+                        <input type="range" id="imageWidthSlider" min="200" max="400" step="16" value="256" 
+                               class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center text-yellow-400" id="imageWidthValue">256px</div>
+                        <div class="text-xs text-gray-400 mt-1">每張圖片寬度 (容器固定256px×256px正方形，與生產版本相同)</div>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="infiniteLoop" checked class="form-checkbox">
+                            <span>無限循環</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 技術資訊顯示區 -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">📋 技術參數資訊</h2>
+                <button id="copyBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                    📋 複製參數
+                </button>
+            </div>
+            <pre id="techInfo" class="bg-black p-4 rounded text-green-400 font-mono text-sm overflow-x-auto"></pre>
+        </div>
+        
+        <!-- 圖片路徑顯示 -->
+        <div class="mt-6 bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-bold mb-2">🖼️ 載入的圖片</h3>
+            <div id="imageList" class="text-sm text-gray-400"></div>
+        </div>
+    </div>
+
+    <script>
+        class SlotMachineTest {
+            constructor() {
+                this.images = [];
+                this.currentAnimation = null;
+                this.isSpinning = false;
+                
+                this.initElements();
+                this.loadImages();
+                this.bindEvents();
+                this.updateTechInfo();
+            }
+            
+            initElements() {
+                this.slotStrip = document.getElementById('slotStrip');
+                this.slotContainer = document.getElementById('slotContainer');
+                this.toggleBtn = document.getElementById('toggleBtn');
+                this.durationSlider = document.getElementById('durationSlider');
+                this.durationValue = document.getElementById('durationValue');
+                this.imageCountSlider = document.getElementById('imageCountSlider');
+                this.imageCountValue = document.getElementById('imageCountValue');
+                this.timingFunction = document.getElementById('timingFunction');
+                this.imageWidthSlider = document.getElementById('imageWidthSlider');
+                this.imageWidthValue = document.getElementById('imageWidthValue');
+                this.infiniteLoop = document.getElementById('infiniteLoop');
+                this.techInfo = document.getElementById('techInfo');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.imageList = document.getElementById('imageList');
+                this.displayTimeIndicator = document.getElementById('displayTimeIndicator');
+            }
+            
+            async loadImages() {
+                const basePath = '../assets/image/slot-machine';
+                const detectedImages = [];
+                
+                // 自動偵測可用的slot圖片 (與生產模式相同)
+                for (let i = 1; i <= 20; i++) {
+                    const imagePath = `${basePath}/slot (${i}).jpg`;
+                    try {
+                        const response = await fetch(imagePath, { method: 'HEAD' });
+                        if (response.ok) {
+                            detectedImages.push(imagePath);
+                        } else {
+                            break;
+                        }
+                    } catch (error) {
+                        break;
+                    }
+                }
+                
+                this.images = detectedImages;
+                this.updateImageList();
+                this.generateSlotStrip();
+                
+                console.log(`🎰 載入了 ${this.images.length} 張slot圖片`);
+            }
+            
+            updateImageList() {
+                this.imageList.innerHTML = this.images.map((img, index) => 
+                    `${index + 1}. ${img.split('/').pop()}`
+                ).join('<br>');
+            }
+            
+            generateSlotStrip() {
+                const imageCount = parseInt(this.imageCountSlider.value);
+                const imageWidth = parseInt(this.imageWidthSlider.value);
+                
+                // 容器保持正方形，不需要動態調整尺寸
+                const container = document.querySelector('.slot-container');
+                // container.style.width保持CSS中的設定：width: 256px
+                // container.style.height保持CSS中的設定：height: 256px
+                
+                // 清空現有圖片
+                this.slotStrip.innerHTML = '';
+                
+                // 生成圖片序列 (循環使用可用圖片)
+                for (let i = 0; i < imageCount; i++) {
+                    const img = document.createElement('img');
+                    img.src = this.images[i % this.images.length];
+                    img.className = 'slot-image';
+                    img.style.width = imageWidth + 'px';
+                    img.style.height = imageWidth + 'px';
+                    img.alt = `Slot ${i + 1}`;
+                    
+                    // 添加邊框便於識別每張圖片
+                    img.style.border = '1px solid #ff6b35';
+                    
+                    this.slotStrip.appendChild(img);
+                }
+                
+                // 重置動畫位置
+                this.slotStrip.style.transform = 'translateX(0)';
+            }
+            
+            bindEvents() {
+                this.toggleBtn.addEventListener('click', () => this.toggleAnimation());
+                this.copyBtn.addEventListener('click', () => this.copyTechInfo());
+                
+                // 參數變更事件
+                [this.durationSlider, this.imageCountSlider, this.imageWidthSlider, this.timingFunction, this.infiniteLoop]
+                    .forEach(element => {
+                        element.addEventListener('input', () => {
+                            this.updateValues();
+                            this.updateAnimation();
+                            this.updateTechInfo();
+                        });
+                        element.addEventListener('change', () => {
+                            if (element === this.imageCountSlider || element === this.imageWidthSlider) {
+                                this.generateSlotStrip();
+                            }
+                        });
+                    });
+            }
+            
+            updateValues() {
+                const duration = parseFloat(this.durationSlider.value);
+                const imageCount = parseInt(this.imageCountSlider.value);
+                
+                this.durationValue.textContent = duration + 's';
+                this.imageCountValue.textContent = duration + '秒內顯示' + imageCount + '張';
+                this.imageWidthValue.textContent = this.imageWidthSlider.value + 'px';
+                
+                // 更新關鍵指標：每張圖片顯示時間
+                const displayTimePerImage = (duration / imageCount).toFixed(2);
+                this.displayTimeIndicator.textContent = displayTimePerImage + 's';
+                
+                // 根據速度調整容器邊框顏色和指標顏色
+                if (displayTimePerImage <= 0.2) {
+                    // 太快，紅色
+                    this.displayTimeIndicator.className = 'text-2xl font-bold text-red-300';
+                    this.slotContainer.style.borderColor = '#ef4444'; // red-500
+                } else if (displayTimePerImage <= 0.3) {
+                    // 快，黃色
+                    this.displayTimeIndicator.className = 'text-2xl font-bold text-yellow-300';
+                    this.slotContainer.style.borderColor = '#eab308'; // yellow-500
+                } else if (displayTimePerImage <= 0.5) {
+                    // 理想，綠色
+                    this.displayTimeIndicator.className = 'text-2xl font-bold text-green-300';
+                    this.slotContainer.style.borderColor = '#22c55e'; // green-500
+                } else {
+                    // 慢，藍色
+                    this.displayTimeIndicator.className = 'text-2xl font-bold text-blue-300';
+                    this.slotContainer.style.borderColor = '#3b82f6'; // blue-500
+                }
+            }
+            
+            updateAnimation() {
+                if (!this.isSpinning) return;
+                
+                const duration = parseFloat(this.durationSlider.value);
+                const imageWidth = parseInt(this.imageWidthSlider.value);
+                const imageCount = parseInt(this.imageCountSlider.value);
+                const timing = this.timingFunction.value;
+                const infinite = this.infiniteLoop.checked ? 'infinite' : 'forwards';
+                
+                // 計算移動距離 - 移動所有圖片的距離 (模擬fast模式)
+                const totalDistance = (imageCount - 1) * imageWidth;
+                
+                // 移除舊動畫
+                const oldStyle = document.getElementById('dynamicAnimation');
+                if (oldStyle) oldStyle.remove();
+                
+                // 創建新動畫
+                const style = document.createElement('style');
+                style.id = 'dynamicAnimation';
+                style.textContent = `
+                    @keyframes currentSlotAnimation {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-${totalDistance}px); }
+                    }
+                    .current-slot-animation {
+                        animation: currentSlotAnimation ${duration}s ${timing} ${infinite};
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 應用新動畫
+                this.slotStrip.className = 'slot-strip current-slot-animation';
+            }
+            
+            toggleAnimation() {
+                if (this.isSpinning) {
+                    // 停止動畫
+                    this.isSpinning = false;
+                    this.slotStrip.className = 'slot-strip';
+                    this.toggleBtn.textContent = '🎰 開始轉動';
+                    this.toggleBtn.className = 'bg-green-600 hover:bg-green-700 px-6 py-2 rounded font-bold';
+                } else {
+                    // 開始動畫
+                    this.isSpinning = true;
+                    this.updateAnimation();
+                    this.toggleBtn.textContent = '🛑 停止轉動';
+                    this.toggleBtn.className = 'bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold';
+                }
+                this.updateTechInfo();
+            }
+            
+            updateTechInfo() {
+                const duration = parseFloat(this.durationSlider.value);
+                const imageCount = parseInt(this.imageCountSlider.value);
+                const imageWidth = parseInt(this.imageWidthSlider.value);
+                const timing = this.timingFunction.value;
+                const infinite = this.infiniteLoop.checked;
+                const totalDistance = (imageCount - 1) * imageWidth;
+                
+                const info = {
+                    "狀態": this.isSpinning ? "🎰 轉動中" : "⏹️ 停止",
+                    "動畫持續時間": duration + "s (整個滾動完成的時間)",
+                    "動畫序列長度": imageCount + "張 (" + duration + "秒內依序顯示" + imageCount + "張圖片)",
+                    "容器尺寸": "256px × 256px (正方形，與生產版本相同)",
+                    "圖片寬度": imageWidth + "px (每張圖片的實際寬度)",
+                    "動畫速度曲線": timing,
+                    "無限循環": infinite ? "是 (永不停止)" : "否 (播放一次後停止)",
+                    "圖片序列總寬度": (imageCount * imageWidth) + "px",
+                    "動畫移動距離": totalDistance + "px (向左移動，滾動" + (imageCount-1) + "張圖片)",
+                    "實際載入圖片檔案": this.images.length + "張",
+                    "模擬模式": "FAST模式 (快速滾動所有圖片)",
+                    "每張圖片顯示時間": (duration / imageCount).toFixed(2) + "s",
+                    "滾動速度": (totalDistance / duration).toFixed(0) + "px/s",
+                    "CSS動畫宣告": `animation: slotAnimation ${duration}s ${timing} ${infinite ? 'infinite' : 'forwards'}`,
+                    "CSS關鍵幀定義": `@keyframes slotAnimation {\n  0% { transform: translateX(0); }\n  100% { transform: translateX(-${totalDistance}px); }\n}`,
+                    "容器CSS設定": `width: 256px; height: 256px; overflow: hidden; (正方形)`,
+                    "圖片CSS設定": `width: ${imageWidth}px; height: ${imageWidth}px; object-fit: cover;`
+                };
+                
+                this.techInfo.textContent = JSON.stringify(info, null, 2);
+            }
+            
+            copyTechInfo() {
+                navigator.clipboard.writeText(this.techInfo.textContent).then(() => {
+                    this.copyBtn.textContent = '✅ 已複製';
+                    setTimeout(() => {
+                        this.copyBtn.textContent = '📋 複製參數';
+                    }, 2000);
+                });
+            }
+        }
+        
+        // 初始化測試器
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlotMachineTest();
+        });
+    </script>
+</body>
+</html>
