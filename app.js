@@ -325,6 +325,7 @@ function App() {
             window.updateRestaurantHistory(selectedRestaurant.id, 0);
           }
           
+          // 從快取取得餐廳時，直接更新不觸發滑動轉場（避免轉盤停止後自動滑走）
           setCurrentRestaurant(selectedRestaurant);
           
           // 立即觸發預載入池管理 - 套用測試檔成功邏輯
@@ -355,6 +356,7 @@ function App() {
           
           if (restaurant) {
             // 移除API獲取成功日誌
+            // API搜尋完成後，直接更新不觸發滑動轉場（避免轉盤停止後自動滑走）
             setCurrentRestaurant(restaurant);
             
             // 立即觸發預載入池管理 - 套用測試檔成功邏輯
@@ -446,7 +448,70 @@ function App() {
       const previousRestaurant = handlePreviousRestaurant();
       if (previousRestaurant) {
         setNavigationDirection('previous'); // 標記為向後操作
-        setCurrentRestaurant(previousRestaurant);
+        // 延遲更新currentRestaurant，先觸發滑動轉場
+        if (triggerSlideTransition && currentRestaurant) {
+          triggerSlideTransition(currentRestaurant, previousRestaurant, 'right', () => {
+            // 滑動轉場完成後才更新currentRestaurant
+            setCurrentRestaurant(previousRestaurant);
+          });
+        } else {
+          setCurrentRestaurant(previousRestaurant);
+        }
+      }
+    };
+
+    // 處理用戶主動搜尋餐廳（觸發滑動轉場）
+    const handleUserSpin = async () => {
+      if (isSpinning) return;
+
+      // 如果有當前餐廳，先觸發滑動轉場
+      if (triggerSlideTransition && currentRestaurant) {
+        // 先搜尋新餐廳
+        const newRestaurant = await searchNewRestaurant();
+        if (newRestaurant) {
+          setNavigationDirection('next');
+          triggerSlideTransition(currentRestaurant, newRestaurant, 'left', () => {
+            // 滑動轉場完成後才更新currentRestaurant
+            setCurrentRestaurant(newRestaurant);
+          });
+        }
+      } else {
+        // 沒有當前餐廳，直接搜尋
+        handleSpin(false);
+      }
+    };
+
+    // 搜尋新餐廳的輔助函數
+    const searchNewRestaurant = async () => {
+      try {
+        const cachedRestaurants = window.getAvailableRestaurantsFromCache ?
+          window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
+
+        if (cachedRestaurants.length > 0) {
+          const selectedRestaurant = cachedRestaurants[Math.floor(Math.random() * cachedRestaurants.length)];
+
+          // 添加距離資訊
+          if (userLocation && window.calculateDistance) {
+            selectedRestaurant.distance = window.calculateDistance(
+              userLocation.lat, userLocation.lng,
+              selectedRestaurant.lat, selectedRestaurant.lng
+            );
+          }
+
+          // 更新歷史記錄
+          if (window.updateRestaurantHistory) {
+            window.updateRestaurantHistory(selectedRestaurant.id, 0);
+          }
+
+          return selectedRestaurant;
+        } else {
+          // 沒有快取，使用原來的搜尋邏輯
+          handleSpin(false);
+          return null;
+        }
+      } catch (error) {
+        console.error('搜尋新餐廳失敗:', error);
+        return null;
       }
     };
 
@@ -455,34 +520,12 @@ function App() {
       setTriggerSlideTransition(() => slideTransitionFn);
     }, []);
 
-    // 監聽餐廳變化，觸發滑動轉場
+    // 更新餐廳歷史記錄
     React.useEffect(() => {
-      if (triggerSlideTransition && previousRestaurantRef.current && currentRestaurant &&
-          previousRestaurantRef.current !== currentRestaurant && !isSpinning) {
-        
-        // 根據操作方向決定滑動方向
-        let slideDirection = 'left'; // 預設向左（搜尋下一家，圖片向左滑動）
-        
-        if (navigationDirection === 'previous') {
-          slideDirection = 'right'; // 向右滑動表示回到上一家
-          console.log('🔄 [App] 觸發向後滑動轉場 (向右滑動)');
-        } else {
-          console.log('🔄 [App] 觸發向前滑動轉場 (向左滑動)');
-        }
-        
-        console.log('🔄 [App] 滑動轉場詳情:', {
-          previous: previousRestaurantRef.current?.name,
-          current: currentRestaurant?.name,
-          direction: slideDirection
-        });
-        
-        triggerSlideTransition(currentRestaurant, slideDirection);
-        
-        // 重置方向標記
-        setNavigationDirection(null);
+      if (currentRestaurant) {
+        previousRestaurantRef.current = currentRestaurant;
       }
-      previousRestaurantRef.current = currentRestaurant;
-    }, [currentRestaurant, triggerSlideTransition, isSpinning, navigationDirection]);
+    }, [currentRestaurant]);
 
     return (
       <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
@@ -505,7 +548,7 @@ function App() {
           <div className="flex justify-center mb-8">
             <SlotMachine
               isSpinning={isSpinning}
-              onSpin={handleSpin}
+              onSpin={handleUserSpin}
               onAddCandidate={handleAddCandidate}
               translations={t}
               finalRestaurant={currentRestaurant}

@@ -215,7 +215,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const [nextRestaurantData, setNextRestaurantData] = React.useState(null);
 
     // 滑動轉場函數
-    const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
+    const triggerSlideTransition = React.useCallback((previousRestaurant, newRestaurant, direction = 'left', onComplete = null) => {
       // 🔄 保留滑動轉場的關鍵LOG，因為這是我們最近在偵錯的功能
       console.log('🔄 [SlotMachine] 滑動轉場觸發:', newRestaurant?.name);
 
@@ -267,6 +267,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setNextImage(null);
         setCurrentRestaurantData(null); // 清除保存的餐廳資料
         setNextRestaurantData(null);
+
+        // 調用完成回調
+        if (onComplete && typeof onComplete === 'function') {
+          onComplete();
+        }
       }, currentConfig.duration);
     }, [finalRestaurant, isSliding, isSpinning, preloadedImages, getSlideAnimationConfig]);
 
