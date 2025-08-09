@@ -97,8 +97,8 @@ function SearchSettings({
           {/* 第一行：現在營業中和不限時間 */}
           <div className="flex gap-2 justify-center mb-2">
             {[
-              { id: 'current', label: selectedLanguage === 'zh' ? '現在營業中' : 'Open Now', icon: 'clock', time: '' },
-              { id: 'all', label: selectedLanguage === 'zh' ? '不限時間' : 'Any Time', icon: 'globe', time: '' }
+              { id: 'current', label: t.openNowFilter, icon: 'clock', time: '' },
+              { id: 'all', label: t.anyTime, icon: 'globe', time: '' }
             ].map((mealTime) => (
               <button
                 key={mealTime.id}

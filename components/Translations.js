@@ -83,7 +83,13 @@ function createTranslations(brandSubtitle) {
       thursday: "Thu",
       friday: "Fri",
       saturday: "Sat",
-      sunday: "Sun"
+      sunday: "Sun",
+      // 候選餐廳相關
+      candidates: "Candidates",
+      clearList: "Clear List",
+      // 搜尋設定相關
+      openNowFilter: "Open Now",
+      anyTime: "Any Time"
     },
     zh: {
       title: themeTranslations.zh,
@@ -141,7 +147,13 @@ function createTranslations(brandSubtitle) {
       thursday: "週四",
       friday: "週五",
       saturday: "週六",
-      sunday: "週日"
+      sunday: "週日",
+      // 候選餐廳相關
+      candidates: "候選餐廳",
+      clearList: "清除列表",
+      // 搜尋設定相關
+      openNowFilter: "現在營業中",
+      anyTime: "不限時間"
     },
     ja: {
       title: themeTranslations.ja,
@@ -190,7 +202,13 @@ function createTranslations(brandSubtitle) {
       thursday: "木曜",
       friday: "金曜",
       saturday: "土曜",
-      sunday: "日曜"
+      sunday: "日曜",
+      // 候選餐廳相關
+      candidates: "候補レストラン",
+      clearList: "リストをクリア",
+      // 搜尋設定相關
+      openNowFilter: "現在営業中",
+      anyTime: "いつでも"
     },
     ko: {
       title: themeTranslations.ko,
@@ -239,7 +257,13 @@ function createTranslations(brandSubtitle) {
       thursday: "목요일",
       friday: "금요일",
       saturday: "토요일",
-      sunday: "일요일"
+      sunday: "일요일",
+      // 候選餐廳相關
+      candidates: "후보 레스토랑",
+      clearList: "목록 지우기",
+      // 搜尋設定相關
+      openNowFilter: "지금 영업 중",
+      anyTime: "언제든"
     },
     vi: {
       title: themeTranslations.vi,
@@ -288,7 +312,13 @@ function createTranslations(brandSubtitle) {
       thursday: "Thứ năm",
       friday: "Thứ sáu",
       saturday: "Thứ bảy",
-      sunday: "Chủ nhật"
+      sunday: "Chủ nhật",
+      // 候選餐廳相關
+      candidates: "Nhà hàng ứng viên",
+      clearList: "Xóa danh sách",
+      // 搜尋設定相關
+      openNowFilter: "Hiện đang mở cửa",
+      anyTime: "Bất kì lúc nào"
     },
     ms: {
       title: themeTranslations.ms,
@@ -337,7 +367,13 @@ function createTranslations(brandSubtitle) {
       thursday: "Khamis",
       friday: "Jumaat",
       saturday: "Sabtu",
-      sunday: "Ahad"
+      sunday: "Ahad",
+      // 候選餐廳相關
+      candidates: "Restoran Calon",
+      clearList: "Kosongkan Senarai",
+      // 搜尋設定相關
+      openNowFilter: "Sedang Buka Sekarang",
+      anyTime: "Bila-bila Masa"
     }
   };
 }

@@ -207,12 +207,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                           : getTranslation('hoursUnknown')
                       }
                     </div>
-                    <div className={`text-sm ${
-                      restaurant.operatingStatus.status === 'open' ? 'text-green-700 dark:text-green-400' : 
-                      restaurant.operatingStatus.status === 'closed' ? 'text-red-700 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400'
-                    }`}>
-                      {restaurant.operatingStatus.message}
-                    </div>
                   </div>
                 </div>
               </div>
