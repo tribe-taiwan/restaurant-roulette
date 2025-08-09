@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試快取修復</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #3367d6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 測試快取數據修復</h1>
+        <p>此測試用於驗證快取數據中 isOpen 函數丟失問題的修復。</p>
+        
+        <div>
+            <button class="test-button" onclick="clearCache()">🗑️ 清除快取</button>
+            <button class="test-button" onclick="testCacheData()">🧪 測試快取數據</button>
+            <button class="test-button" onclick="simulateRestaurantSearch()">🔍 模擬餐廳搜索</button>
+        </div>
+
+        <div id="result" class="result" style="display: none;">
+            等待測試結果...
+        </div>
+    </div>
+
+    <!-- 載入配置和工具 -->
+    <script src="../utils/config.js"></script>
+    <script src="../utils/locationUtils.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            const resultDiv = document.getElementById('result');
+            if (resultDiv.style.display === 'none') {
+                resultDiv.style.display = 'block';
+            }
+            
+            resultDiv.innerHTML += `<div class="log-entry">${logEntry}</div>`;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        function clearCache() {
+            try {
+                localStorage.removeItem('restaurant_history');
+                log('✅ 已清除餐廳快取', 'success');
+            } catch (error) {
+                log(`❌ 清除快取失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testCacheData() {
+            log('🔍 檢查快取數據結構...', 'info');
+            
+            try {
+                const history = localStorage.getItem('restaurant_history');
+                if (!history) {
+                    log('📝 快取為空，需要先搜索餐廳', 'info');
+                    return;
+                }
+
+                const parsedHistory = JSON.parse(history);
+                log(`📊 快取中有 ${parsedHistory.cached_restaurants?.length || 0} 家餐廳`, 'info');
+
+                if (parsedHistory.cached_restaurants && parsedHistory.cached_restaurants.length > 0) {
+                    const restaurant = parsedHistory.cached_restaurants[0];
+                    log(`🏪 檢查第一家餐廳: ${restaurant.name}`, 'info');
+                    
+                    // 檢查數據結構
+                    log(`   有 detailsCache: ${!!restaurant.detailsCache}`, 'info');
+                    if (restaurant.detailsCache) {
+                        log(`   有 opening_hours: ${!!restaurant.detailsCache.opening_hours}`, 'info');
+                        if (restaurant.detailsCache.opening_hours) {
+                            log(`   有 periods: ${!!restaurant.detailsCache.opening_hours.periods}`, 'info');
+                            log(`   有 weekday_text: ${!!restaurant.detailsCache.opening_hours.weekday_text}`, 'info');
+                            log(`   有 isOpen 函數: ${typeof restaurant.detailsCache.opening_hours.isOpen === 'function'}`, 'info');
+                            log(`   isOpen 值: ${restaurant.detailsCache.opening_hours.isOpen}`, 'info');
+                        }
+                    }
+
+                    // 測試 isRestaurantOpenInTimeSlot 函數
+                    log('🧪 測試 isRestaurantOpenInTimeSlot 函數...', 'info');
+                    const isOpen = window.isRestaurantOpenInTimeSlot ? 
+                        window.isRestaurantOpenInTimeSlot(restaurant, 'current') : 
+                        '函數不存在';
+                    log(`   結果: ${isOpen}`, 'info');
+                }
+
+            } catch (error) {
+                log(`❌ 檢查快取數據失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateRestaurantSearch() {
+            log('🔍 模擬餐廳搜索流程...', 'info');
+            
+            try {
+                // 初始化 Google Maps
+                if (!window.google || !window.google.maps) {
+                    log('📡 初始化 Google Maps API...', 'info');
+                    await initializeGoogleMaps();
+                }
+
+                // 使用台北101作為測試位置
+                const userLocation = { lat: 25.0330, lng: 121.5654 };
+                log('📍 使用台北101作為測試位置', 'info');
+
+                // 搜索餐廳
+                log('🔍 搜索附近餐廳...', 'info');
+                const restaurant = await getRandomRestaurant(userLocation, 'current');
+                
+                if (restaurant) {
+                    log('✅ 餐廳搜索成功！', 'success');
+                    log(`🏪 找到餐廳: ${restaurant.name}`, 'info');
+                    log(`📍 地址: ${restaurant.address}`, 'info');
+                    log(`⭐ 評分: ${restaurant.rating}`, 'info');
+                    log(`🕐 營業狀態: ${restaurant.operatingStatus?.message || '未知'}`, 'info');
+                    
+                    // 檢查快取
+                    setTimeout(() => {
+                        log('🔍 檢查搜索後的快取狀態...', 'info');
+                        testCacheData();
+                    }, 1000);
+                } else {
+                    log('❌ 未找到合適的餐廳', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ 模擬搜索失敗: ${error.message}`, 'error');
+                console.error('搜索錯誤:', error);
+            }
+        }
+
+        // 頁面載入完成後的初始化
+        window.addEventListener('load', function() {
+            log('📄 測試頁面已載入', 'info');
+            log('🔧 準備測試快取數據修復', 'info');
+        });
+    </script>
+</body>
+</html>
