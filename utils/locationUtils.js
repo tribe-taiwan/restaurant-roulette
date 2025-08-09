@@ -299,6 +299,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 
     // 使用新的 Google Places API 的 isOpen() 方法
     // 根據官方文檔，isOpen() 需要 utc_offset_minutes 或 periods 才能正常工作
+    // 注意：從 localStorage 讀取的快取數據不會有 isOpen 函數（函數無法序列化）
     if (openingHours && typeof openingHours.isOpen === 'function') {
       try {
         const isOpenNow = openingHours.isOpen();
@@ -323,9 +324,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
       } catch (error) {
         console.warn('⚠️ Google Places API isOpen() 調用失敗，回退到 periods 計算:', error);
       }
-    } else {
-      console.log('🔄 Google Places API isOpen() 方法不可用，使用 periods 手動計算營業狀態');
     }
+    // 注意：不輸出 "isOpen() 方法不可用" 的日誌，因為快取數據本來就沒有這個函數
     
     // 回退邏輯：使用 periods 手動計算當前營業狀態
     if (openingHours.periods && openingHours.periods.length > 0) {
@@ -968,8 +968,8 @@ function updateRestaurantCache(restaurants) {
           detailsCache: restaurant.detailsCache ? {
             opening_hours: restaurant.detailsCache.opening_hours ? {
               periods: restaurant.detailsCache.opening_hours.periods,
-              weekday_text: restaurant.detailsCache.opening_hours.weekday_text,
-              isOpen: restaurant.detailsCache.opening_hours.isOpen
+              weekday_text: restaurant.detailsCache.opening_hours.weekday_text
+              // 注意：不存儲 isOpen 函數，因為函數無法序列化到 localStorage
               // 不包含已棄用的 open_now, utc_offset 等屬性
             } : null,
             utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes
