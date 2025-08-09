@@ -78,6 +78,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
     const [fastAnimationLevel, setFastAnimationLevel] = React.useState(1); // 1-5 漸進式減速級別
+    const [fastSequenceCache, setFastSequenceCache] = React.useState([]); // 預先準備的快速動畫序列
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
 
@@ -459,28 +460,28 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
       console.log(`🎯 動畫參數: ${imageCount}張圖，每張${timePerImage}s，fast總時間${fastTotalDuration}s，slow總時間${slowTotalDuration}s`);
 
-      // 動態創建CSS keyframes - 使用新的時間計算
+      // 動態創建CSS keyframes - 使用GPU加速的transform3d
       const keyframes = `
         @keyframes scrollFastDynamic {
           0% {
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
           }
           100% {
-            transform: translateX(-${fastScrollDistance}px);
+            transform: translate3d(-${fastScrollDistance}px, 0, 0);
           }
         }
 
         @keyframes scrollSlowStopDynamic {
           0% {
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
             animation-timing-function: ease-out;
           }
           70% {
-            transform: translateX(-${midPosition}px);
+            transform: translate3d(-${midPosition}px, 0, 0);
             animation-timing-function: ease-in;
           }
           100% {
-            transform: translateX(-${finalPosition}px);
+            transform: translate3d(-${finalPosition}px, 0, 0);
           }
         }
         
@@ -534,6 +535,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
           console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
+          
+          // 🎯 預先準備 fast 動畫序列，避免動畫開始時的計算延遲
+          const preparedFastSequence = [...shuffledImages]; // 使用單組圖片，依賴CSS infinite循環
+          setFastSequenceCache(preparedFastSequence);
+          console.log('🚀 [DEBUG] 預先準備 fast 序列:', preparedFastSequence.length, '張圖片');
           
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
           createDynamicAnimation(detectedImages.length, 0.5);
@@ -640,16 +646,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // =====================================
           // 情況：等待API返回，顯示載入動畫
           // =====================================
-          setAnimationPhase('fast');
-          setFastAnimationLevel(1); // 重置為最快級別
+          
+          // 🚀 使用 requestAnimationFrame 確保動畫啟動的流暢性
+          requestAnimationFrame(() => {
+            setAnimationPhase('fast');
+            setFastAnimationLevel(1); // 重置為最快級別
 
-          // 🎲 快速循環時使用亂數排序的圖片，減少視覺負擔
-          const fastSequence = [];
-          for (let i = 0; i < 3; i++) { // 避免眼花頭暈，從50進一步減少到1組都沒用
-            const shuffledSlots = shuffleArray(slotImages);
-            fastSequence.push(...shuffledSlots);
-          }
-          setScrollingNames(fastSequence);
+            // 🎯 直接使用預先準備的快取序列，避免臨時計算
+            if (fastSequenceCache.length > 0) {
+              setScrollingNames(fastSequenceCache);
+              console.log('⚡ 使用預先準備的 fast 序列，長度:', fastSequenceCache.length);
+            } else {
+              // 🔧 Fallback: 如果快取還沒準備好，使用簡化邏輯
+              setScrollingNames([...slotImages]);
+              console.log('⚠️ Fallback: 直接使用 slotImages');
+            }
+          });
         }
       } else {
         // =====================================
@@ -661,41 +673,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [isSpinning, finalRestaurant, shuffleArray]);
 
-    // 漸進式減速邏輯 - 0.3秒後開始減速
-    React.useEffect(() => {
-      let timeoutIds = [];
+    // 🚫 移除漸進式減速邏輯，使用固定速度避免卡頓
+    // 漸進式變速會導致動畫中斷和視覺跳躍，改用單一固定速度
 
-      if (animationPhase === 'fast' && !finalRestaurant) {
-        // 第一級持續0.3秒（最快速度）
-        timeoutIds.push(setTimeout(() => {
-          setFastAnimationLevel(2);
-        }, 300));
-
-        // 之後每0.3秒切換到下一級
-        timeoutIds.push(setTimeout(() => {
-          setFastAnimationLevel(3);
-        }, 700));
-
-        timeoutIds.push(setTimeout(() => {
-          setFastAnimationLevel(4);
-        }, 1100));
-
-        timeoutIds.push(setTimeout(() => {
-          setFastAnimationLevel(5);
-        }, 1500));
-      }
-
-      return () => {
-        timeoutIds.forEach(id => clearTimeout(id));
-      };
-    }, [animationPhase, finalRestaurant]);
-
-    // 獲取當前動畫類別
+    // 獲取當前動畫類別 - 使用固定速度避免變速卡頓
     const getAnimationClass = () => {
       switch (animationPhase) {
         case 'fast':
-          // 🎯 使用動態生成的快速動畫
-          return `animate-scroll-fast-dynamic-${fastAnimationLevel}`;
+          // 🎯 使用固定速度的快速動畫，避免變速導致的卡頓
+          return 'animate-scroll-fast-dynamic-2'; // 固定使用level-2速度
         case 'slow':
           // 🎯 使用動態生成的慢速動畫
           return 'animate-scroll-slow-stop-dynamic';
@@ -902,9 +888,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             )}
 
             {/* 內容覆蓋層 */}
-            <div className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
-              isSpinning ? getAnimationClass() : ''
-            }`}>
+            <div 
+              className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
+                isSpinning ? getAnimationClass() : ''
+              }`}
+              style={{
+                willChange: isSpinning ? 'transform' : 'auto'
+              }}
+            >
               {isSpinning ? (
                 scrollingNames.map((imageSrc, index) => {
                   const isRestaurantImage = finalRestaurant && finalRestaurant.image && imageSrc === finalRestaurant.image;
