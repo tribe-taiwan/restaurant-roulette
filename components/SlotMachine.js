@@ -198,6 +198,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 setPreloadedImages(current => new Map(current).set(url, img));
               }).catch(error => {
                 console.warn(`❌ 預載入失敗 (${restaurant.name}):`, error.message);
+                // 載入失敗時使用 fallback 圖片
+                const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                preloadImage(fallbackUrl).then(fallbackImg => {
+                  setPreloadedImages(current => new Map(current).set(url, fallbackImg));
+                }).catch(() => {
+                  console.warn(`❌ Fallback 圖片也載入失敗 (${restaurant.name})`);
+                });
               });
             }
           }
@@ -521,13 +528,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 組件初始化時自動偵測圖片
     React.useEffect(() => {
       autoDetectSlotImages().then(detectedImages => {
+        console.log('🔧 [DEBUG] 偵測到的圖片:', detectedImages);
         if (detectedImages.length > 0) {
           // 🎲 一開始就亂數排序圖片順序，增加隨機性
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
+          console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
           
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.3秒/張）
           createDynamicAnimation(detectedImages.length, 0.3);
+        } else {
+          console.warn('⚠️ [DEBUG] 沒有偵測到任何圖片，slotImages 將保持預設值');
         }
       });
     }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
@@ -869,11 +880,21 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               <div
                 className="absolute inset-0"
                 style={{
-                  backgroundImage: finalRestaurant && finalRestaurant.image ?
-                    `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image})` :
-                    slotImages.length > 0 ?
-                      `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${slotImages[slotImages.length - 1]})` :
-                      'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  backgroundImage: (() => {
+                    if (finalRestaurant && finalRestaurant.image) {
+                      console.log('🔧 [DEBUG] 使用餐廳圖片:', finalRestaurant.image);
+                      // 添加 fallback 圖片以防載入失敗
+                      const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                      return `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image}), url(${fallbackUrl})`;
+                    } else if (slotImages.length > 0) {
+                      const fallbackImage = slotImages[slotImages.length - 1];
+                      console.log('🔧 [DEBUG] 使用 slot fallback 圖片:', fallbackImage);
+                      return `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${fallbackImage})`;
+                    } else {
+                      console.log('🔧 [DEBUG] 使用預設漸層背景');
+                      return 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                    }
+                  })(),
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
