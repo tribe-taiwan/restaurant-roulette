@@ -12,9 +12,15 @@
 ## 錯誤的檢查方式
 
 ```javascript
-// ❌ 錯誤的檢查方式
+// ❌ 錯誤的檢查方式 1：不檢查函數存在性
+if (openingHours && openingHours.isOpen) {
+  const isOpenNow = openingHours.isOpen();
+}
+
+// ❌ 錯誤的檢查方式 2：不檢查返回值
 if (openingHours && typeof openingHours.isOpen === 'function') {
   const isOpenNow = openingHours.isOpen();
+  return isOpenNow; // 可能返回 undefined
 }
 ```
 
@@ -22,8 +28,16 @@ if (openingHours && typeof openingHours.isOpen === 'function') {
 
 ```javascript
 // ✅ 正確的檢查方式
-if (openingHours && openingHours.isOpen) {
+if (openingHours && typeof openingHours.isOpen === 'function') {
   const isOpenNow = openingHours.isOpen();
+
+  // 重要：檢查返回值是否為 undefined
+  if (isOpenNow !== undefined) {
+    return isOpenNow;
+  } else {
+    // 使用備用方案
+    console.log('isOpen() 返回 undefined，缺少必要數據');
+  }
 }
 ```
 
@@ -85,18 +99,58 @@ function checkRestaurantOpenStatus(openingHours) {
 🔄 Google Places API isOpen() 方法不可用，使用 periods 手動計算營業狀態
 ```
 
+## 常見問題與解決方案
+
+### 問題 1：仍然出現 "open_now is deprecated" 警告
+
+**原因**：程式碼中可能在序列化包含已棄用屬性的 Google Places API 原始物件。
+
+**解決方案**：避免直接存儲原始的 Google Places API 物件
+```javascript
+// ❌ 錯誤：直接存儲原始物件
+localStorage.setItem('restaurants', JSON.stringify(rawPlaceResults));
+
+// ✅ 正確：只存儲清理後的數據
+const cleanRestaurant = {
+  id: place.place_id,
+  name: place.name,
+  // ... 其他必要屬性
+  // 不包含 detailsCache 或原始 Google Places 物件
+};
+localStorage.setItem('restaurants', JSON.stringify([cleanRestaurant]));
+```
+
+### 問題 2：isOpen() 返回 undefined
+
+**原因**：缺少 `utc_offset_minutes` 或 `periods` 數據。
+
+**解決方案**：確保在 getPlaceDetails 中請求正確的欄位
+```javascript
+const request = {
+  placeId: placeId,
+  fields: [
+    'name', 'formatted_address', 'geometry', 'rating',
+    'opening_hours', 'utc_offset_minutes', // 重要：包含時區資訊
+    'photos', 'price_level', 'website', 'url'
+  ]
+};
+```
+
 ## 注意事項
 
 1. **向後兼容**：保留 periods 手動計算作為備用方案
 2. **錯誤處理**：使用 try-catch 包裹 isOpen() 調用
 3. **日誌記錄**：適當的日誌輸出有助於除錯
 4. **緩衝區檢查**：營業中的餐廳仍需檢查是否即將關門
+5. **數據清理**：避免存儲包含已棄用屬性的原始 API 物件
 
 ## 相關檔案
 
 - `utils/locationUtils.js` - 主要修復檔案
 - `test/test-places-api.spec.js` - 測試檔案
 
-## 修復日期
+## 修復歷史
 
-2025-01-09 - Commit Hash: `5e49749`
+- **2025-01-09** - Commit Hash: `5e49749` - 初始修復 isOpen() 檢查邏輯
+- **2025-01-09** - Commit Hash: `4d18e31` - 新增技術文檔
+- **2025-01-09** - Commit Hash: `4763fd1` - 修復 localStorage 存儲問題，避免序列化已棄用屬性
