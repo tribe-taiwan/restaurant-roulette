@@ -1,5 +1,65 @@
 function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
   try {
+    // 🎬 滑動動畫配置中心 - 集中管理所有滑動動畫參數
+    const getSlideAnimationConfig = React.useCallback(() => {
+      // 動畫時間分配：前70%慢速移動10%距離，後30%加速完成90%距離
+      const slowPhasePercent = 60;     // 慢速階段佔總時間的百分比
+      const slowMoveDistance = 5;     // 慢速階段移動的距離百分比
+      const totalDuration = 700;       // 總動畫時間(ms)
+      
+      // 計算關鍵幀參數
+      const slowPhaseEnd = slowPhasePercent; // 70%時間點
+      const slowDistanceEnd = slowMoveDistance; // 10%距離點
+      
+      // 生成 CSS keyframes 字符串
+      const generateKeyframes = (animationName, startPos, slowEndPos, finalPos) => `
+        @keyframes ${animationName} {
+          0% { transform: translateX(${startPos}%); }
+          ${slowPhaseEnd}% { transform: translateX(${slowEndPos}%); }
+          100% { transform: translateX(${finalPos}%); }
+        }
+      `;
+      
+      // 動態生成所有動畫的 keyframes
+      const keyframes = [
+        generateKeyframes('slideOutToLeft', 0, -slowDistanceEnd, -100),
+        generateKeyframes('slideOutToRight', 0, slowDistanceEnd, 100),
+        generateKeyframes('slideInFromRight', 100, 100-slowDistanceEnd, 0),
+        generateKeyframes('slideInFromLeft', -100, -100+slowDistanceEnd, 0)
+      ].join('\n');
+      
+      // 自訂 cubic-bezier 曲線，實現前慢後快效果
+      const timingFunction = 'cubic-bezier(0.05, 0, 0.2, 1)';
+      
+      return {
+        duration: totalDuration,
+        timingFunction,
+        keyframes,
+        slowPhasePercent,
+        slowMoveDistance
+      };
+    }, []);
+
+    // 應用動畫配置到 DOM
+    const applySlideAnimationStyles = React.useCallback(() => {
+      const config = getSlideAnimationConfig();
+      
+      // 移除舊的動畫樣式
+      const oldStyle = document.getElementById('custom-slide-animation');
+      if (oldStyle) {
+        oldStyle.remove();
+      }
+      
+      // 創建新的動畫樣式
+      const style = document.createElement('style');
+      style.id = 'custom-slide-animation';
+      style.textContent = config.keyframes;
+      document.head.appendChild(style);
+      
+      console.log(`🎬 滑動動畫配置已更新: 前${config.slowPhasePercent}%時間移動${config.slowMoveDistance}%距離`);
+      
+      return config;
+    }, [getSlideAnimationConfig]);
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
     const [fastAnimationLevel, setFastAnimationLevel] = React.useState(1); // 1-5 漸進式減速級別
@@ -15,6 +75,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 預載入池管理
     const [preloadedImages, setPreloadedImages] = React.useState(new Map());
+    
+    // 動畫配置狀態
+    const [animationConfig, setAnimationConfig] = React.useState(null);
 
     // 使用共用的價位標籤
     const priceLabels = window.getPriceLabels();
@@ -179,13 +242,20 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       setSlideDirection(direction);
       setIsSliding(true);
 
-      // 300ms後完成動畫
+      // 使用動態配置的動畫時間
+      const currentConfig = getSlideAnimationConfig();
       setTimeout(() => {
         setIsSliding(false);
         setCurrentImage(null);
         setNextImage(null);
-      }, 300);
-    }, [finalRestaurant, isSliding, isSpinning, preloadedImages]);
+      }, currentConfig.duration);
+    }, [finalRestaurant, isSliding, isSpinning, preloadedImages, getSlideAnimationConfig]);
+
+    // 初始化動畫配置
+    React.useEffect(() => {
+      const config = applySlideAnimationStyles();
+      setAnimationConfig(config);
+    }, []); // 只在組件載入時執行一次
 
     // 初始預載入：完全套用測試檔成功經驗 - 先載下一張，完成後載5張池
     React.useEffect(() => {
@@ -583,7 +653,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: 'translateX(0)',
-                      animation: slideDirection === 'left' ? 'slideOutToLeft 300ms ease-out forwards' : 'slideOutToRight 300ms ease-out forwards',
+                      animation: slideDirection === 'left' 
+                        ? `slideOutToLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
+                        : `slideOutToRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 1
                     }}
                   />
@@ -597,7 +669,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
-                      animation: slideDirection === 'left' ? 'slideInFromRight 300ms ease-out forwards' : 'slideInFromLeft 300ms ease-out forwards',
+                      animation: slideDirection === 'left' 
+                        ? `slideInFromRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
+                        : `slideInFromLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 2
                     }}
                   />

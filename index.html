@@ -122,10 +122,15 @@
 
         /* 注意：實際使用的動畫由 JavaScript 動態生成：scrollFastDynamic 和 scrollSlowStopDynamic */
 
-        /* 滑動轉場動畫 */
+        /* 滑動轉場動畫 - 漸快效果 (慢開始，後加速) */
         @keyframes slideInFromRight {
             0% {
                 transform: translateX(100%);
+                animation-timing-function: ease-in;
+            }
+            40% {
+                transform: translateX(60%);
+                animation-timing-function: ease-in;
             }
             100% {
                 transform: translateX(0);
@@ -135,6 +140,11 @@
         @keyframes slideInFromLeft {
             0% {
                 transform: translateX(-100%);
+                animation-timing-function: ease-in;
+            }
+            40% {
+                transform: translateX(-60%);
+                animation-timing-function: ease-in;
             }
             100% {
                 transform: translateX(0);
@@ -144,6 +154,11 @@
         @keyframes slideOutToLeft {
             0% {
                 transform: translateX(0);
+                animation-timing-function: ease-in;
+            }
+            40% {
+                transform: translateX(-40%);
+                animation-timing-function: ease-in;
             }
             100% {
                 transform: translateX(-100%);
@@ -153,6 +168,11 @@
         @keyframes slideOutToRight {
             0% {
                 transform: translateX(0);
+                animation-timing-function: ease-in;
+            }
+            40% {
+                transform: translateX(40%);
+                animation-timing-function: ease-in;
             }
             100% {
                 transform: translateX(100%);
