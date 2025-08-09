@@ -963,8 +963,17 @@ function updateRestaurantCache(restaurants) {
           website: restaurant.website,
           googleMapsUrl: restaurant.googleMapsUrl,
           businessStatus: restaurant.businessStatus,
-          operatingStatus: restaurant.operatingStatus
-          // 注意：不存儲 detailsCache，避免包含已棄用的 Google Places API 屬性
+          operatingStatus: restaurant.operatingStatus,
+          // 保留營業時間資訊，但清理已棄用屬性
+          detailsCache: restaurant.detailsCache ? {
+            opening_hours: restaurant.detailsCache.opening_hours ? {
+              periods: restaurant.detailsCache.opening_hours.periods,
+              weekday_text: restaurant.detailsCache.opening_hours.weekday_text,
+              isOpen: restaurant.detailsCache.opening_hours.isOpen
+              // 不包含已棄用的 open_now, utc_offset 等屬性
+            } : null,
+            utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes
+          } : null
         };
         history.cached_restaurants.push(cleanRestaurant);
       }
