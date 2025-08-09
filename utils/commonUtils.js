@@ -49,18 +49,12 @@ window.renderStars = function(rating) {
 
 // 導航URL生成函數 - 統一的導航URL生成邏輯
 window.getDirectionsUrl = function(restaurant, userLocation, userAddress, language = 'zh') {
-  console.log('🗺️ 生成導航URL，當前userLocation:', userLocation);
-  console.log('🗺️ 當前userAddress:', userAddress);
-  console.log('🗺️ 餐廳地址:', restaurant.address);
-  
   // 優先使用userAddress作為起點地址
   if (userAddress && restaurant.address) {
     const origin = encodeURIComponent(userAddress);
     const destination = encodeURIComponent(restaurant.address);
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-    console.log('🎯 最終導航URL:', finalUrl);
-    console.log('🎯 導航起點地址:', userAddress);
-    console.log('🎯 導航終點地址:', restaurant.address);
+    console.log(`🎯 導航: ${userAddress} → ${restaurant.address}`);
     return finalUrl;
   }
 
@@ -69,9 +63,7 @@ window.getDirectionsUrl = function(restaurant, userLocation, userAddress, langua
     const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
     const destination = encodeURIComponent(restaurant.address);
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-    console.log('🎯 使用座標的導航URL:', finalUrl);
-    console.log('🎯 導航起點座標:', userLocation);
-    console.log('🎯 導航終點地址:', restaurant.address);
+    console.log(`🎯 導航: 座標(${userLocation.lat},${userLocation.lng}) → ${restaurant.address}`);
     return finalUrl;
   }
 

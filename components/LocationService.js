@@ -201,7 +201,7 @@ function createLocationService() {
         // 初次載入時自動執行餐廳搜索 - 確保userLocation已設定
         if (isInitialLoad && userLocation) {
           setIsInitialLoad(false);
-          console.log('🎯 初次載入，自動搜索餐廳...', { userLocation });
+          console.log('🎯 初次載入，自動搜索餐廳...');
           setTimeout(() => {
             handleSpin();
           }, 500); // 延遲500ms確保UI已更新
@@ -213,7 +213,7 @@ function createLocationService() {
       // 即使地址獲取失敗，如果是初次載入也要嘗試搜索餐廳
       if (isInitialLoad && userLocation) {
         setIsInitialLoad(false);
-        console.log('🎯 初次載入（地址失敗），仍自動搜索餐廳...', { userLocation });
+        console.log('🎯 初次載入，自動搜索餐廳...（地址獲取失敗）');
         setTimeout(() => {
           handleSpin();
         }, 500);

@@ -133,7 +133,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 預載入池管理 - 套用測試版本成功經驗：維持5張圖片
     const managePreloadPool = React.useCallback((currentRestaurant, restaurantHistory = []) => {
-      console.log(`🔄 管理預載入池，當前餐廳: ${currentRestaurant?.name}`);
 
       setPreloadedImages(prevPool => {
         const newPool = new Map();
@@ -177,22 +176,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             // 保留已存在的圖片或預載入新圖片
             if (prevPool.has(url)) {
               newPool.set(url, prevPool.get(url));
-              console.log(`♻️ 保留已預載入圖片: ${restaurant.name}`);
             } else {
               // 標記需要預載入，但不等待
               preloadImage(url).then(img => {
-                console.log(`✅ 新圖片預載入完成: ${restaurant.name}`);
                 setPreloadedImages(current => new Map(current).set(url, img));
               }).catch(error => {
-                console.warn(`❌ 圖片預載入失敗 (${restaurant.name}):`, error.message);
+                console.warn(`❌ 預載入失敗 (${restaurant.name}):`, error.message);
               });
-              console.log(`⏳ 開始預載入新圖片: ${restaurant.name}`);
             }
           }
         }
         
-        console.log(`📊 預載入池更新 - 保留: ${newPool.size}張, 清除: ${prevPool.size - newPool.size}張`);
-        console.log(`📋 當前範圍: [${Math.max(0, currentIndex-6)} 到 ${currentIndex+6}]`);
+        // 一行總結顯示預載入池狀態
+        console.log(`🔄 預載入池: ${newPool.size}張 (${currentRestaurant?.name || '無餐廳'})`);
         return newPool;
       });
     }, [selectedMealTime]);
@@ -226,14 +222,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const currentImg = getCurrentImageUrl();
       const newImg = getNewImageUrl();
 
-      // 檢查新圖片是否已預載入
-      if (newImg && preloadedImages.has(newImg)) {
-        console.log('✅ [SlotMachine] 新圖片已預載入，立即開始滑動');
-      } else if (newImg) {
-        console.log('⏳ [SlotMachine] 新圖片未預載入，緊急預載入中...');
+      // 檢查新圖片是否已預載入，必要時緊急預載入
+      if (newImg && !preloadedImages.has(newImg)) {
         // 緊急預載入，但不等待
         preloadImage(newImg).catch(error => {
-          console.warn('❌ [SlotMachine] 緊急預載入失敗:', error.message);
+          console.warn('❌ 緊急預載入失敗:', error.message);
         });
       }
 
@@ -260,7 +253,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 初始預載入：完全套用測試檔成功經驗 - 先載下一張，完成後載5張池
     React.useEffect(() => {
       const initializePreloading = async () => {
-        console.log('🚀 [SlotMachine] 初始化預載入...');
+        console.log('🚀 初始化預載入...');
 
         // 1. 先預載下一張（還沒顯示的下一張餐廳）
         let nextRestaurant = null;
@@ -330,14 +323,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [finalRestaurant, restaurantHistory, managePreloadPool]);
 
-    // 預載入池變更時的日誌（調試用）
+    // 預載入池變更時的簡化日誌
     React.useEffect(() => {
-      console.log(`📊 [SlotMachine] 預載入池大小變更: ${preloadedImages.size} 張`);
       if (preloadedImages.size > 0) {
-        const urls = Array.from(preloadedImages.keys());
-        console.log(`📋 [SlotMachine] 預載入池內容:`, urls.map(url => url.split('?')[0]).join(', '));
+        console.log(`📊 預載入池: ${preloadedImages.size}張圖片已就緒`);
       }
-    }, [preloadedImages]);
+    }, [preloadedImages.size]); // 只在大小變更時觸發
 
     // 儲存上一個餐廳的引用，用於滑動轉場時的圖片比較
     const previousRestaurant = React.useRef(finalRestaurant);
