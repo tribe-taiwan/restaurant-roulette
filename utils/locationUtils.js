@@ -996,7 +996,7 @@ function getAvailableRestaurantsFromCache(selectedMealTime) {
     const history = getRestaurantHistory();
     
     if (!history || !history.cached_restaurants || history.cached_restaurants.length === 0) {
-      console.log('📝 快取中沒有餐廳資料');
+      // 只在首次或重要狀態變化時顯示
       return [];
     }
 
@@ -1194,7 +1194,7 @@ window.isRestaurantOpenInTimeSlot = isRestaurantOpenInTimeSlot; // 用於測試
 window.clearRestaurantHistory = function() {
   try {
     localStorage.removeItem('restaurant_history');
-    console.log('🗑️ 已清除餐廳歷史記錄（條件變化）');
+    // 歷史記錄已清除（靜默）
   } catch (error) {
     console.warn('⚠️ 清除餐廳歷史記錄失敗:', error);
   }

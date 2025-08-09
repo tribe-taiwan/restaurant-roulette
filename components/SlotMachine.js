@@ -142,12 +142,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         const currentIndex = allRestaurants.length - 1; // 當前餐廳在歷史的最後
         
         // 預載入範圍：前10家（歷史）+ 當前 + 後10家（候補）
+        let skippedNegativeCount = 0;
         for (let offset = -10; offset <= 10; offset++) {
           const index = currentIndex + offset;
           
-          // 跳過負數索引
+          // 跳過負數索引（統計數量）
           if (index < 0) {
-            console.log(`⏭️ 跳過負數索引 ${index}`);
+            skippedNegativeCount++;
             continue;
           }
           
@@ -188,7 +189,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         }
         
         // 一行總結顯示預載入池狀態
-        console.log(`🔄 預載入池: ${newPool.size}張 (${currentRestaurant?.name || '無餐廳'})`);
+        const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
+        console.log(`🔄 預載入池: ${newPool.size}張 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
         return newPool;
       });
     }, [selectedMealTime]);
@@ -316,7 +318,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 餐廳變更時管理預載入池 - 作為備用
     React.useEffect(() => {
       if (finalRestaurant) {
-        console.log('🔄 [SlotMachine] 餐廳變更備用處理:', finalRestaurant.name);
+        // 餐廳變更備用處理（靜默）
         
         // 備用預載入池管理
         managePreloadPool(finalRestaurant, restaurantHistory);

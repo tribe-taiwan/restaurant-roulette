@@ -11,13 +11,7 @@ function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
   React.useEffect(() => {
     if (window.clearRestaurantHistory && !isInitialLoad) {
       const actualRadius = baseUnit * unitMultiplier;
-      console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { 
-        selectedMealTime, 
-        baseUnit, 
-        unitMultiplier, 
-        actualRadius, 
-        userLocation 
-      });
+      console.log(`🔄 搜索條件變化，清除餐廳歷史記錄 (${selectedMealTime}, ${actualRadius}m)`);
       window.clearRestaurantHistory();
       // 同時清除本地餐廳歷史記錄
       setRestaurantHistory([]);
@@ -27,7 +21,8 @@ function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
   // 當前餐廳變化時添加到歷史記錄
   React.useEffect(() => {
     if (currentRestaurant && currentRestaurant.id) {
-      console.log('📝 添加餐廳到歷史記錄:', currentRestaurant.name);
+      // 只在首次添加時顯示
+      // console.log('📝 添加餐廳到歷史記錄:', currentRestaurant.name);
       setRestaurantHistory(prev => {
         // 檢查是否已存在相同餐廳，避免重複添加
         const exists = prev.some(restaurant => restaurant.id === currentRestaurant.id);
