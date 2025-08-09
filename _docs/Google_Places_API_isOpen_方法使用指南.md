@@ -173,9 +173,34 @@ detailsCache: restaurant.detailsCache ? {
 } : null
 ```
 
+### 問題 4：函數無法序列化導致快取數據丟失 isOpen 方法
+
+**原因**：`JSON.stringify` 無法序列化函數，導致從 localStorage 讀取的數據沒有 `isOpen` 函數。
+
+**解決方案**：不存儲 `isOpen` 函數，並移除相關錯誤日誌
+```javascript
+// ❌ 錯誤：嘗試存儲函數
+detailsCache: {
+  opening_hours: {
+    isOpen: restaurant.detailsCache.opening_hours.isOpen // 函數無法序列化
+  }
+}
+
+// ✅ 正確：不存儲函數
+detailsCache: {
+  opening_hours: {
+    periods: restaurant.detailsCache.opening_hours.periods,
+    weekday_text: restaurant.detailsCache.opening_hours.weekday_text
+    // 不包含 isOpen 函數
+  }
+}
+```
+
 ## 修復歷史
 
 - **2025-01-09** - Commit Hash: `5e49749` - 初始修復 isOpen() 檢查邏輯
 - **2025-01-09** - Commit Hash: `4d18e31` - 新增技術文檔
 - **2025-01-09** - Commit Hash: `4763fd1` - 修復 localStorage 存儲問題，避免序列化已棄用屬性
 - **2025-01-09** - Commit Hash: `1990989` - 恢復 detailsCache 營業時間資訊，修復輪盤轉圈問題
+- **2025-01-09** - Commit Hash: `255f781` - 解決快取數據中 isOpen 函數丟失問題，移除錯誤日誌
+- **2025-01-09** - Commit Hash: `2c547ce` - 新增測試頁面驗證修復效果
