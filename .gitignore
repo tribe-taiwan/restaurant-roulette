@@ -41,9 +41,7 @@ yarn-error.log*
 
 # 其他
 _ignore
-_docs
 _test
-*.md
 *.zip
 *.url
 *.lnk
