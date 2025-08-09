@@ -25,7 +25,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         generateKeyframes('slideOutToLeft', 0, -slowDistanceEnd, -100),
         generateKeyframes('slideOutToRight', 0, slowDistanceEnd, 100),
         generateKeyframes('slideInFromRight', 100, 100-slowDistanceEnd, 0),
-        generateKeyframes('slideInFromLeft', -100, -100+slowDistanceEnd, 0)
+        generateKeyframes('slideInFromLeft', -100, -100+slowDistanceEnd, 0),
+        // 🎯 添加元素淡出動畫 - 柔和漸隱
+        `@keyframes fadeOutSlide {
+          0% { 
+            opacity: 1; 
+            transform: scale(1); 
+          }
+          50% { 
+            opacity: 0.6; 
+            transform: scale(0.98); 
+          }
+          100% { 
+            opacity: 0; 
+            transform: scale(0.95); 
+          }
+        }`
       ].join('\n');
       
       // 自訂 cubic-bezier 曲線，實現前慢後快效果
@@ -195,6 +210,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     }, [selectedMealTime]);
 
+    // 保存當前餐廳資料用於滑動轉場
+    const [currentRestaurantData, setCurrentRestaurantData] = React.useState(null);
+    const [nextRestaurantData, setNextRestaurantData] = React.useState(null);
+
     // 滑動轉場函數
     const triggerSlideTransition = React.useCallback((newRestaurant, direction = 'left') => {
       // 🔄 保留滑動轉場的關鍵LOG，因為這是我們最近在偵錯的功能
@@ -232,6 +251,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         });
       }
 
+      // 💡 保存當前和新餐廳資料，實現正確的滑動轉場
+      setCurrentRestaurantData(finalRestaurant);  // 原餐廳跟著原圖滑出
+      setNextRestaurantData(newRestaurant);        // 新餐廳跟著新圖滑入
       setCurrentImage(currentImg);
       setNextImage(newImg);
       setSlideDirection(direction);
@@ -243,6 +265,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setIsSliding(false);
         setCurrentImage(null);
         setNextImage(null);
+        setCurrentRestaurantData(null); // 清除保存的餐廳資料
+        setNextRestaurantData(null);
       }, currentConfig.duration);
     }, [finalRestaurant, isSliding, isSpinning, preloadedImages, getSlideAnimationConfig]);
 
@@ -651,7 +675,68 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         : `slideOutToRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 1
                     }}
-                  />
+                  >
+                    {/* 當前餐廳的UI元素 - 原餐廳的資料跟著原圖片一起滑出 */}
+                    {currentRestaurantData && (
+                      <>
+                        {/* 餐廳名稱和距離 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                          <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
+                            {currentRestaurantData.name_zh || currentRestaurantData.name}
+                          </div>
+                          {currentRestaurantData.name_en && currentRestaurantData.name_en !== (currentRestaurantData.name_zh || currentRestaurantData.name) && (
+                            <div className="text-lg text-gray-200 drop-shadow mb-2">
+                              {currentRestaurantData.name_en}
+                            </div>
+                          )}
+                          <div className="text-sm text-white drop-shadow">
+                            {currentRestaurantData.distance && (
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="icon-map text-sm"></div>
+                                <span>{currentRestaurantData.distance} km</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* 價位標籤 */}
+                        {currentRestaurantData.priceLevel && (
+                          <div className="absolute bottom-10 left-4 pointer-events-none">
+                            <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
+                              {priceLabels[language]?.[currentRestaurantData.priceLevel] || priceLabels.en[currentRestaurantData.priceLevel]}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 評分和類型標籤 */}
+                        <div className="absolute bottom-2 left-4 pointer-events-none">
+                          <div className="flex items-center gap-2">
+                            {/* 評分 */}
+                            {currentRestaurantData.rating && currentRestaurantData.rating > 0 && (
+                              <div className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                <span className="flex items-center">{renderStars(currentRestaurantData.rating)}</span>
+                                <span>{currentRestaurantData.rating}</span>
+                                {currentRestaurantData.reviewCount && currentRestaurantData.reviewCount > 0 && (
+                                  <span>({currentRestaurantData.reviewCount.toLocaleString()})</span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* 餐廳類型標籤 */}
+                            {currentRestaurantData.cuisine && currentRestaurantData.cuisine.length > 0 && (
+                              <div className="flex gap-1">
+                                {currentRestaurantData.cuisine.slice(0, 2).map((type, index) => (
+                                  <div key={index} className="bg-black bg-opacity-50 text-white px-1.5 py-0.5 rounded text-xs">
+                                    {type}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
                 {/* 下一張圖片 - 從右側滑入 */}
                 {nextImage && (
@@ -667,7 +752,68 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         : `slideInFromLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 2
                     }}
-                  />
+                  >
+                    {/* 新餐廳的UI元素 - 跟著新圖片一起滑入 */}
+                    {nextRestaurantData && (
+                      <>
+                        {/* 餐廳名稱和距離 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                          <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
+                            {nextRestaurantData.name_zh || nextRestaurantData.name}
+                          </div>
+                          {nextRestaurantData.name_en && nextRestaurantData.name_en !== (nextRestaurantData.name_zh || nextRestaurantData.name) && (
+                            <div className="text-lg text-gray-200 drop-shadow mb-2">
+                              {nextRestaurantData.name_en}
+                            </div>
+                          )}
+                          <div className="text-sm text-white drop-shadow">
+                            {nextRestaurantData.distance && (
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="icon-map text-sm"></div>
+                                <span>{nextRestaurantData.distance} km</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* 價位標籤 */}
+                        {nextRestaurantData.priceLevel && (
+                          <div className="absolute bottom-10 left-4 pointer-events-none">
+                            <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
+                              {priceLabels[language]?.[nextRestaurantData.priceLevel] || priceLabels.en[nextRestaurantData.priceLevel]}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 評分和類型標籤 */}
+                        <div className="absolute bottom-2 left-4 pointer-events-none">
+                          <div className="flex items-center gap-2">
+                            {/* 評分 */}
+                            {nextRestaurantData.rating && nextRestaurantData.rating > 0 && (
+                              <div className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                <span className="flex items-center">{renderStars(nextRestaurantData.rating)}</span>
+                                <span>{nextRestaurantData.rating}</span>
+                                {nextRestaurantData.reviewCount && nextRestaurantData.reviewCount > 0 && (
+                                  <span>({nextRestaurantData.reviewCount.toLocaleString()})</span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* 餐廳類型標籤 */}
+                            {nextRestaurantData.cuisine && nextRestaurantData.cuisine.length > 0 && (
+                              <div className="flex gap-1">
+                                {nextRestaurantData.cuisine.slice(0, 2).map((type, index) => (
+                                  <div key={index} className="bg-black bg-opacity-50 text-white px-1.5 py-0.5 rounded text-xs">
+                                    {type}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (
@@ -729,7 +875,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   );
                 })
               ) : finalRestaurant ? (
-                <div className="text-center py-4">
+                <div className="w-full h-64 flex flex-col items-center justify-center flex-shrink-0 text-center">
                   <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
                     {finalRestaurant.name_zh || finalRestaurant.name}
                   </div>
@@ -748,23 +894,25 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                 </div>
               ) : (
-                <div className="text-xl font-bold text-white drop-shadow-lg py-8 flex items-center justify-center gap-2">
-                  {/* 🎯 如果有slot圖片，顯示「打烊了」，否則顯示原始訊息 */}
-                  {slotImages.length > 0 ? (
-                    <>
-                      😴
-                      {language === 'zh' ? '打烊了' : 
-                       language === 'ja' ? '閉店' :
-                       language === 'ko' ? '영업종료' : 
-                       language === 'es' ? 'Cerrado' :
-                       language === 'fr' ? 'Fermé' : 'Closed'}
-                    </>
-                  ) : (
-                    <>
-                      😋
-                      {translations.spinButton}
-                    </>
-                  )}
+                <div className="w-full h-64 flex flex-col items-center justify-center flex-shrink-0 text-center">
+                  <div className="text-xl font-bold text-white drop-shadow-lg flex items-center justify-center gap-2">
+                    {/* 🎯 如果有slot圖片，顯示「打烊了」，否則顯示原始訊息 */}
+                    {slotImages.length > 0 ? (
+                      <>
+                        😴
+                        {language === 'zh' ? '打烊了' : 
+                         language === 'ja' ? '閉店' :
+                         language === 'ko' ? '영업종료' : 
+                         language === 'es' ? 'Cerrado' :
+                         language === 'fr' ? 'Fermé' : 'Closed'}
+                      </>
+                    ) : (
+                      <>
+                        😋
+                        {translations.spinButton}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
