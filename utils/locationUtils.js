@@ -306,8 +306,6 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 
         // 檢查 isOpen() 是否返回有效結果（不是 undefined）
         if (isOpenNow !== undefined) {
-          console.log('🕐 使用 Google Places API isOpen() 方法結果:', isOpenNow);
-
           // 如果營業中，檢查20分鐘緩衝區
           if (isOpenNow) {
             const minutesUntilClose = calculateMinutesUntilClose(openingHours);
@@ -315,6 +313,9 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
               console.log(`⚠️ 餐廳將在${minutesUntilClose}分鐘後關門，排除此餐廳`);
               return false;
             }
+          } else {
+            // 只在關店時顯示日誌
+            console.log('🕐 餐廳已關門，跳過');
           }
 
           return isOpenNow;
@@ -759,7 +760,6 @@ function getBusinessStatus(openingHours, language = 'zh') {
 
       // 檢查 isOpen() 是否返回有效結果（不是 undefined）
       if (isOpenNow !== undefined) {
-        console.log('🕐 getBusinessStatus 使用 isOpen() 方法結果:', isOpenNow);
         return {
           status: isOpenNow ? 'open' : 'closed',
           message: isOpenNow ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
