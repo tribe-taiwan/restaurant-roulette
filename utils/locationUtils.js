@@ -633,8 +633,9 @@ async function formatRestaurantData(place) {
     // 使用中文資訊作為主要資訊
     const details = detailsZh;
     
-    // 處理照片
-    let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
+    // 處理照片 如果餐廳有Google Places API提供的照片，會使用真實照片；如果沒有，就使用這張Unsplash的預設餐廳圖片。
+    // let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
+    let imageUrl = './assets/image/banner.jpg';
     if (place.photos && place.photos.length > 0) {
       imageUrl = place.photos[0].getUrl({ maxWidth: 800 });
     }

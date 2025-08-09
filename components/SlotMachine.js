@@ -1024,7 +1024,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             {finalRestaurant && !isSpinning && candidateList.length < 9 && (
               <button
                 onClick={onAddCandidate}
-                className="bg-blue-600 text-white w-12 h-12 min-w-[3rem] rounded-full shadow-lg transition-all duration-200 active:scale-95 active:bg-blue-500 flex items-center justify-center flex-shrink-0"
+                className="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 min-w-[3rem] rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 active:bg-blue-500 flex items-center justify-center flex-shrink-0"
                 style={{
                   touchAction: 'manipulation'
                 }}
