@@ -494,7 +494,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
         const request = {
           location: new google.maps.LatLng(area.lat, area.lng),
           radius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius, // 使用用戶滑軌設定的完整範圍
-          type: type
+          type: type,
+          language: 'zh-TW' // 設定中文為主要語言
         };
         
         try {
@@ -576,9 +577,10 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
 /**
  * 獲取地點詳細資訊
  * @param {string} placeId - Google Places ID
+ * @param {string} language - 語言代碼 (zh-TW, en, ja, ko)
  * @returns {Promise<Object>} 詳細資訊
  */
-async function getPlaceDetails(placeId) {
+async function getPlaceDetails(placeId, language = 'zh-TW') {
   try {
     if (!placesService) {
       await initializeGoogleMaps();
@@ -586,7 +588,8 @@ async function getPlaceDetails(placeId) {
     
     const request = {
       placeId: placeId,
-      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url', 'utc_offset_minutes']
+      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url', 'utc_offset_minutes'],
+      language: language
     };
     
     return new Promise((resolve) => {
@@ -615,8 +618,12 @@ async function formatRestaurantData(place) {
   try {
     // 移除格式化過程日誌
 
-    // 獲取詳細資訊（如果有快取則使用快取）
-    const details = place.detailsCache || await getPlaceDetails(place.place_id);
+    // 獲取中文和英文詳細資訊
+    const detailsZh = place.detailsCache || await getPlaceDetails(place.place_id, 'zh-TW');
+    const detailsEn = await getPlaceDetails(place.place_id, 'en');
+    
+    // 使用中文資訊作為主要資訊
+    const details = detailsZh;
     
     // 處理照片
     let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
@@ -670,6 +677,9 @@ async function formatRestaurantData(place) {
     const formattedData = {
       id: place.place_id,
       name: place.name,
+      // 添加中文和英文名稱
+      name_zh: (detailsZh && detailsZh.name) || place.name,
+      name_en: (detailsEn && detailsEn.name) || place.name,
       lat: place.geometry.location.lat(),
       lng: place.geometry.location.lng(),
       rating: Math.round((place.rating || 0) * 10) / 10, // 保留一位小數

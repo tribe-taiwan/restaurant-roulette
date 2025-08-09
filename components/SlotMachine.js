@@ -640,9 +640,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       {/* 如果是餐廳圖片，添加資訊覆蓋層 */}
                       {isRestaurantImage && (
                         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center">
-                          <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
-                            {finalRestaurant.name}
+                          <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
+                            {finalRestaurant.name_zh || finalRestaurant.name}
                           </div>
+                          {finalRestaurant.name_en && finalRestaurant.name_en !== (finalRestaurant.name_zh || finalRestaurant.name) && (
+                            <div className="text-lg text-gray-200 drop-shadow mb-2">
+                              {finalRestaurant.name_en}
+                            </div>
+                          )}
                           <div className="text-sm text-white drop-shadow">
                             {finalRestaurant.distance && (
                               <div className="flex items-center justify-center gap-1">
@@ -658,9 +663,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 })
               ) : finalRestaurant ? (
                 <div className="text-center py-4">
-                  <div className="text-2xl font-bold text-white drop-shadow-lg mb-2">
-                    {finalRestaurant.name}
+                  <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
+                    {finalRestaurant.name_zh || finalRestaurant.name}
                   </div>
+                  {finalRestaurant.name_en && finalRestaurant.name_en !== (finalRestaurant.name_zh || finalRestaurant.name) && (
+                    <div className="text-lg text-gray-200 drop-shadow mb-2">
+                      {finalRestaurant.name_en}
+                    </div>
+                  )}
                   <div className="text-sm text-white drop-shadow">
                     {finalRestaurant.distance && (
                       <div className="flex items-center justify-center gap-1">
