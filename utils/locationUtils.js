@@ -944,7 +944,29 @@ function updateRestaurantCache(restaurants) {
     restaurants.forEach(restaurant => {
       const exists = history.cached_restaurants.some(cached => cached.id === restaurant.id);
       if (!exists) {
-        history.cached_restaurants.push(restaurant);
+        // 只存儲必要的餐廳資訊，避免存儲包含已棄用屬性的原始 Google Places 物件
+        const cleanRestaurant = {
+          id: restaurant.id,
+          name: restaurant.name,
+          name_zh: restaurant.name_zh,
+          name_en: restaurant.name_en,
+          lat: restaurant.lat,
+          lng: restaurant.lng,
+          rating: restaurant.rating,
+          reviewCount: restaurant.reviewCount,
+          priceLevel: restaurant.priceLevel,
+          cuisine: restaurant.cuisine,
+          address: restaurant.address,
+          phone: restaurant.phone,
+          hours: restaurant.hours,
+          image: restaurant.image,
+          website: restaurant.website,
+          googleMapsUrl: restaurant.googleMapsUrl,
+          businessStatus: restaurant.businessStatus,
+          operatingStatus: restaurant.operatingStatus
+          // 注意：不存儲 detailsCache，避免包含已棄用的 Google Places API 屬性
+        };
+        history.cached_restaurants.push(cleanRestaurant);
       }
     });
 
