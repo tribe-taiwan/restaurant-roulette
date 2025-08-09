@@ -54,7 +54,6 @@ window.getDirectionsUrl = function(restaurant, userLocation, userAddress, langua
     const origin = encodeURIComponent(userAddress);
     const destination = encodeURIComponent(restaurant.address);
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-    console.log(`🎯 導航: ${userAddress} → ${restaurant.address}`);
     return finalUrl;
   }
 
@@ -63,7 +62,6 @@ window.getDirectionsUrl = function(restaurant, userLocation, userAddress, langua
     const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
     const destination = encodeURIComponent(restaurant.address);
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
-    console.log(`🎯 導航: 座標(${userLocation.lat},${userLocation.lng}) → ${restaurant.address}`);
     return finalUrl;
   }
 

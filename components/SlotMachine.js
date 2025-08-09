@@ -381,37 +381,59 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       "./assets/image/slot-machine/slot (6).jpg"
     ]);
 
-    // 自動偵測可用的slot圖片數量
+    // 自動偵測可用的slot圖片數量 - 支援多種格式且無數量限制
     const autoDetectSlotImages = React.useCallback(async () => {
       const basePath = './assets/image/slot-machine';
       const detectedImages = [];
-      let maxTries = 20; // 最多嘗試20張圖片
-
-      console.log('🔍 開始自動偵測slot圖片數量...');
-
-      for (let i = 1; i <= maxTries; i++) {
-        const imagePath = `${basePath}/slot (${i}).jpg`;
-        const encodedImagePath = encodeURI(imagePath);
+      const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+      
+      console.log('🔍 開始自動偵測slot圖片數量（支援多種格式）...');
+      
+      let i = 1;
+      while (true) {
+        let imageFound = false;
         
-        try {
-          const response = await fetch(encodedImagePath, { method: 'HEAD' });
-          if (response.ok) {
+        // 嘗試每種副檔名
+        for (const ext of extensions) {
+          const imagePath = `${basePath}/slot (${i})${ext}`;
+
+          try {
+            // 使用 Image 物件靜默檢查圖片，完全不會在 console 顯示 404
+            await new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve();
+              img.onerror = () => reject();
+              img.src = imagePath;
+            });
+
             detectedImages.push(imagePath);
-            // 移除找到圖片日誌
-          } else {
-            break;
+            imageFound = true;
+            break; // 找到就跳出副檔名迴圈
+          } catch (error) {
+            // 繼續嘗試下一個副檔名
           }
-        } catch (error) {
+        }
+        
+        if (!imageFound) {
+          console.log(`🏁 偵測完成，共找到 ${detectedImages.length} 張圖片 (slot (1) ~ slot (${detectedImages.length}))`);
+          break; // 沒找到任何格式的圖片，停止搜尋
+        }
+        
+        i++;
+        
+        // 安全上限，避免無限迴圈
+        if (i > 100) {
+          console.warn('⚠️ 達到圖片搜尋上限100張，停止搜尋');
           break;
         }
       }
-
-      // 移除偵測完成日誌
+      
+      console.log(`✅ 成功載入 ${detectedImages.length} 張slot圖片，支援格式: ${extensions.join(', ')}`);
       return detectedImages;
     }, []);
 
-    // 🎯 動態生成CSS動畫 - 修改為左右滑動動畫，與滑動轉場呼應
-    const createDynamicAnimation = React.useCallback((imageCount) => {
+    // 🎯 動態生成CSS動畫 - 修改為固定每張顯示時間的模式
+    const createDynamicAnimation = React.useCallback((imageCount, timePerImage = 0.3) => {
       const itemWidth = 256; // 每張圖片寬度（w-64 = 256px）
 
       // 🎯 使用原來的邏輯：slot圖片 + 前2張 + 餐廳圖片（保持相同效果）
@@ -421,12 +443,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       // 保持原來的70%位置計算方式
       const midPosition = Math.floor((totalImages - 3) * itemWidth);
 
+      // 🎯 新的動畫時間計算：每張圖片固定顯示時間
+      const fastTotalDuration = timePerImage * imageCount; // fast模式總時間
+      const slowTotalDuration = timePerImage * totalImages; // slow模式總時間
+      
       // 🎯 快速動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
       const fastScrollDistance = imageCount * itemWidth;
 
-      // 移除動態CSS計算日誌
+      console.log(`🎯 動畫參數: ${imageCount}張圖，每張${timePerImage}s，fast總時間${fastTotalDuration}s，slow總時間${slowTotalDuration}s`);
 
-      // 動態創建CSS keyframes - 改為左右滑動動畫
+      // 動態創建CSS keyframes - 使用新的時間計算
       const keyframes = `
         @keyframes scrollFastDynamic {
           0% {
@@ -450,6 +476,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             transform: translateX(-${finalPosition}px);
           }
         }
+        
+        /* 漸進式減速動畫 - 使用新的時間計算 */
+        .animate-scroll-fast-dynamic-1 { animation: scrollFastDynamic ${(fastTotalDuration * 0.8).toFixed(2)}s linear infinite; }
+        .animate-scroll-fast-dynamic-2 { animation: scrollFastDynamic ${(fastTotalDuration * 1.0).toFixed(2)}s linear infinite; }
+        .animate-scroll-fast-dynamic-3 { animation: scrollFastDynamic ${(fastTotalDuration * 1.2).toFixed(2)}s linear infinite; }
+        .animate-scroll-fast-dynamic-4 { animation: scrollFastDynamic ${(fastTotalDuration * 1.4).toFixed(2)}s linear infinite; }
+        .animate-scroll-fast-dynamic-5 { animation: scrollFastDynamic ${(fastTotalDuration * 1.6).toFixed(2)}s linear infinite; }
+        
+        /* 最終慢速動畫 */
+        .animate-scroll-slow-stop-dynamic { animation: scrollSlowStopDynamic ${slowTotalDuration.toFixed(2)}s ease-out forwards; }
       `;
 
       // 移除舊的動畫樣式
@@ -463,8 +499,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       style.id = 'dynamic-slot-animation';
       style.textContent = keyframes;
       document.head.appendChild(style);
-
-      // 移除CSS動畫生成日誌
+      
+      // 返回時間參數供其他地方使用
+      return {
+        fastDuration: fastTotalDuration,
+        slowDuration: slowTotalDuration,
+        timePerImage
+      };
     }, []);
 
     // 🎲 亂數排序函數 - 增加轉盤的隨機性
@@ -484,10 +525,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // 🎲 一開始就亂數排序圖片順序，增加隨機性
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
-          // 移除圖片數量更新日誌
           
-          // 🎯 根據偵測結果生成動態CSS動畫
-          createDynamicAnimation(detectedImages.length);
+          // 🎯 根據偵測結果生成動態CSS動畫（預設0.3秒/張）
+          createDynamicAnimation(detectedImages.length, 0.3);
         }
       });
     }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
@@ -576,11 +616,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           setScrollingNames(finalSequence);
 
-          // 設置動畫結束計時器（1秒後結束，對應CSS動畫時間）
+          // 設置動畫結束計時器 - 使用新的時間計算
+          const animationResult = createDynamicAnimation(slotImages.length, 0.3);
+          const slowAnimationDuration = animationResult.slowDuration * 1000; // 轉換為毫秒
+          
           setTimeout(() => {
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
-          }, 1050); // 稍微延長一點確保動畫完成
+          }, slowAnimationDuration + 50); // 稍微延長一點確保動畫完成
 
         } else {
           // =====================================
@@ -617,7 +660,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setFastAnimationLevel(2);
         }, 300));
 
-        // 之後每0.4秒切換到下一級
+        // 之後每0.3秒切換到下一級
         timeoutIds.push(setTimeout(() => {
           setFastAnimationLevel(3);
         }, 700));

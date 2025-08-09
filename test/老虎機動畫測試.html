@@ -90,18 +90,18 @@
                 <h2 class="text-xl font-bold mb-4">參數調整</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold mb-2">動畫持續時間 (秒)</label>
-                        <input type="range" id="durationSlider" min="0.2" max="3" step="0.1" value="1" 
+                        <label class="block text-sm font-bold mb-2">每張圖片顯示時間 (秒)</label>
+                        <input type="range" id="durationSlider" min="0.1" max="1.0" step="0.05" value="0.4" 
                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        <div class="text-center text-yellow-400" id="durationValue">1.0s</div>
+                        <div class="text-center text-yellow-400" id="durationValue">0.40s/張</div>
                     </div>
                     
                     <div>
                         <label class="block text-sm font-bold mb-2">動畫序列長度</label>
                         <input type="range" id="imageCountSlider" min="3" max="20" step="1" value="8" 
                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        <div class="text-center text-yellow-400" id="imageCountValue">1.0秒內顯示8張</div>
-                        <div class="text-xs text-gray-400 mt-1">控制動畫序列中的圖片總數</div>
+                        <div class="text-center text-yellow-400" id="imageCountValue">使用8張圖片</div>
+                        <div class="text-xs text-gray-400 mt-1">控制動畫序列中的圖片總數（總時間會自動計算）</div>
                     </div>
                     
                     <div>
@@ -186,18 +186,37 @@
             async loadImages() {
                 const basePath = '../assets/image/slot-machine';
                 const detectedImages = [];
+                const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
                 
-                // 自動偵測可用的slot圖片 (與生產模式相同)
-                for (let i = 1; i <= 20; i++) {
-                    const imagePath = `${basePath}/slot (${i}).jpg`;
-                    try {
-                        const response = await fetch(imagePath, { method: 'HEAD' });
-                        if (response.ok) {
-                            detectedImages.push(imagePath);
-                        } else {
-                            break;
+                // 自動偵測可用的slot圖片（支援多種格式，無數量限制）
+                let i = 1;
+                while (true) {
+                    let imageFound = false;
+                    
+                    // 嘗試每種副檔名
+                    for (const ext of extensions) {
+                        const imagePath = `${basePath}/slot (${i})${ext}`;
+                        try {
+                            const response = await fetch(imagePath, { method: 'HEAD' });
+                            if (response.ok) {
+                                detectedImages.push(imagePath);
+                                imageFound = true;
+                                break; // 找到就跳出副檔名迴圈
+                            }
+                        } catch (error) {
+                            // 繼續嘗試下一個副檔名
                         }
-                    } catch (error) {
+                    }
+                    
+                    if (!imageFound) {
+                        break; // 沒找到任何格式的圖片，停止搜尋
+                    }
+                    
+                    i++;
+                    
+                    // 安全上限，避免無限迴圈（但比原來的20張高很多）
+                    if (i > 100) {
+                        console.warn('⚠️ 達到圖片搜尋上限100張，停止搜尋');
                         break;
                     }
                 }
@@ -206,7 +225,7 @@
                 this.updateImageList();
                 this.generateSlotStrip();
                 
-                console.log(`🎰 載入了 ${this.images.length} 張slot圖片`);
+                console.log(`🎰 載入了 ${this.images.length} 張slot圖片，支援格式: ${extensions.join(', ')}`);
             }
             
             updateImageList() {
@@ -267,27 +286,29 @@
             }
             
             updateValues() {
-                const duration = parseFloat(this.durationSlider.value);
+                const timePerImage = parseFloat(this.durationSlider.value);
                 const imageCount = parseInt(this.imageCountSlider.value);
                 
-                this.durationValue.textContent = duration + 's';
-                this.imageCountValue.textContent = duration + '秒內顯示' + imageCount + '張';
+                // 計算總動畫時間 = 每張圖片顯示時間 × 圖片數量
+                const totalDuration = (timePerImage * imageCount).toFixed(2);
+                
+                this.durationValue.textContent = timePerImage.toFixed(2) + 's/張';
+                this.imageCountValue.textContent = '使用' + imageCount + '張圖片 (總時間' + totalDuration + 's)';
                 this.imageWidthValue.textContent = this.imageWidthSlider.value + 'px';
                 
-                // 更新關鍵指標：每張圖片顯示時間
-                const displayTimePerImage = (duration / imageCount).toFixed(2);
-                this.displayTimeIndicator.textContent = displayTimePerImage + 's';
+                // 更新關鍵指標：每張圖片顯示時間（現在就是用戶設定的值）
+                this.displayTimeIndicator.textContent = timePerImage.toFixed(2) + 's';
                 
                 // 根據速度調整容器邊框顏色和指標顏色
-                if (displayTimePerImage <= 0.2) {
+                if (timePerImage <= 0.2) {
                     // 太快，紅色
                     this.displayTimeIndicator.className = 'text-2xl font-bold text-red-300';
                     this.slotContainer.style.borderColor = '#ef4444'; // red-500
-                } else if (displayTimePerImage <= 0.3) {
+                } else if (timePerImage <= 0.3) {
                     // 快，黃色
                     this.displayTimeIndicator.className = 'text-2xl font-bold text-yellow-300';
                     this.slotContainer.style.borderColor = '#eab308'; // yellow-500
-                } else if (displayTimePerImage <= 0.5) {
+                } else if (timePerImage <= 0.5) {
                     // 理想，綠色
                     this.displayTimeIndicator.className = 'text-2xl font-bold text-green-300';
                     this.slotContainer.style.borderColor = '#22c55e'; // green-500
@@ -301,11 +322,14 @@
             updateAnimation() {
                 if (!this.isSpinning) return;
                 
-                const duration = parseFloat(this.durationSlider.value);
-                const imageWidth = parseInt(this.imageWidthSlider.value);
+                const timePerImage = parseFloat(this.durationSlider.value);
                 const imageCount = parseInt(this.imageCountSlider.value);
+                const imageWidth = parseInt(this.imageWidthSlider.value);
                 const timing = this.timingFunction.value;
                 const infinite = this.infiniteLoop.checked ? 'infinite' : 'forwards';
+                
+                // 計算總動畫時間 = 每張圖片顯示時間 × 圖片數量
+                const totalDuration = timePerImage * imageCount;
                 
                 // 計算移動距離 - 移動所有圖片的距離 (模擬fast模式)
                 const totalDistance = (imageCount - 1) * imageWidth;
@@ -323,7 +347,7 @@
                         100% { transform: translateX(-${totalDistance}px); }
                     }
                     .current-slot-animation {
-                        animation: currentSlotAnimation ${duration}s ${timing} ${infinite};
+                        animation: currentSlotAnimation ${totalDuration}s ${timing} ${infinite};
                     }
                 `;
                 document.head.appendChild(style);
@@ -350,28 +374,29 @@
             }
             
             updateTechInfo() {
-                const duration = parseFloat(this.durationSlider.value);
+                const timePerImage = parseFloat(this.durationSlider.value);
                 const imageCount = parseInt(this.imageCountSlider.value);
                 const imageWidth = parseInt(this.imageWidthSlider.value);
                 const timing = this.timingFunction.value;
                 const infinite = this.infiniteLoop.checked;
+                const totalDuration = timePerImage * imageCount;
                 const totalDistance = (imageCount - 1) * imageWidth;
                 
                 const info = {
                     "狀態": this.isSpinning ? "🎰 轉動中" : "⏹️ 停止",
-                    "動畫持續時間": duration + "s (整個滾動完成的時間)",
-                    "動畫序列長度": imageCount + "張 (" + duration + "秒內依序顯示" + imageCount + "張圖片)",
+                    "每張圖片顯示時間": timePerImage.toFixed(2) + "s (用戶設定的固定值)",
+                    "動畫總持續時間": totalDuration.toFixed(2) + "s (自動計算: " + timePerImage.toFixed(2) + "s × " + imageCount + "張)",
+                    "動畫序列長度": imageCount + "張 (依序顯示" + imageCount + "張圖片)",
                     "容器尺寸": "256px × 256px (正方形，與生產版本相同)",
                     "圖片寬度": imageWidth + "px (每張圖片的實際寬度)",
                     "動畫速度曲線": timing,
                     "無限循環": infinite ? "是 (永不停止)" : "否 (播放一次後停止)",
                     "圖片序列總寬度": (imageCount * imageWidth) + "px",
                     "動畫移動距離": totalDistance + "px (向左移動，滾動" + (imageCount-1) + "張圖片)",
-                    "實際載入圖片檔案": this.images.length + "張",
-                    "模擬模式": "FAST模式 (快速滾動所有圖片)",
-                    "每張圖片顯示時間": (duration / imageCount).toFixed(2) + "s",
-                    "滾動速度": (totalDistance / duration).toFixed(0) + "px/s",
-                    "CSS動畫宣告": `animation: slotAnimation ${duration}s ${timing} ${infinite ? 'infinite' : 'forwards'}`,
+                    "實際載入圖片檔案": this.images.length + "張 (支援.jpg/.jpeg/.png/.webp/.gif)",
+                    "模擬模式": "FAST模式 (快速滾動所有圖片，每張固定顯示時間)",
+                    "滾動速度": (totalDistance / totalDuration).toFixed(0) + "px/s",
+                    "CSS動畫宣告": `animation: slotAnimation ${totalDuration.toFixed(2)}s ${timing} ${infinite ? 'infinite' : 'forwards'}`,
                     "CSS關鍵幀定義": `@keyframes slotAnimation {\n  0% { transform: translateX(0); }\n  100% { transform: translateX(-${totalDistance}px); }\n}`,
                     "容器CSS設定": `width: 256px; height: 256px; overflow: hidden; (正方形)`,
                     "圖片CSS設定": `width: ${imageWidth}px; height: ${imageWidth}px; object-fit: cover;`
