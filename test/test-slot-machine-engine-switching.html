@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>老虎機轉動引擎切換測試</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* 基礎樣式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .control-panel {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.active {
+      background: rgba(76, 175, 80, 0.8);
+      border-color: rgba(76, 175, 80, 1);
+    }
+
+    .slot-machine {
+      width: 300px;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      margin: 0 auto 20px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 原版老虎機動畫 - 水平滑動 */
+    .original-engine .slot-content {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .original-engine .slot-item {
+      min-width: 300px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* 簡單轉圈動畫 */
+    .simple-engine .slot-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .simple-spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top: 8px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 原版動畫關鍵幀 */
+    @keyframes scrollFast {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-1500px); }
+    }
+
+    @keyframes scrollSlow {
+      0% { transform: translateX(0); }
+      70% { transform: translateX(-1000px); }
+      100% { transform: translateX(-1200px); }
+    }
+
+    .animate-fast {
+      animation: scrollFast 0.5s linear infinite;
+    }
+
+    .animate-slow {
+      animation: scrollSlow 2s ease-out forwards;
+    }
+
+    .status {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .info {
+      background: rgba(33, 150, 243, 0.2);
+      border-left: 4px solid #2196F3;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+
+    .warning {
+      background: rgba(255, 193, 7, 0.2);
+      border-left: 4px solid #FFC107;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // 模擬餐廳數據
+    const mockRestaurants = [
+      { id: 1, name: '鼎泰豐', image: '🥟', emoji: '🥟' },
+      { id: 2, name: '麥當勞', image: '🍟', emoji: '🍟' },
+      { id: 3, name: '星巴克', image: '☕', emoji: '☕' },
+      { id: 4, name: '肯德基', image: '🍗', emoji: '🍗' },
+      { id: 5, name: '必勝客', image: '🍕', emoji: '🍕' },
+    ];
+
+    // 老虎機引擎抽象類
+    class SlotMachineEngine {
+      constructor(containerRef, onComplete) {
+        this.containerRef = containerRef;
+        this.onComplete = onComplete;
+        this.isSpinning = false;
+      }
+
+      start(finalResult) {
+        if (this.isSpinning) return;
+        this.isSpinning = true;
+        this.spin(finalResult);
+      }
+
+      stop() {
+        this.isSpinning = false;
+        this.cleanup();
+      }
+
+      // 子類需要實現的方法
+      spin(finalResult) {
+        throw new Error('子類必須實現 spin 方法');
+      }
+
+      cleanup() {
+        // 清理工作，子類可以重寫
+      }
+    }
+
+    // 原版老虎機引擎 - 水平滾動
+    class OriginalSlotEngine extends SlotMachineEngine {
+      spin(finalResult) {
+        const container = this.containerRef.current;
+        if (!container) return;
+
+        container.className = 'slot-machine original-engine';
+        
+        // 創建滾動內容
+        const slotContent = document.createElement('div');
+        slotContent.className = 'slot-content';
+
+        // 生成隨機滾動序列 + 最終結果
+        const sequence = [];
+        
+        // 添加隨機項目
+        for (let i = 0; i < 8; i++) {
+          const randomRestaurant = mockRestaurants[Math.floor(Math.random() * mockRestaurants.length)];
+          sequence.push(randomRestaurant);
+        }
+        
+        // 添加最終結果
+        sequence.push(finalResult);
+
+        // 創建滾動元素
+        sequence.forEach((item, index) => {
+          const slotItem = document.createElement('div');
+          slotItem.className = 'slot-item';
+          slotItem.textContent = item.emoji;
+          slotContent.appendChild(slotItem);
+        });
+
+        container.innerHTML = '';
+        container.appendChild(slotContent);
+
+        // 開始快速動畫
+        slotContent.classList.add('animate-fast');
+
+        // 1秒後切換到慢速動畫
+        setTimeout(() => {
+          slotContent.classList.remove('animate-fast');
+          slotContent.classList.add('animate-slow');
+        }, 1000);
+
+        // 3秒後完成動畫
+        setTimeout(() => {
+          this.isSpinning = false;
+          this.onComplete && this.onComplete(finalResult);
+        }, 3000);
+      }
+
+      cleanup() {
+        const container = this.containerRef.current;
+        if (container) {
+          const slotContent = container.querySelector('.slot-content');
+          if (slotContent) {
+            slotContent.classList.remove('animate-fast', 'animate-slow');
+          }
+        }
+      }
+    }
+
+    // 簡單轉圈引擎
+    class SimpleSpinEngine extends SlotMachineEngine {
+      spin(finalResult) {
+        const container = this.containerRef.current;
+        if (!container) return;
+
+        container.className = 'slot-machine simple-engine';
+        
+        // 創建轉圈內容
+        const slotContent = document.createElement('div');
+        slotContent.className = 'slot-content';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'simple-spinner';
+
+        slotContent.appendChild(spinner);
+        container.innerHTML = '';
+        container.appendChild(slotContent);
+
+        // 2秒後顯示結果
+        setTimeout(() => {
+          container.innerHTML = `
+            <div class="slot-content">
+              <div style="font-size: 72px; animation: fadeIn 0.5s ease-out;">${finalResult.emoji}</div>
+            </div>
+          `;
+          
+          // 添加淡入動畫
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes fadeIn {
+              0% { opacity: 0; transform: scale(0.8); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+          `;
+          document.head.appendChild(style);
+
+          this.isSpinning = false;
+          this.onComplete && this.onComplete(finalResult);
+        }, 2000);
+      }
+    }
+
+    // 主測試組件
+    function SlotMachineTest() {
+      const [currentEngine, setCurrentEngine] = React.useState('original');
+      const [isSpinning, setIsSpinning] = React.useState(false);
+      const [lastResult, setLastResult] = React.useState(null);
+      const [engineInstance, setEngineInstance] = React.useState(null);
+      const slotRef = React.useRef(null);
+
+      // 創建引擎實例
+      React.useEffect(() => {
+        const onComplete = (result) => {
+          setIsSpinning(false);
+          setLastResult(result);
+          console.log('轉動完成:', result);
+        };
+
+        let engine;
+        if (currentEngine === 'original') {
+          engine = new OriginalSlotEngine(slotRef, onComplete);
+        } else {
+          engine = new SimpleSpinEngine(slotRef, onComplete);
+        }
+
+        setEngineInstance(engine);
+
+        return () => {
+          if (engine) {
+            engine.stop();
+          }
+        };
+      }, [currentEngine]);
+
+      // 開始轉動
+      const handleSpin = () => {
+        if (!engineInstance || isSpinning) return;
+
+        const randomResult = mockRestaurants[Math.floor(Math.random() * mockRestaurants.length)];
+        setIsSpinning(true);
+        setLastResult(null);
+        
+        console.log('開始轉動，目標:', randomResult);
+        engineInstance.start(randomResult);
+      };
+
+      // 切換引擎
+      const switchEngine = (engineType) => {
+        if (isSpinning) {
+          alert('轉動中無法切換引擎！');
+          return;
+        }
+        setCurrentEngine(engineType);
+        setLastResult(null);
+        console.log('切換引擎:', engineType);
+      };
+
+      return (
+        <div className="container">
+          <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>
+            🎰 老虎機轉動引擎切換測試
+          </h1>
+
+          <div className="card">
+            <div className="info">
+              <strong>測試目的：</strong> 測試外部轉動引擎的切換功能，驗證不同動畫效果的實現
+            </div>
+
+            <div className="control-panel">
+              <button
+                className={`btn ${currentEngine === 'original' ? 'active' : ''}`}
+                onClick={() => switchEngine('original')}
+                disabled={isSpinning}
+              >
+                原版引擎 (水平滾動)
+              </button>
+              <button
+                className={`btn ${currentEngine === 'simple' ? 'active' : ''}`}
+                onClick={() => switchEngine('simple')}
+                disabled={isSpinning}
+              >
+                簡單引擎 (轉圈圈)
+              </button>
+              <button
+                className="btn"
+                onClick={handleSpin}
+                disabled={isSpinning}
+                style={{ 
+                  background: isSpinning ? 'rgba(255, 255, 255, 0.1)' : 'rgba(76, 175, 80, 0.8)',
+                  borderColor: isSpinning ? 'rgba(255, 255, 255, 0.2)' : 'rgba(76, 175, 80, 1)'
+                }}
+              >
+                {isSpinning ? '轉動中...' : '🎲 開始轉動'}
+              </button>
+            </div>
+
+            <div className="slot-machine" ref={slotRef}>
+              <div className="slot-content">
+                <div style={{ fontSize: '48px', opacity: '0.5' }}>
+                  {lastResult ? lastResult.emoji : '🎰'}
+                </div>
+              </div>
+            </div>
+
+            <div className="status">
+              當前引擎: <strong>{currentEngine === 'original' ? '原版水平滾動' : '簡單轉圈'}</strong>
+              {isSpinning && ' | 轉動中...'}
+              {lastResult && ` | 結果: ${lastResult.name} ${lastResult.emoji}`}
+            </div>
+          </div>
+
+          <div className="card">
+            <h3>🔧 引擎架構說明</h3>
+            <div className="warning">
+              <strong>設計理念：</strong> 使用策略模式實現可切換的轉動引擎，便於生產環境中動態切換動畫效果
+            </div>
+
+            <h4>核心架構:</h4>
+            <pre>{`
+// 抽象引擎基類
+class SlotMachineEngine {
+  constructor(containerRef, onComplete) { ... }
+  start(finalResult) { ... }    // 開始轉動
+  stop() { ... }                // 停止轉動
+  spin(finalResult) { ... }     // 子類實現具體動畫
+  cleanup() { ... }             // 清理工作
+}
+
+// 原版引擎 - 水平滾動效果
+class OriginalSlotEngine extends SlotMachineEngine {
+  spin(finalResult) {
+    // 1. 生成隨機序列 + 最終結果
+    // 2. 創建水平滾動動畫
+    // 3. 快速動畫 → 慢速動畫 → 停止
+  }
+}
+
+// 簡單引擎 - 轉圈效果
+class SimpleSpinEngine extends SlotMachineEngine {
+  spin(finalResult) {
+    // 1. 顯示轉圈動畫
+    // 2. 延遲後顯示最終結果
+    // 3. 淡入效果
+  }
+}
+            `}</pre>
+
+            <h4>生產環境整合建議:</h4>
+            <pre>{`
+// 在 SlotMachine.js 中整合
+const SlotMachine = ({ engineType = 'original', ...props }) => {
+  const [engine, setEngine] = React.useState(null);
+  
+  React.useEffect(() => {
+    const onComplete = (result) => {
+      setIsSpinning(false);
+      // 處理結果...
+    };
+    
+    let newEngine;
+    switch(engineType) {
+      case 'simple':
+        newEngine = new SimpleSpinEngine(slotRef, onComplete);
+        break;
+      default:
+        newEngine = new OriginalSlotEngine(slotRef, onComplete);
+    }
+    
+    setEngine(newEngine);
+    return () => newEngine.stop();
+  }, [engineType]);
+  
+  // 在 handleSpin 中使用 engine.start(finalResult)
+};
+            `}</pre>
+
+            <div className="info">
+              <strong>優勢：</strong>
+              <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
+                <li>🔄 熱切換：運行時動態切換動畫引擎</li>
+                <li>🧩 模組化：每個引擎獨立實現，易於維護</li>
+                <li>🎯 一致介面：統一的 start/stop API</li>
+                <li>🚀 擴展性：輕鬆添加新的動畫效果</li>
+                <li>🎛️ 用戶偏好：可以讓用戶選擇喜歡的動畫</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // 渲染應用
+    ReactDOM.render(<SlotMachineTest />, document.getElementById('root'));
+  </script>
+</body>
+</html>
