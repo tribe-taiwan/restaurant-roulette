@@ -196,6 +196,36 @@ detailsCache: {
 }
 ```
 
+### 問題 5：同一餐廳重複輸出錯誤日誌
+
+**原因**：`isRestaurantOpenInTimeSlot` 函數在多個地方被調用，同一家餐廳會被重複檢查。
+
+**解決方案**：使用記憶機制避免重複日誌
+```javascript
+// 用於避免重複日誌的記憶機制
+const loggedRestaurants = new Set();
+
+function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
+  if (timeSlot === 'current') {
+    if (!restaurant.detailsCache?.opening_hours) {
+      // 避免重複日誌：每家餐廳只記錄一次
+      const logKey = `no-hours-${restaurant.id || restaurant.name}`;
+      if (!loggedRestaurants.has(logKey)) {
+        loggedRestaurants.add(logKey);
+        console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+      }
+      return false;
+    }
+  }
+}
+
+// 在每次新搜索開始時清除記憶
+window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
+  loggedRestaurants.clear(); // 清除重複日誌記憶
+  // ... 其他邏輯
+}
+```
+
 ## 修復歷史
 
 - **2025-01-09** - Commit Hash: `5e49749` - 初始修復 isOpen() 檢查邏輯
@@ -204,3 +234,4 @@ detailsCache: {
 - **2025-01-09** - Commit Hash: `1990989` - 恢復 detailsCache 營業時間資訊，修復輪盤轉圈問題
 - **2025-01-09** - Commit Hash: `255f781` - 解決快取數據中 isOpen 函數丟失問題，移除錯誤日誌
 - **2025-01-09** - Commit Hash: `2c547ce` - 新增測試頁面驗證修復效果
+- **2025-01-09** - Commit Hash: `aa59d89` - 避免重複日誌，同一餐廳錯誤訊息只顯示一次
