@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試 isOpen() 方法修復</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #3367d6;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            background: #f8f9fa;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 測試 Google Places API isOpen() 方法修復</h1>
+        <p>此測試頁面用於驗證 isOpen() 方法的修復是否有效。</p>
+        
+        <div>
+            <button class="test-button" onclick="testIsOpenMethod()">🧪 測試 isOpen() 方法</button>
+            <button class="test-button" onclick="testMultipleRestaurants()">🏪 測試多家餐廳</button>
+            <button class="test-button" onclick="clearResults()">🗑️ 清除結果</button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTested">0</div>
+                <div class="stat-label">測試餐廳數</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="isOpenWorking">0</div>
+                <div class="stat-label">isOpen() 可用</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="fallbackUsed">0</div>
+                <div class="stat-label">使用備用方案</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="noOpeningHours">0</div>
+                <div class="stat-label">無營業時間</div>
+            </div>
+        </div>
+
+        <div id="result" class="result info" style="display: none;">
+            等待測試結果...
+        </div>
+    </div>
+
+    <!-- 載入配置和工具 -->
+    <script src="../utils/config.js"></script>
+    <script src="../utils/locationUtils.js"></script>
+
+    <script>
+        let testResults = [];
+        let stats = {
+            totalTested: 0,
+            isOpenWorking: 0,
+            fallbackUsed: 0,
+            noOpeningHours: 0
+        };
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            const resultDiv = document.getElementById('result');
+            if (resultDiv.style.display === 'none') {
+                resultDiv.style.display = 'block';
+            }
+            
+            resultDiv.innerHTML += `<div class="log-entry">${logEntry}</div>`;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('totalTested').textContent = stats.totalTested;
+            document.getElementById('isOpenWorking').textContent = stats.isOpenWorking;
+            document.getElementById('fallbackUsed').textContent = stats.fallbackUsed;
+            document.getElementById('noOpeningHours').textContent = stats.noOpeningHours;
+            document.getElementById('stats').style.display = 'grid';
+        }
+
+        function clearResults() {
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+            testResults = [];
+            stats = {
+                totalTested: 0,
+                isOpenWorking: 0,
+                fallbackUsed: 0,
+                noOpeningHours: 0
+            };
+        }
+
+        async function testIsOpenMethod() {
+            log('🔍 開始測試 isOpen() 方法修復...', 'info');
+            
+            try {
+                // 初始化 Google Maps
+                if (!window.google || !window.google.maps) {
+                    log('📡 初始化 Google Maps API...', 'info');
+                    await initializeGoogleMaps();
+                }
+
+                // 搜索附近餐廳
+                log('🔍 搜索台北市附近餐廳...', 'info');
+                const userLocation = { lat: 25.0330, lng: 121.5654 }; // 台北101
+                
+                const restaurants = await searchNearbyRestaurants(userLocation, 'restaurant', 1000);
+                log(`✅ 找到 ${restaurants.length} 家餐廳`, 'info');
+
+                if (restaurants.length === 0) {
+                    log('❌ 未找到餐廳，無法進行測試', 'error');
+                    return;
+                }
+
+                // 測試第一家餐廳
+                const restaurant = restaurants[0];
+                log(`🏪 測試餐廳: ${restaurant.name}`, 'info');
+
+                // 獲取詳細資訊
+                const details = await getPlaceDetails(restaurant.place_id);
+                
+                if (!details) {
+                    log('❌ 無法獲取餐廳詳細資訊', 'error');
+                    return;
+                }
+
+                log(`📋 餐廳詳細資訊:`, 'info');
+                log(`   名稱: ${details.name}`, 'info');
+                log(`   地址: ${details.formatted_address || '未知'}`, 'info');
+                log(`   有營業時間: ${!!details.opening_hours}`, 'info');
+                
+                if (details.opening_hours) {
+                    log(`   有 periods: ${!!details.opening_hours.periods}`, 'info');
+                    log(`   有 isOpen 方法: ${typeof details.opening_hours.isOpen === 'function'}`, 'info');
+                    log(`   有 utc_offset_minutes: ${details.utc_offset_minutes !== undefined}`, 'info');
+                    
+                    // 測試 isOpen() 方法
+                    if (typeof details.opening_hours.isOpen === 'function') {
+                        try {
+                            const isOpenResult = details.opening_hours.isOpen();
+                            log(`🕐 isOpen() 結果: ${isOpenResult}`, 'info');
+                            
+                            if (isOpenResult !== undefined) {
+                                log('✅ isOpen() 方法正常工作！', 'success');
+                                stats.isOpenWorking++;
+                            } else {
+                                log('⚠️ isOpen() 返回 undefined，可能缺少必要數據', 'error');
+                                stats.fallbackUsed++;
+                            }
+                        } catch (error) {
+                            log(`❌ isOpen() 調用失敗: ${error.message}`, 'error');
+                            stats.fallbackUsed++;
+                        }
+                    } else {
+                        log('❌ isOpen() 方法不存在', 'error');
+                        stats.fallbackUsed++;
+                    }
+                } else {
+                    log('❌ 餐廳沒有營業時間數據', 'error');
+                    stats.noOpeningHours++;
+                }
+
+                stats.totalTested++;
+                updateStats();
+                
+                log('✅ 測試完成', 'success');
+
+            } catch (error) {
+                log(`❌ 測試失敗: ${error.message}`, 'error');
+                console.error('測試錯誤:', error);
+            }
+        }
+
+        async function testMultipleRestaurants() {
+            log('🔍 開始測試多家餐廳的 isOpen() 方法...', 'info');
+            
+            try {
+                // 初始化 Google Maps
+                if (!window.google || !window.google.maps) {
+                    log('📡 初始化 Google Maps API...', 'info');
+                    await initializeGoogleMaps();
+                }
+
+                // 搜索附近餐廳
+                log('🔍 搜索台北市附近餐廳...', 'info');
+                const userLocation = { lat: 25.0330, lng: 121.5654 }; // 台北101
+                
+                const restaurants = await searchNearbyRestaurants(userLocation, 'restaurant', 2000);
+                log(`✅ 找到 ${restaurants.length} 家餐廳`, 'info');
+
+                const testCount = Math.min(10, restaurants.length);
+                log(`🧪 將測試前 ${testCount} 家餐廳`, 'info');
+
+                for (let i = 0; i < testCount; i++) {
+                    const restaurant = restaurants[i];
+                    log(`\n[${i + 1}/${testCount}] 測試: ${restaurant.name}`, 'info');
+
+                    try {
+                        const details = await getPlaceDetails(restaurant.place_id);
+                        
+                        if (!details) {
+                            log('   ❌ 無法獲取詳細資訊', 'error');
+                            stats.totalTested++;
+                            continue;
+                        }
+
+                        if (!details.opening_hours) {
+                            log('   ❌ 無營業時間數據', 'error');
+                            stats.noOpeningHours++;
+                            stats.totalTested++;
+                            continue;
+                        }
+
+                        if (typeof details.opening_hours.isOpen === 'function') {
+                            try {
+                                const isOpenResult = details.opening_hours.isOpen();
+                                log(`   🕐 isOpen() 結果: ${isOpenResult}`, 'info');
+                                
+                                if (isOpenResult !== undefined) {
+                                    log('   ✅ isOpen() 正常工作', 'success');
+                                    stats.isOpenWorking++;
+                                } else {
+                                    log('   ⚠️ isOpen() 返回 undefined', 'error');
+                                    stats.fallbackUsed++;
+                                }
+                            } catch (error) {
+                                log(`   ❌ isOpen() 調用失敗: ${error.message}`, 'error');
+                                stats.fallbackUsed++;
+                            }
+                        } else {
+                            log('   ❌ isOpen() 方法不存在', 'error');
+                            stats.fallbackUsed++;
+                        }
+
+                        stats.totalTested++;
+                        updateStats();
+
+                        // 避免過快請求
+                        await new Promise(resolve => setTimeout(resolve, 200));
+
+                    } catch (error) {
+                        log(`   ❌ 測試失敗: ${error.message}`, 'error');
+                        stats.totalTested++;
+                    }
+                }
+
+                log('\n📊 測試總結:', 'info');
+                log(`   總測試數: ${stats.totalTested}`, 'info');
+                log(`   isOpen() 可用: ${stats.isOpenWorking}`, 'info');
+                log(`   使用備用方案: ${stats.fallbackUsed}`, 'info');
+                log(`   無營業時間: ${stats.noOpeningHours}`, 'info');
+                
+                const successRate = stats.totalTested > 0 ? (stats.isOpenWorking / stats.totalTested * 100).toFixed(1) : 0;
+                log(`   成功率: ${successRate}%`, 'info');
+
+                log('✅ 多餐廳測試完成', 'success');
+
+            } catch (error) {
+                log(`❌ 測試失敗: ${error.message}`, 'error');
+                console.error('測試錯誤:', error);
+            }
+        }
+
+        // 頁面載入完成後的初始化
+        window.addEventListener('load', function() {
+            log('📄 測試頁面已載入', 'info');
+            log('🔧 準備測試 isOpen() 方法修復', 'info');
+        });
+    </script>
+</body>
+</html>

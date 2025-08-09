@@ -298,21 +298,28 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 
 
     // 使用新的 Google Places API 的 isOpen() 方法
-    if (openingHours && openingHours.isOpen) {
+    // 根據官方文檔，isOpen() 需要 utc_offset_minutes 或 periods 才能正常工作
+    if (openingHours && typeof openingHours.isOpen === 'function') {
       try {
         const isOpenNow = openingHours.isOpen();
-        console.log('🕐 使用 Google Places API isOpen() 方法結果:', isOpenNow);
 
-        // 如果營業中，檢查20分鐘緩衝區
-        if (isOpenNow) {
-          const minutesUntilClose = calculateMinutesUntilClose(openingHours);
-          if (minutesUntilClose !== null && minutesUntilClose <= 20) {
-            console.log(`⚠️ 餐廳將在${minutesUntilClose}分鐘後關門，排除此餐廳`);
-            return false;
+        // 檢查 isOpen() 是否返回有效結果（不是 undefined）
+        if (isOpenNow !== undefined) {
+          console.log('🕐 使用 Google Places API isOpen() 方法結果:', isOpenNow);
+
+          // 如果營業中，檢查20分鐘緩衝區
+          if (isOpenNow) {
+            const minutesUntilClose = calculateMinutesUntilClose(openingHours);
+            if (minutesUntilClose !== null && minutesUntilClose <= 20) {
+              console.log(`⚠️ 餐廳將在${minutesUntilClose}分鐘後關門，排除此餐廳`);
+              return false;
+            }
           }
-        }
 
-        return isOpenNow;
+          return isOpenNow;
+        } else {
+          console.log('🔄 Google Places API isOpen() 返回 undefined，缺少必要的時區或營業時間數據');
+        }
       } catch (error) {
         console.warn('⚠️ Google Places API isOpen() 調用失敗，回退到 periods 計算:', error);
       }
@@ -746,14 +753,20 @@ function getBusinessStatus(openingHours, language = 'zh') {
   }
 
   // 使用 Google 推薦的 isOpen() 方法
-  if (openingHours.isOpen) {
+  if (typeof openingHours.isOpen === 'function') {
     try {
       const isOpenNow = openingHours.isOpen();
-      console.log('🕐 getBusinessStatus 使用 isOpen() 方法結果:', isOpenNow);
-      return {
-        status: isOpenNow ? 'open' : 'closed',
-        message: isOpenNow ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
-      };
+
+      // 檢查 isOpen() 是否返回有效結果（不是 undefined）
+      if (isOpenNow !== undefined) {
+        console.log('🕐 getBusinessStatus 使用 isOpen() 方法結果:', isOpenNow);
+        return {
+          status: isOpenNow ? 'open' : 'closed',
+          message: isOpenNow ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
+        };
+      } else {
+        console.log('🔄 getBusinessStatus isOpen() 返回 undefined，缺少必要的時區或營業時間數據');
+      }
     } catch (error) {
       console.warn('⚠️ getBusinessStatus isOpen() 方法調用失敗:', error);
     }
