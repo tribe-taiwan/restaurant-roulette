@@ -1015,6 +1015,9 @@ function getAvailableRestaurantsFromCache(selectedMealTime) {
   }
 }
 
+// 用於避免重複日誌的記憶機制
+const loggedRestaurants = new Set();
+
 /**
  * 檢查餐廳是否在指定時段營業
  * @param {Object} restaurant - 餐廳資訊
@@ -1026,7 +1029,12 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
   // 【重要】不得將沒有營業時間數據的餐廳視為營業中，這會誤導用戶
   if (timeSlot === 'current') {
     if (!restaurant.detailsCache?.opening_hours) {
-      console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+      // 避免重複日誌：每家餐廳只記錄一次
+      const logKey = `no-hours-${restaurant.id || restaurant.name}`;
+      if (!loggedRestaurants.has(logKey)) {
+        loggedRestaurants.add(logKey);
+        console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+      }
       return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
     }
     return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
@@ -1053,7 +1061,8 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
  * @returns {Promise<Object>} 隨機餐廳
  */
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
-  // 移除開始搜索日誌
+  // 清除重複日誌記憶，開始新的搜索週期
+  loggedRestaurants.clear();
 
   // ========================================
   // 第一步：檢查快取中是否有可用餐廳
