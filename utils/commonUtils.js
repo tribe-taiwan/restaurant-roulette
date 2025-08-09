@@ -79,36 +79,7 @@ window.getDirectionsUrl = function(restaurant, userLocation, userAddress, langua
   return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
 };
 
-// 格式化營業時間 - 統一的營業時間格式化邏輯
-window.formatBusinessHours = function(hours, language = 'zh') {
-  if (!hours) {
-    const translations = {
-      en: 'Hours not available',
-      zh: '營業時間不可用',
-      ja: '営業時間が利用できません',
-      ko: '영업시간 정보 없음',
-      es: 'Horario no disponible',
-      fr: 'Horaires non disponibles'
-    };
-    return translations[language] || translations.zh;
-  }
-  
-  if (Array.isArray(hours)) {
-    // 格式化營業時間為純文字陣列
-    return hours.map(dayHours => {
-      return dayHours
-        .replace(/Monday/g, 'Mon')
-        .replace(/Tuesday/g, 'Tue')
-        .replace(/Wednesday/g, 'Wed')
-        .replace(/Thursday/g, 'Thu')
-        .replace(/Friday/g, 'Fri')
-        .replace(/Saturday/g, 'Sat')
-        .replace(/Sunday/g, 'Sun');
-    });
-  }
-  
-  return hours;
-};
+// 格式化營業時間 - 統一的營業時間格式化邏輯（已移至檔案末尾避免重複）
 
 // 翻譯函數 - 餐廳卡片用的翻譯
 window.getRestaurantTranslations = function(language = 'zh') {
@@ -200,6 +171,90 @@ window.getRestaurantTranslations = function(language = 'zh') {
   };
   
   return translations[language] || translations.zh;
+};
+
+// 多語言營業時間格式化函數
+window.formatBusinessHours = function(hours, language = 'zh') {
+  if (!hours) {
+    // 如果沒有營業時間資料，返回多語言的「營業時間不可用」訊息
+    const translations = {
+      en: 'Hours not available',
+      zh: '營業時間不可用',
+      ja: '営業時間が利用できません',
+      ko: '영업시간 정보 없음',
+      vi: 'Giờ hoạt động không có sẵn',
+      ms: 'Waktu operasi tidak tersedia'
+    };
+    return translations[language] || translations.zh;
+  }
+
+  // 如果不是陣列，直接回傳
+  if (!Array.isArray(hours)) {
+    return hours;
+  }
+
+  // 取得當前語言的翻譯
+  const getTranslation = window.getTranslation || function(lang, key) {
+    // fallback 函式
+    const fallbackTranslations = {
+      monday: { zh: '週一', en: 'Mon', ja: '月曜', ko: '월요일', vi: 'Thứ hai', ms: 'Isnin' },
+      tuesday: { zh: '週二', en: 'Tue', ja: '火曜', ko: '화요일', vi: 'Thứ ba', ms: 'Selasa' },
+      wednesday: { zh: '週三', en: 'Wed', ja: '水曜', ko: '수요일', vi: 'Thứ tư', ms: 'Rabu' },
+      thursday: { zh: '週四', en: 'Thu', ja: '木曜', ko: '목요일', vi: 'Thứ năm', ms: 'Khamis' },
+      friday: { zh: '週五', en: 'Fri', ja: '金曜', ko: '금요일', vi: 'Thứ sáu', ms: 'Jumaat' },
+      saturday: { zh: '週六', en: 'Sat', ja: '土曜', ko: '토요일', vi: 'Thứ bảy', ms: 'Sabtu' },
+      sunday: { zh: '週日', en: 'Sun', ja: '日曜', ko: '일요일', vi: 'Chủ nhật', ms: 'Ahad' },
+      // 添加「休息」的翻譯
+      closed: { zh: '休息', en: 'Closed', ja: '定休日', ko: '휴무', vi: 'Nghỉ', ms: 'Tutup' }
+    };
+    return fallbackTranslations[key] ? fallbackTranslations[key][lang] || fallbackTranslations[key]['en'] : key;
+  };
+
+  // 格式化每一天的營業時間
+  return hours.map(day => {
+    if (!day) return day;
+
+    let formattedDay = day;
+
+    // 處理各種可能的星期格式並統一轉換
+    // 1. 先處理中文格式（Google Places API 在中文環境下返回中文）
+    formattedDay = formattedDay
+      .replace(/星期一/g, 'Mon')
+      .replace(/星期二/g, 'Tue')
+      .replace(/星期三/g, 'Wed')
+      .replace(/星期四/g, 'Thu')
+      .replace(/星期五/g, 'Fri')
+      .replace(/星期六/g, 'Sat')
+      .replace(/星期日/g, 'Sun');
+
+    // 2. 處理英文全名格式
+    formattedDay = formattedDay
+      .replace(/Monday/g, 'Mon')
+      .replace(/Tuesday/g, 'Tue')
+      .replace(/Wednesday/g, 'Wed')
+      .replace(/Thursday/g, 'Thu')
+      .replace(/Friday/g, 'Fri')
+      .replace(/Saturday/g, 'Sat')
+      .replace(/Sunday/g, 'Sun');
+
+    // 3. 處理「休息」狀態的翻譯
+    formattedDay = formattedDay.replace(/休息/g, 'Closed');
+
+    // 4. 根據目標語言進行最終翻譯
+    if (language !== 'en') {
+      formattedDay = formattedDay
+        .replace(/Mon/g, getTranslation(language, 'monday'))
+        .replace(/Tue/g, getTranslation(language, 'tuesday'))
+        .replace(/Wed/g, getTranslation(language, 'wednesday'))
+        .replace(/Thu/g, getTranslation(language, 'thursday'))
+        .replace(/Fri/g, getTranslation(language, 'friday'))
+        .replace(/Sat/g, getTranslation(language, 'saturday'))
+        .replace(/Sun/g, getTranslation(language, 'sunday'))
+        .replace(/Closed/g, getTranslation(language, 'closed'));
+    }
+
+    return formattedDay;
+  });
 };
 
 console.log('✅ commonUtils.js 已載入 - 共用工具函數可用');

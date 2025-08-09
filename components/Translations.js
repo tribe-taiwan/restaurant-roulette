@@ -67,9 +67,23 @@ function createTranslations(brandSubtitle) {
       enterAddressTip: "Please enter address first",
       autoLocationTip: "Use GPS for automatic location",
       manualLocationTip: "Locate based on entered address",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "Opening in",
-      hours: "hours"
+      hours: "hours",
+      hoursNotAvailable: "Hours not available",
+      openNow: "Open Now",
+      closed: "Closed",
+      hoursUnknown: "Hours Unknown",
+      closingSoon: "Closing Soon",
+      closedToday: "Closed today",
+      // 星期幾
+      monday: "Mon",
+      tuesday: "Tue",
+      wednesday: "Wed",
+      thursday: "Thu",
+      friday: "Fri",
+      saturday: "Sat",
+      sunday: "Sun"
     },
     zh: {
       title: themeTranslations.zh,
@@ -111,9 +125,23 @@ function createTranslations(brandSubtitle) {
       enterAddressTip: "請先輸入地址",
       autoLocationTip: "使用GPS自動定位",
       manualLocationTip: "根據輸入地址進行定位",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "還有多久開業",
-      hours: "小時"
+      hours: "小時",
+      hoursNotAvailable: "營業時間不可用",
+      openNow: "營業中",
+      closed: "已打烊",
+      hoursUnknown: "營業時間未知",
+      closingSoon: "即將打烊",
+      closedToday: "今日休息",
+      // 星期幾
+      monday: "週一",
+      tuesday: "週二",
+      wednesday: "週三",
+      thursday: "週四",
+      friday: "週五",
+      saturday: "週六",
+      sunday: "週日"
     },
     ja: {
       title: themeTranslations.ja,
@@ -146,9 +174,23 @@ function createTranslations(brandSubtitle) {
       located: "位置設定完了",
       pleaseEnterHomeAddress: "まず自宅の住所を入力してください",
       pleaseEnterOfficeAddress: "まず会社の住所を入力してください",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "開業まで",
-      hours: "時間"
+      hours: "時間",
+      hoursNotAvailable: "営業時間が利用できません",
+      openNow: "営業中",
+      closed: "閉店",
+      hoursUnknown: "営業時間不明",
+      closingSoon: "まもなく閉店",
+      closedToday: "本日休業",
+      // 星期幾
+      monday: "月曜",
+      tuesday: "火曜",
+      wednesday: "水曜",
+      thursday: "木曜",
+      friday: "金曜",
+      saturday: "土曜",
+      sunday: "日曜"
     },
     ko: {
       title: themeTranslations.ko,
@@ -181,9 +223,23 @@ function createTranslations(brandSubtitle) {
       located: "위치설정 완료",
       pleaseEnterHomeAddress: "먼저 집 주소를 입력해주세요",
       pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "개업까지 남은 시간",
-      hours: "시간"
+      hours: "시간",
+      hoursNotAvailable: "영업시간 정보 없음",
+      openNow: "영업 중",
+      closed: "영업종료",
+      hoursUnknown: "영업시간 알 수 없음",
+      closingSoon: "곧 영업종료",
+      closedToday: "오늘 휴무",
+      // 星期幾
+      monday: "월요일",
+      tuesday: "화요일",
+      wednesday: "수요일",
+      thursday: "목요일",
+      friday: "금요일",
+      saturday: "토요일",
+      sunday: "일요일"
     },
     vi: {
       title: themeTranslations.vi,
@@ -216,9 +272,23 @@ function createTranslations(brandSubtitle) {
       located: "Đã định vị",
       pleaseEnterHomeAddress: "Vui lòng nhập địa chỉ nhà trước",
       pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "Mở cửa sau",
-      hours: "giờ"
+      hours: "giờ",
+      hoursNotAvailable: "Giờ hoạt động không có sẵn",
+      openNow: "Đang mở cửa",
+      closed: "Đã đóng cửa",
+      hoursUnknown: "Giờ hoạt động không rõ",
+      closingSoon: "Sắp đóng cửa",
+      closedToday: "Hôm nay nghỉ",
+      // 星期幾
+      monday: "Thứ hai",
+      tuesday: "Thứ ba",
+      wednesday: "Thứ tư",
+      thursday: "Thứ năm",
+      friday: "Thứ sáu",
+      saturday: "Thứ bảy",
+      sunday: "Chủ nhật"
     },
     ms: {
       title: themeTranslations.ms,
@@ -251,12 +321,32 @@ function createTranslations(brandSubtitle) {
       located: "Sudah dikenal pasti",
       pleaseEnterHomeAddress: "Sila masukkan alamat rumah terlebih dahulu",
       pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
-      // 餐廳資訊
+      // 餐廳資訊和營業時間
       openingIn: "Buka dalam",
-      hours: "jam"
+      hours: "jam",
+      hoursNotAvailable: "Waktu operasi tidak tersedia",
+      openNow: "Sedang buka",
+      closed: "Tutup",
+      hoursUnknown: "Waktu operasi tidak diketahui",
+      closingSoon: "Akan tutup sebentar lagi",
+      closedToday: "Tutup hari ini",
+      // 星期幾
+      monday: "Isnin",
+      tuesday: "Selasa",
+      wednesday: "Rabu",
+      thursday: "Khamis",
+      friday: "Jumaat",
+      saturday: "Sabtu",
+      sunday: "Ahad"
     }
   };
 }
+
+// 全域翻譯函數 - 用於獲取特定語言的特定鍵值
+window.getTranslation = function(language, key, brandSubtitle = "舞鶴台南民宿") {
+  const translations = createTranslations(brandSubtitle);
+  return translations[language] && translations[language][key] ? translations[language][key] : key;
+};
 
 // 導出函數供其他模組使用
 window.getThemeTranslations = getThemeTranslations;

@@ -635,21 +635,14 @@ async function formatRestaurantData(place) {
     const priceLevel = place.price_level || (details && details.price_level) || 2;
     
     // 處理營業時間 - 使用純文字格式，避免XSS風險
+    // 注意：這裡暫時使用預設語言，實際語言會在組件層面處理
     let hours = '營業時間請洽餐廳';
     if (details && details.opening_hours && details.opening_hours.weekday_text) {
       // 格式化營業時間為純文字陣列，由組件負責渲染樣式
-      hours = details.opening_hours.weekday_text
-        .map(dayHours => {
-          // 將星期幾改為縮寫，保持純文字格式
-          return dayHours
-            .replace(/Monday/g, 'Mon')
-            .replace(/Tuesday/g, 'Tue')
-            .replace(/Wednesday/g, 'Wed')
-            .replace(/Thursday/g, 'Thu')
-            .replace(/Friday/g, 'Fri')
-            .replace(/Saturday/g, 'Sat')
-            .replace(/Sunday/g, 'Sun');
-        });
+      const rawHours = details.opening_hours.weekday_text.filter(text => text); // 過濾空值
+
+      // 先儲存原始資料，讓組件層面根據當前語言進行格式化
+      hours = rawHours; // 保留原始資料，讓 RestaurantCard 根據當前語言格式化
     }
 
     // 處理餐廳類型

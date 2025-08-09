@@ -15,14 +15,16 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
     const formatHours = (hours) => {
       if (!hours) return getTranslation('hoursNotAvailable');
-      
-      // 【防護備註】星期縮寫必須使用英文三字母格式 (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
-      // 【嚴禁修改】無論任何語言或本地化需求，星期縮寫一律保持英文格式！
+
+      // 使用多語言營業時間格式化函數
+      const formattedHours = window.formatBusinessHours ?
+        window.formatBusinessHours(hours, language) : hours;
+
       // 安全處理營業時間：如果是陣列，逐行渲染；如果是字串，直接顯示
-      if (Array.isArray(hours)) {
+      if (Array.isArray(formattedHours)) {
         return (
           <div className="space-y-1">
-            {hours.map((dayHours, index) => (
+            {formattedHours.map((dayHours, index) => (
               <div key={index} className="text-sm">
                 <span className="font-mono font-bold mr-2">
                   {dayHours.split(': ')[0]}:
@@ -35,8 +37,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           </div>
         );
       }
-      
-      return hours;
+
+      return formattedHours;
     };
 
     const handleImageClick = () => {
