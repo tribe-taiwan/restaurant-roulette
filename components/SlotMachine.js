@@ -1004,13 +1004,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             {/* Search Next Button */}
             <button
               onClick={() => onSpin(false)}
-              disabled={isSpinning}
-              className={`btn-primary flex-1 text-lg ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`btn-primary flex-1 text-lg ${isSpinning ? 'hover:bg-red-600' : ''}`}
             >
               {isSpinning ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {translations.spinning}
+                  點擊停止
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">

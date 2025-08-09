@@ -448,6 +448,14 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
  * @returns {Promise<Array>} 餐廳列表
  */
 async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', options = {}) {
+  // 解構 abortSignal 參數
+  const { abortSignal, ...searchOptions } = options;
+  
+  // 檢查是否已被中止
+  if (abortSignal?.aborted) {
+    throw new DOMException('搜尋被中止', 'AbortError');
+  }
+  
   if (!userLocation) {
     const errorDetails = {
       errorType: 'LocationError',
@@ -497,7 +505,17 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     const searchTypes = ['restaurant', 'meal_takeaway'];
 
     for (const area of areasToSearch) {
+      // 檢查是否已被中止
+      if (abortSignal?.aborted) {
+        throw new DOMException('搜尋被中止', 'AbortError');
+      }
+      
       for (const type of searchTypes) {
+        // 檢查是否已被中止
+        if (abortSignal?.aborted) {
+          throw new DOMException('搜尋被中止', 'AbortError');
+        }
+        
         // 建立搜索請求，使用用戶設定的搜索半徑
         const request = {
           location: new google.maps.LatLng(area.lat, area.lng),
@@ -1062,8 +1080,16 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
  * @returns {Promise<Object>} 隨機餐廳
  */
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
+  // 解構 abortSignal 參數
+  const { abortSignal, ...otherConfig } = distanceConfig;
+  
   // 清除重複日誌記憶，開始新的搜索週期
   loggedRestaurants.clear();
+  
+  // 檢查是否已被中止
+  if (abortSignal?.aborted) {
+    throw new DOMException('搜尋被中止', 'AbortError');
+  }
 
   // ========================================
   // 第一步：檢查快取中是否有可用餐廳
@@ -1106,6 +1132,11 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   const maxAttempts = 25;
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // 檢查是否已被中止
+    if (abortSignal?.aborted) {
+      throw new DOMException('搜尋被中止', 'AbortError');
+    }
+    
     let searchRadius = originalRadius;
     let searchOptions = { attempt: attempt };
     
@@ -1124,8 +1155,8 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
     try {
-      // 獲取餐廳列表，傳入搜索選項
-      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, searchOptions);
+      // 獲取餐廳列表，傳入搜索選項和 abortSignal
+      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, { ...searchOptions, abortSignal });
 
       // 重要：將所有搜索到的餐廳加入快取
       if (restaurants.length > 0) {

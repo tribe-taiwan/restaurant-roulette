@@ -44,6 +44,7 @@ function App() {
     const [currentRestaurant, setCurrentRestaurant] = React.useState(null);
     const [candidateList, setCandidateList] = React.useState([]); // 用戶候選餐廳列表，最多9家
     const [isSpinning, setIsSpinning] = React.useState(false);
+    const [searchAbortController, setSearchAbortController] = React.useState(null); // 搜尋中止控制器
     const [userLocation, setUserLocation] = React.useState(null);
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
@@ -287,6 +288,23 @@ function App() {
     // ===========================================
     
     /**
+     * 停止正在進行的搜尋
+     */
+    const handleStopSearch = () => {
+      console.log('🛑 停止搜尋被觸發');
+      if (searchAbortController) {
+        console.log('🛑 中止控制器存在，正在中止...');
+        searchAbortController.abort();
+        setSearchAbortController(null);
+      } else {
+        console.log('🛑 沒有中止控制器，直接停止動畫');
+      }
+      setIsSpinning(false);
+      setSpinError(null);
+      console.log('🛑 用戶停止搜尋完成');
+    };
+
+    /**
      * 智能餐廳搜索函數 - 根據資料可用性決定是否顯示動畫
      * 
      * 邏輯說明：
@@ -295,7 +313,11 @@ function App() {
      * 3. 自動調用：初次載入時的自動搜索 → 根據實際需要決定
      */
     const handleSpin = async (isAutoSpin = false) => {
-      if (isSpinning) return;
+      // 如果正在搜尋中，按按鈕停止搜尋
+      if (isSpinning) {
+        handleStopSearch();
+        return;
+      }
 
       // 移除餐廳搜索開始日誌
       setSpinError(null);
@@ -345,14 +367,23 @@ function App() {
           setIsSpinning(true);
           setCurrentRestaurant(null);
           
+          // 創建中止控制器
+          const abortController = new AbortController();
+          setSearchAbortController(abortController);
+          
           // 計算實際搜索半徑並更新搜索設定
           const actualRadius = baseUnit * unitMultiplier;
           if (window.updateSearchRadius) {
             window.updateSearchRadius(actualRadius);
           }
           
-          // 調用餐廳搜索API（與動畫並行）
-          const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { baseUnit, unitMultiplier });
+          try {
+            // 調用餐廳搜索API（與動畫並行）- 添加 abort signal 支援
+            const restaurant = await window.getRandomRestaurant(userLocation, selectedMealTime, { 
+              baseUnit, 
+              unitMultiplier,
+              abortSignal: abortController.signal
+            });
           
           if (restaurant) {
             // 移除API獲取成功日誌
@@ -368,15 +399,36 @@ function App() {
             
             // 圖片載入完成後結束動畫
             preloadImageAndStopSpin(restaurant);
+            
+            // 清除中止控制器
+            setSearchAbortController(null);
           } else {
             throw new Error('無法找到符合條件的餐廳');
+          }
+          } catch (apiError) {
+            // 檢查是否為用戶中止的請求
+            if (apiError.name === 'AbortError') {
+              console.log('🛑 搜尋已被用戶中止');
+              return; // 用戶中止，不顯示錯誤
+            }
+            throw apiError; // 重新拋出其他錯誤
+          } finally {
+            // 清除中止控制器
+            setSearchAbortController(null);
           }
         }
 
       } catch (error) {
+        // 檢查是否為用戶中止的請求
+        if (error.name === 'AbortError') {
+          console.log('🛑 搜尋已被用戶中止');
+          return; // 用戶中止，不顯示錯誤也不設置錯誤狀態
+        }
+        
         console.error('❌ 餐廳搜索發生錯誤:', error);
         setSpinError(error.message);
         setIsSpinning(false);
+        setSearchAbortController(null);
       }
     };
 
@@ -462,7 +514,13 @@ function App() {
 
     // 處理用戶主動搜尋餐廳（觸發滑動轉場）
     const handleUserSpin = async () => {
-      if (isSpinning) return;
+      console.log('🎮 handleUserSpin 被觸發, isSpinning:', isSpinning);
+      // 如果正在搜尋中，按按鈕停止搜尋
+      if (isSpinning) {
+        console.log('🎮 偵測到正在搜尋中，呼叫停止搜尋');
+        handleStopSearch();
+        return;
+      }
 
       // 如果有當前餐廳，先觸發滑動轉場
       if (triggerSlideTransition && currentRestaurant) {
