@@ -105,19 +105,26 @@ function checkRestaurantOpenStatus(openingHours) {
 
 **原因**：程式碼中可能在序列化包含已棄用屬性的 Google Places API 原始物件。
 
-**解決方案**：避免直接存儲原始的 Google Places API 物件
+**解決方案**：清理 detailsCache 中的已棄用屬性
 ```javascript
 // ❌ 錯誤：直接存儲原始物件
 localStorage.setItem('restaurants', JSON.stringify(rawPlaceResults));
 
-// ✅ 正確：只存儲清理後的數據
+// ✅ 正確：清理已棄用屬性後存儲
 const cleanRestaurant = {
   id: place.place_id,
   name: place.name,
   // ... 其他必要屬性
-  // 不包含 detailsCache 或原始 Google Places 物件
+  detailsCache: place.detailsCache ? {
+    opening_hours: place.detailsCache.opening_hours ? {
+      periods: place.detailsCache.opening_hours.periods,
+      weekday_text: place.detailsCache.opening_hours.weekday_text,
+      isOpen: place.detailsCache.opening_hours.isOpen
+      // 不包含已棄用的 open_now, utc_offset 等屬性
+    } : null,
+    utc_offset_minutes: place.detailsCache.utc_offset_minutes
+  } : null
 };
-localStorage.setItem('restaurants', JSON.stringify([cleanRestaurant]));
 ```
 
 ### 問題 2：isOpen() 返回 undefined
@@ -149,8 +156,26 @@ const request = {
 - `utils/locationUtils.js` - 主要修復檔案
 - `test/test-places-api.spec.js` - 測試檔案
 
+### 問題 3：大量「沒有營業時間數據」錯誤導致輪盤轉圈
+
+**原因**：移除 `detailsCache` 存儲後，`isRestaurantOpenInTimeSlot` 函數無法檢查營業時間。
+
+**解決方案**：恢復 `detailsCache` 存儲，但只保留必要的營業時間屬性
+```javascript
+// 在 updateRestaurantCache 中保留清理後的 detailsCache
+detailsCache: restaurant.detailsCache ? {
+  opening_hours: restaurant.detailsCache.opening_hours ? {
+    periods: restaurant.detailsCache.opening_hours.periods,
+    weekday_text: restaurant.detailsCache.opening_hours.weekday_text,
+    isOpen: restaurant.detailsCache.opening_hours.isOpen
+  } : null,
+  utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes
+} : null
+```
+
 ## 修復歷史
 
 - **2025-01-09** - Commit Hash: `5e49749` - 初始修復 isOpen() 檢查邏輯
 - **2025-01-09** - Commit Hash: `4d18e31` - 新增技術文檔
 - **2025-01-09** - Commit Hash: `4763fd1` - 修復 localStorage 存儲問題，避免序列化已棄用屬性
+- **2025-01-09** - Commit Hash: `1990989` - 恢復 detailsCache 營業時間資訊，修復輪盤轉圈問題
