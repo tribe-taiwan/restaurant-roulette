@@ -298,7 +298,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
 
 
     // 使用新的 Google Places API 的 isOpen() 方法
-    if (openingHours && typeof openingHours.isOpen === 'function') {
+    if (openingHours && openingHours.isOpen) {
       try {
         const isOpenNow = openingHours.isOpen();
         console.log('🕐 使用 Google Places API isOpen() 方法結果:', isOpenNow);
@@ -746,7 +746,7 @@ function getBusinessStatus(openingHours, language = 'zh') {
   }
 
   // 使用 Google 推薦的 isOpen() 方法
-  if (typeof openingHours.isOpen === 'function') {
+  if (openingHours.isOpen) {
     try {
       const isOpenNow = openingHours.isOpen();
       console.log('🕐 getBusinessStatus 使用 isOpen() 方法結果:', isOpenNow);
