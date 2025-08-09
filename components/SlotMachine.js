@@ -691,6 +691,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               )}
             </div>
+
+            {/* 簡單轉圈Loading覆蓋層 - 只在轉盤時顯示 */}
+            {isSpinning && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+                <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
             
             {/* Price Label - 完全獨立的絕對定位 */}
             {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
