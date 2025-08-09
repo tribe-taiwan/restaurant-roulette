@@ -535,8 +535,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setSlotImages(shuffledImages);
           console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
           
-          // 🎯 根據偵測結果生成動態CSS動畫（預設0.3秒/張）
-          createDynamicAnimation(detectedImages.length, 0.3);
+          // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
+          createDynamicAnimation(detectedImages.length, 0.5);
         } else {
           console.warn('⚠️ [DEBUG] 沒有偵測到任何圖片，slotImages 將保持預設值');
         }
@@ -628,7 +628,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setScrollingNames(finalSequence);
 
           // 設置動畫結束計時器 - 使用新的時間計算
-          const animationResult = createDynamicAnimation(slotImages.length, 0.3);
+          const animationResult = createDynamicAnimation(slotImages.length, 0.5);
           const slowAnimationDuration = animationResult.slowDuration * 1000; // 轉換為毫秒
           
           setTimeout(() => {
