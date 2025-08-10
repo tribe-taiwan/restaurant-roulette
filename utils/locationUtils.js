@@ -1083,20 +1083,33 @@ function updateRestaurantCache(restaurants) {
 function getAvailableRestaurantsFromCache(selectedMealTime) {
   try {
     const history = getRestaurantHistory();
-    
+
     if (!history || !history.cached_restaurants || history.cached_restaurants.length === 0) {
       // 只在首次或重要狀態變化時顯示
       return [];
     }
 
+    // 統計沒有營業時間數據的餐廳
+    const noHoursRestaurants = [];
+
     // 篩選：營業中 + 未出現過
     const availableRestaurants = history.cached_restaurants.filter(restaurant => {
-      const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
+      const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime, true); // 抑制個別日誌
       const notShown = !history.shown_restaurants.includes(restaurant.id);
+
+      // 收集沒有營業時間數據的餐廳
+      if (selectedMealTime === 'current' && !restaurant.detailsCache?.opening_hours) {
+        noHoursRestaurants.push(restaurant.name);
+      }
+
       return isOpen && notShown;
     });
 
-    // 移除快取篩選結果日誌
+    // 統一顯示沒有營業時間數據的餐廳日誌
+    if (noHoursRestaurants.length > 0) {
+      console.log(`⚠️ 幕後補充: ${noHoursRestaurants.length}家餐廳沒有營業時間數據已排除 (${noHoursRestaurants.slice(0, 3).join('、')}${noHoursRestaurants.length > 3 ? '等' : ''})`);
+    }
+
     return availableRestaurants;
   } catch (error) {
     console.warn('⚠️ 從快取獲取餐廳失敗:', error);
@@ -1111,18 +1124,22 @@ const loggedRestaurants = new Set();
  * 檢查餐廳是否在指定時段營業
  * @param {Object} restaurant - 餐廳資訊
  * @param {string} timeSlot - 時段 ('breakfast', 'lunch', 'dinner', 'all')
+ * @param {boolean} suppressLog - 是否抑制日誌輸出（用於批量檢查）
  * @returns {boolean} 是否營業
  */
-function isRestaurantOpenInTimeSlot(restaurant, timeSlot) {
+function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
   // 【防護性註解：2025-01-02】遊客時間寶貴，沒有營業時間數據的餐廳必須排除，避免白跑一趟
   // 【重要】不得將沒有營業時間數據的餐廳視為營業中，這會誤導用戶
   if (timeSlot === 'current') {
     if (!restaurant.detailsCache?.opening_hours) {
-      // 避免重複日誌：每家餐廳只記錄一次
-      const logKey = `no-hours-${restaurant.id || restaurant.name}`;
-      if (!loggedRestaurants.has(logKey)) {
-        loggedRestaurants.add(logKey);
-        console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+      // 只在非抑制模式下顯示日誌
+      if (!suppressLog) {
+        // 避免重複日誌：每家餐廳只記錄一次
+        const logKey = `no-hours-${restaurant.id || restaurant.name}`;
+        if (!loggedRestaurants.has(logKey)) {
+          loggedRestaurants.add(logKey);
+          console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+        }
       }
       return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
     }
