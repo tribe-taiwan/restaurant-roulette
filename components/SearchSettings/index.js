@@ -1,25 +1,76 @@
-// SearchSettings/index.js - 搜索設定組件模組導出
+// SearchSettings/index.js - 主要 SearchSettings 組件
+// 使用子組件架構實現模組化設計
 
-// 載入主組件
-if (typeof window !== 'undefined') {
-  // 瀏覽器環境 - 動態載入腳本
-  const loadScript = (src) => {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`)) {
-        resolve();
-        return;
-      }
+function SearchSettings({
+  selectedMealTime,
+  setSelectedMealTime,
+  translations,
+  selectedLanguage,
+  baseUnit,
+  setBaseUnit,
+  unitMultiplier,
+  setUnitMultiplier
+}) {
+  // 安全檢查
+  if (!translations) {
+    console.warn('SearchSettings: translations 未提供');
+    return React.createElement('div', {
+      className: 'text-center text-red-400'
+    }, '搜索設定組件載入失敗：缺少翻譯資源');
+  }
 
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  };
+  // 檢查子組件是否已載入
+  const missingComponents = [];
+  if (typeof window.DistanceControl !== 'function') missingComponents.push('DistanceControl');
+  if (typeof window.MealTimeSelector !== 'function') missingComponents.push('MealTimeSelector');
+  if (typeof window.SettingsDisplay !== 'function') missingComponents.push('SettingsDisplay');
 
-  // 主組件已經通過 HTML 載入，無需動態載入
-  console.log('SearchSettings 子組件模組已準備就緒');
+  if (missingComponents.length > 0) {
+    console.warn('SearchSettings 子組件尚未完全載入:', missingComponents);
+    return React.createElement('div', {
+      className: 'text-center text-[var(--text-secondary)]'
+    }, `載入搜索設定組件中... (缺少: ${missingComponents.join(', ')})`);
+  }
+
+  try {
+    // 直接使用 React 組件
+    return React.createElement('div', {
+      className: 'search-settings-container'
+    }, [
+      // 距離控制組件
+      React.createElement(window.DistanceControl, {
+        key: 'distance-control',
+        baseUnit,
+        setBaseUnit,
+        unitMultiplier,
+        setUnitMultiplier,
+        translations
+      }),
+
+      // 用餐時段選擇組件
+      React.createElement(window.MealTimeSelector, {
+        key: 'meal-time-selector',
+        selectedMealTime,
+        setSelectedMealTime,
+        translations
+      }),
+
+      // 設定顯示組件
+      React.createElement(window.SettingsDisplay, {
+        key: 'settings-display',
+        selectedMealTime,
+        baseUnit,
+        unitMultiplier,
+        translations
+      })
+    ]);
+
+  } catch (error) {
+    console.error('SearchSettings 組件渲染失敗:', error);
+    return React.createElement('div', {
+      className: 'text-center text-red-400'
+    }, `搜索設定組件渲染失敗：${error.message}`);
+  }
 }
 
 // 安全的模組載入函數
@@ -59,9 +110,13 @@ function loadSearchSettingsComponents() {
   }
 }
 
+// 註冊到全域範圍
+if (typeof window !== 'undefined') {
+  window.SearchSettings = SearchSettings;
+  window.loadSearchSettingsComponents = loadSearchSettingsComponents;
+}
+
 // Node.js 環境導出
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadSearchSettingsComponents };
-} else if (typeof window !== 'undefined') {
-  window.loadSearchSettingsComponents = loadSearchSettingsComponents;
+  module.exports = { SearchSettings, loadSearchSettingsComponents };
 }
