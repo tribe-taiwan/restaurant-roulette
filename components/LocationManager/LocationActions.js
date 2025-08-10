@@ -79,7 +79,7 @@ function LocationActions({
                 </>
               ) : (
                 <>
-                  <div className="location-btn-icon icon-map-pin"></div>
+                  <div className="location-btn-icon location-btn-icon--map-pin"></div>
                   <div className="location-btn-text">
                     {t.autoLocation}
                   </div>
@@ -109,7 +109,7 @@ function LocationActions({
                 </>
               ) : (
                 <>
-                  <div className="location-btn-icon icon-clock"></div>
+                  <div className="location-btn-icon location-btn-icon--clock"></div>
                   <div className="location-btn-text">
                     {getManualLocationButtonText()}
                   </div>

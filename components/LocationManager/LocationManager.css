@@ -360,7 +360,7 @@ LocationButtons 組件樣式 */
   height: var(--icon-size-lg);
 }
 
-.icon-home {
+.quick-btn-icon--home {
   width: var(--icon-size-lg);
   height: var(--icon-size-lg);
   color: white;
@@ -371,7 +371,7 @@ LocationButtons 組件樣式 */
   background-size: contain;
 }
 
-.icon-briefcase {
+.quick-btn-icon--briefcase {
   width: var(--icon-size-lg);
   height: var(--icon-size-lg);
   color: white;
@@ -672,7 +672,7 @@ Actions 組件樣式 */
   height: var(--icon-size-md);
 }
 
-.location-btn-icon.icon-map-pin {
+.location-btn-icon--map-pin {
   width: var(--icon-size-md);
   height: var(--icon-size-md);
   color: white;
@@ -683,7 +683,7 @@ Actions 組件樣式 */
   background-size: contain;
 }
 
-.location-btn-icon.icon-clock {
+.location-btn-icon--clock {
   width: var(--icon-size-md);
   height: var(--icon-size-md);
   color: white;
