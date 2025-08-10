@@ -41,7 +41,7 @@ function loadLocationManagerComponents() {
 
 // 匯出組件載入器
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { LocationManager, loadLocationManagerComponents };
+  module.exports = { loadLocationManagerComponents };
 } else if (typeof window !== 'undefined') {
   window.loadLocationManagerComponents = loadLocationManagerComponents;
 }

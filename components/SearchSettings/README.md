@@ -65,9 +65,7 @@ SearchSettings/
 <script src="./components/SearchSettings/DistanceControl.js"></script>
 <script src="./components/SearchSettings/MealTimeSelector.js"></script>
 <script src="./components/SearchSettings/SettingsDisplay.js"></script>
-
-<!-- 載入主組件 -->
-<script src="./components/SearchSettings.js"></script>
+<script type="text/babel" src="./components/SearchSettings/index.js"></script>
 
 <!-- 載入樣式 -->
 <link rel="stylesheet" href="./components/SearchSettings/SearchSettings.css">

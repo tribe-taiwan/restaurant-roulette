@@ -86,7 +86,6 @@ LocationManager/
 <script src="components/LocationManager/AddressInput.js"></script>
 <script src="components/LocationManager/LocationActions.js"></script>
 <script src="components/LocationManager/index.js"></script>
-<script src="components/LocationManager.js"></script>
 ```
 
 ### 2. 組件使用

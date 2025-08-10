@@ -18,12 +18,8 @@ if (typeof window !== 'undefined') {
     });
   };
 
-  // 載入主組件（子組件應該已經在 HTML 中載入）
-  loadScript('./SearchSettings/SearchSettings.js').then(() => {
-    console.log('SearchSettings 主組件載入完成');
-  }).catch(error => {
-    console.error('SearchSettings 主組件載入失敗:', error);
-  });
+  // 主組件已經通過 HTML 載入，無需動態載入
+  console.log('SearchSettings 子組件模組已準備就緒');
 }
 
 // 安全的模組載入函數
@@ -55,8 +51,7 @@ function loadSearchSettingsComponents() {
     return {
       DistanceControl: require('./DistanceControl'),
       MealTimeSelector: require('./MealTimeSelector'),
-      SettingsDisplay: require('./SettingsDisplay'),
-      SearchSettings: require('./SearchSettings')
+      SettingsDisplay: require('./SettingsDisplay')
     };
   } catch (error) {
     console.error('Error loading SearchSettings components:', error);
@@ -66,7 +61,7 @@ function loadSearchSettingsComponents() {
 
 // Node.js 環境導出
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { SearchSettings: require('./SearchSettings'), loadSearchSettingsComponents };
+  module.exports = { loadSearchSettingsComponents };
 } else if (typeof window !== 'undefined') {
   window.loadSearchSettingsComponents = loadSearchSettingsComponents;
 }
