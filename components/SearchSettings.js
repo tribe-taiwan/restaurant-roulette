@@ -1,4 +1,5 @@
-// SearchSettings.js - 搜索設定相關組件
+// SearchSettings.js - 搜索設定相關組件 (重構版本)
+// 使用子組件架構實現模組化設計
 
 function SearchSettings({
   selectedMealTime,
@@ -10,141 +11,165 @@ function SearchSettings({
   unitMultiplier,
   setUnitMultiplier
 }) {
+  // 使用 useRef 來存儲 DOM 容器
+  const containerRef = React.useRef(null);
+  
+  // 使用 useEffect 來處理 DOM 操作
+  React.useEffect(() => {
+    // 安全檢查
+    if (!containerRef.current) {
+      console.warn('SearchSettings: containerRef.current 不存在');
+      return;
+    }
+    
+    // 延遲執行，確保所有腳本都已載入
+    const timeoutId = setTimeout(() => {
+      try {
+        // 清空容器
+        containerRef.current.innerHTML = '';
+        
+        // 確保子組件已載入
+        const missingComponents = [];
+        if (typeof window.DistanceControl !== 'function') missingComponents.push('DistanceControl');
+        if (typeof window.MealTimeSelector !== 'function') missingComponents.push('MealTimeSelector');
+        if (typeof window.SettingsDisplay !== 'function') missingComponents.push('SettingsDisplay');
+        
+        if (missingComponents.length > 0) {
+          console.warn('SearchSettings 子組件尚未完全載入:', missingComponents);
+          
+          const loadingText = document.createElement('div');
+          loadingText.className = 'text-center text-[var(--text-secondary)]';
+          loadingText.textContent = `載入搜索設定組件中... (缺少: ${missingComponents.join(', ')})`;
+          
+          if (containerRef.current) {
+            containerRef.current.appendChild(loadingText);
+          }
+          return;
+        }
+
+        let componentsLoaded = 0;
+
+        // 設定狀態顯示
+        if (typeof window.SettingsDisplay === 'function') {
+          try {
+            console.log('🔧 載入 SettingsDisplay...');
+            const settingsDisplay = window.SettingsDisplay({
+              selectedMealTime,
+              baseUnit,
+              unitMultiplier,
+              translations
+            });
+            
+            if (settingsDisplay && 
+                typeof settingsDisplay === 'object' && 
+                settingsDisplay.nodeType === Node.ELEMENT_NODE &&
+                containerRef.current) {
+              containerRef.current.appendChild(settingsDisplay);
+              console.log('✅ SettingsDisplay 載入成功');
+              componentsLoaded++;
+            } else {
+              console.warn('⚠️ SettingsDisplay 返回無效元素:', settingsDisplay);
+            }
+          } catch (error) {
+            console.error('❌ SettingsDisplay 載入失敗:', error);
+          }
+        }
+        
+        // 距離控制組件
+        if (typeof window.DistanceControl === 'function') {
+          try {
+            console.log('🔧 載入 DistanceControl...');
+            const distanceControl = window.DistanceControl({
+              baseUnit,
+              setBaseUnit,
+              unitMultiplier,
+              setUnitMultiplier
+            });
+            
+            if (distanceControl && 
+                typeof distanceControl === 'object' && 
+                distanceControl.nodeType === Node.ELEMENT_NODE &&
+                containerRef.current) {
+              containerRef.current.appendChild(distanceControl);
+              console.log('✅ DistanceControl 載入成功');
+              componentsLoaded++;
+            } else {
+              console.warn('⚠️ DistanceControl 返回無效元素:', distanceControl);
+            }
+          } catch (error) {
+            console.error('❌ DistanceControl 載入失敗:', error);
+          }
+        }
+        
+        // 用餐時段選擇組件
+        if (typeof window.MealTimeSelector === 'function') {
+          try {
+            console.log('🔧 載入 MealTimeSelector...');
+            const mealTimeSelector = window.MealTimeSelector({
+              selectedMealTime,
+              setSelectedMealTime,
+              translations
+            });
+            
+            if (mealTimeSelector && 
+                typeof mealTimeSelector === 'object' && 
+                mealTimeSelector.nodeType === Node.ELEMENT_NODE &&
+                containerRef.current) {
+              containerRef.current.appendChild(mealTimeSelector);
+              console.log('✅ MealTimeSelector 載入成功');
+              componentsLoaded++;
+            } else {
+              console.warn('⚠️ MealTimeSelector 返回無效元素:', mealTimeSelector);
+            }
+          } catch (error) {
+            console.error('❌ MealTimeSelector 載入失敗:', error);
+          }
+        }
+        
+        console.log(`SearchSettings: 成功載入 ${componentsLoaded} 個子組件`);
+        
+      } catch (error) {
+        console.error('SearchSettings component error:', error);
+        
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+          const errorText = document.createElement('div');
+          errorText.className = 'text-center text-red-400';
+          errorText.textContent = '搜索設定組件載入失敗，請重新整理頁面';
+          containerRef.current.appendChild(errorText);
+        }
+      }
+    }, 100); // 100ms 延遲
+
+    // 清理函數
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [selectedMealTime, baseUnit, unitMultiplier, translations]);
+
+  // 返回 React JSX
   try {
-    const t = translations;
-
-    // 使用統一的用餐時段配置
-    const mealTimeConfig = window.getMealTimeConfig ? window.getMealTimeConfig() : {
-      breakfast: { start: 5, end: 10, displayTime: '5-10', icon: '🌅' },
-      lunch: { start: 10, end: 16, displayTime: '10-16', icon: '☀️' },
-      dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
-    };
-
-    // 距離配置
-    const DISTANCE_CONFIG = {
-      baseUnits: {
-        200: { label: '200m', fullLabel: '200公尺模式' },
-        1000: { label: '1km', fullLabel: '1公里模式' }
-      }
-    };
-
-    // 計算實際搜索距離顯示
-    const getActualRadius = () => baseUnit * unitMultiplier;
-    const getDisplayText = () => {
-      const actualMeters = getActualRadius();
-      if (actualMeters >= 1000) {
-        return `${actualMeters / 1000}km`;
-      } else {
-        return `${actualMeters}m`;
-      }
-    };
-
-    // 單位切換處理
-    const handleUnitSwitch = (newBaseUnit) => {
-      const currentActualDistance = getActualRadius();
-      setBaseUnit(newBaseUnit);
-      
-      // 調整倍數以保持相近距離
-      const newMultiplier = Math.round(currentActualDistance / newBaseUnit);
-      const adjustedMultiplier = Math.max(1, Math.min(10, newMultiplier));
-      setUnitMultiplier(adjustedMultiplier);
-    };
-
     return (
       <div className="w-full max-w-2xl mx-auto">
-        {/* 搜索範圍與用餐時段整合區塊 */}
         <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container">
-          {/* 搜索範圍設定 */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between gap-4">
-              {/* 單位切換器 */}
-              <div className="flex bg-gray-700 rounded-lg overflow-hidden">
-                {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config]) => (
-                  <button
-                    key={value}
-                    onClick={() => handleUnitSwitch(Number(value))}
-                    className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                      baseUnit === Number(value)
-                        ? 'bg-[var(--primary-color)] text-white'
-                        : 'text-[var(--text-secondary)] hover:bg-gray-600'
-                    }`}
-                  >
-                    {config.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* 滑軌和距離顯示 */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={unitMultiplier}
-                  onChange={(e) => setUnitMultiplier(Number(e.target.value))}
-                  className="w-32 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                  style={{'--value': `${((unitMultiplier - 1) / (10 - 1)) * 100}%`}}
-                />
-                <span className="text-[var(--accent-color)] font-bold min-w-[4rem] text-center">
-                  {getDisplayText()}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {/* 用餐時段選擇 */}
-          <div>
-          {/* 第一行：現在營業中和不限時間 */}
-          <div className="flex gap-2 justify-center mb-2">
-            {[
-              { id: 'current', label: t.openNowFilter, icon: 'clock', time: '' },
-              { id: 'all', label: t.anyTime, icon: 'globe', time: '' }
-            ].map((mealTime) => (
-              <button
-                key={mealTime.id}
-                onClick={() => setSelectedMealTime(mealTime.id)}
-                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  selectedMealTime === mealTime.id
-                    ? 'bg-[var(--primary-color)] text-white'
-                    : 'bg-gray-700 text-[var(--text-secondary)] hover:bg-gray-600'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className={`icon-${mealTime.icon} text-lg`}></div>
-                  <span className="text-xs">{mealTime.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-          {/* 第二行：早午晚餐時段 */}
-          <div className="flex gap-2 justify-center">
-            {[
-              { id: 'breakfast', label: t.breakfast, icon: mealTimeConfig.breakfast.icon, time: mealTimeConfig.breakfast.displayTime },
-              { id: 'lunch', label: t.lunch, icon: mealTimeConfig.lunch.icon, time: mealTimeConfig.lunch.displayTime },
-              { id: 'dinner', label: t.dinner, icon: mealTimeConfig.dinner.icon, time: mealTimeConfig.dinner.displayTime }
-            ].map((mealTime) => (
-              <button
-                key={mealTime.id}
-                onClick={() => setSelectedMealTime(mealTime.id)}
-                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  selectedMealTime === mealTime.id
-                    ? 'bg-[var(--primary-color)] text-white'
-                    : 'bg-gray-700 text-[var(--text-secondary)] hover:bg-gray-600'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className={`icon-${mealTime.icon} text-lg`}></div>
-                  <span className="text-xs">{mealTime.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
+          <div ref={containerRef}>
+            {/* 子組件將通過 useEffect 動態插入到這裡 */}
           </div>
         </div>
       </div>
     );
   } catch (error) {
-    console.error('SearchSettings component error:', error);
-    return null;
+    console.error('SearchSettings render error:', error);
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container">
+          <div className="text-center text-red-400">
+            搜索設定組件渲染失敗，請重新整理頁面
+          </div>
+        </div>
+      </div>
+    );
   }
 }

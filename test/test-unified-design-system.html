@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統一視覺設計系統測試</title>
+    
+    <!-- 載入設計系統和樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--theme-background, #f5f5f5);
+            margin: 0;
+            padding: 20px;
+            color: var(--theme-text-primary);
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--unified-border-radius);
+            box-shadow: var(--theme-shadow-lg);
+            margin-bottom: 20px;
+        }
+        
+        .theme-switcher {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .theme-button {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--unified-border-radius);
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+        
+        .theme-button:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--theme-shadow-md);
+        }
+        
+        .theme-button.active {
+            background: var(--theme-primary);
+            color: white;
+            border-color: var(--theme-primary);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--theme-primary);
+        }
+        
+        .component-demo {
+            background: var(--surface-secondary);
+            padding: 15px;
+            border-radius: var(--unified-border-radius);
+            margin-bottom: 15px;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .color-swatch {
+            height: 60px;
+            border-radius: var(--unified-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: var(--theme-shadow-md);
+        }
+        
+        .unified-demo-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>統一視覺設計系統測試</h1>
+        
+        <div class="test-section">
+            <div class="test-title">主題切換器</div>
+            <div class="theme-switcher">
+                <button class="theme-button active" data-theme="maizuru">舞鶴 (日本紅)</button>
+                <button class="theme-button" data-theme="qisu">柒宿 (海藍)</button>
+                <button class="theme-button" data-theme="muluInn">沐旅 (森林綠)</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">當前主題色彩</div>
+            <div class="color-palette">
+                <div class="color-swatch" style="background: var(--theme-primary)">主色</div>
+                <div class="color-swatch" style="background: var(--theme-secondary)">次色</div>
+                <div class="color-swatch" style="background: var(--theme-accent)">強調色</div>
+                <div class="color-swatch" style="background: var(--success-color)">成功色</div>
+                <div class="color-swatch" style="background: var(--warning-color)">警告色</div>
+                <div class="color-swatch" style="background: var(--error-color)">錯誤色</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">統一按鈕樣式</div>
+            <div class="component-demo">
+                <div class="unified-demo-buttons">
+                    <button class="unified-button unified-button--primary">主要按鈕</button>
+                    <button class="unified-button unified-button--secondary">次要按鈕</button>
+                    <button class="unified-button unified-button--accent">強調按鈕</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">用餐時段選擇器</div>
+            <div class="component-demo">
+                <div id="meal-time-selector"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">距離控制組件</div>
+            <div class="component-demo">
+                <div id="distance-control"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">統一卡片樣式</div>
+            <div class="component-demo">
+                <div class="unified-card" style="padding: 15px; margin-bottom: 10px;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--theme-primary);">卡片標題</h4>
+                    <p style="margin: 0; color: var(--text-secondary);">這是一個使用統一設計系統的卡片組件，具有一致的圓角、陰影和懸停效果。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">統一輸入框樣式</div>
+            <div class="component-demo">
+                <input type="text" class="unified-input" placeholder="統一設計的輸入框" style="width: 100%; margin-bottom: 10px;">
+                <input type="text" class="unified-input" placeholder="支援焦點和懸停效果" style="width: 100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入品牌主題配置 -->
+    <script src="../config/brandThemeConfigs.js"></script>
+    
+    <!-- 載入組件 -->
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script src="../components/SearchSettings/DistanceControl.js"></script>
+    
+    <!-- 載入驗證腳本 -->
+    <script src="validate-unified-design-system.js"></script>
+    
+    <script>
+        // 模擬翻譯對象
+        const mockTranslations = {
+            openNowFilter: '現在營業中',
+            anyTime: '不限時間',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐',
+            customTime: '自訂時間'
+        };
+        
+        // 測試狀態
+        let selectedMealTime = 'current';
+        let baseUnit = 1000;
+        let unitMultiplier = 3;
+        
+        function setSelectedMealTime(mealTimeId) {
+            selectedMealTime = mealTimeId;
+            renderComponents();
+        }
+        
+        function setBaseUnit(unit) {
+            baseUnit = unit;
+            renderComponents();
+        }
+        
+        function setUnitMultiplier(multiplier) {
+            unitMultiplier = multiplier;
+            renderComponents();
+        }
+        
+        function renderComponents() {
+            // 渲染用餐時段選擇器
+            const mealTimeContainer = document.getElementById('meal-time-selector');
+            if (mealTimeContainer && window.MealTimeSelector) {
+                mealTimeContainer.innerHTML = '';
+                const mealTimeComponent = window.MealTimeSelector({
+                    selectedMealTime,
+                    setSelectedMealTime,
+                    translations: mockTranslations
+                });
+                if (mealTimeComponent) {
+                    mealTimeContainer.appendChild(mealTimeComponent);
+                }
+            }
+            
+            // 渲染距離控制組件
+            const distanceContainer = document.getElementById('distance-control');
+            if (distanceContainer && window.DistanceControl) {
+                distanceContainer.innerHTML = '';
+                const distanceComponent = window.DistanceControl({
+                    baseUnit,
+                    setBaseUnit,
+                    unitMultiplier,
+                    setUnitMultiplier
+                });
+                if (distanceComponent) {
+                    distanceContainer.appendChild(distanceComponent);
+                }
+            }
+        }
+        
+        // 主題切換功能
+        function switchTheme(themeId) {
+            if (window.BrandThemeManager) {
+                window.BrandThemeManager.loadTheme(themeId);
+                
+                // 更新主題按鈕狀態
+                document.querySelectorAll('.theme-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === themeId) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 重新渲染組件
+                setTimeout(renderComponents, 100);
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化品牌主題管理器
+            if (window.BrandThemeManager) {
+                window.BrandThemeManager.init('maizuru');
+            }
+            
+            // 綁定主題切換事件
+            document.querySelectorAll('.theme-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTheme(button.dataset.theme);
+                });
+            });
+            
+            // 初始渲染組件
+            setTimeout(renderComponents, 200);
+            
+            // 測試鍵盤導航
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    console.log('鍵盤導航測試');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

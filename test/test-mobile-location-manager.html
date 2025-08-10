@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手機優先 LocationManager 測試</title>
+    
+    <!-- 載入必要的樣式和腳本 -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
+    
+    <!-- 組件樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .test-container {
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .test-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 480px;
+            width: 100%;
+        }
+        
+        .viewport-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 8px 16px;
+            background: #007ACC;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>手機優先 LocationManager 測試</h1>
+            <p>測試 Garmin 風格的大按鈕設計和響應式布局</p>
+        </div>
+        
+        <div class="test-info">
+            <div class="viewport-info">
+                視窗尺寸: <span id="viewport-size"></span>
+            </div>
+            <div class="viewport-info">
+                設備類型: <span id="device-type"></span>
+            </div>
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-btn" onclick="simulateLocationSuccess()">模擬定位成功</button>
+            <button class="test-btn" onclick="simulateLocationError()">模擬定位失敗</button>
+            <button class="test-btn" onclick="simulateLoading()">模擬載入中</button>
+            <button class="test-btn" onclick="resetState()">重置狀態</button>
+        </div>
+        
+        <div id="location-manager-test"></div>
+    </div>
+
+    <script type="text/babel">
+        // 模擬翻譯對象
+        const mockTranslations = {
+            locationDetected: '已定位',
+            enterAddress: '請輸入地址或地標',
+            saveHome: '儲存住家',
+            saveOffice: '儲存公司',
+            home: '住家',
+            office: '公司',
+            homeNotSet: '住家未設定',
+            officeNotSet: '公司未設定',
+            autoLocation: '自動定位',
+            locateHere: '定位這裡',
+            located: '已定位',
+            saveHomeTip: '將當前地址儲存為住家',
+            saveOfficeTip: '將當前地址儲存為公司',
+            useHomeTip: '使用已儲存的住家地址',
+            useOfficeTip: '使用已儲存的公司地址',
+            enterAddressTip: '請先輸入地址',
+            autoLocationTip: '使用GPS自動定位',
+            manualLocationTip: '手動確認地址定位'
+        };
+
+        // 測試狀態
+        let testState = {
+            locationStatus: 'idle',
+            userAddress: '',
+            savedLocations: [],
+            addressInput: '',
+            isRelocating: false,
+            isGeocodingAddress: false
+        };
+
+        // 模擬組件
+        function MockCurrentLocationDisplay({ locationStatus, userAddress, translations }) {
+            if (locationStatus !== 'success' || !userAddress) {
+                return null;
+            }
+
+            return (
+                <div className="current-location-display">
+                    <div className="current-location-content">
+                        <div className="current-location-icon">
+                            <div className="icon-map-pin">📍</div>
+                        </div>
+                        <div className="current-location-text">
+                            <div className="current-location-label">
+                                {translations.locationDetected}
+                            </div>
+                            <div className="current-location-address">
+                                {userAddress}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function MockQuickLocationButtons({ savedLocations, addressInput, onLocationButton, translations }) {
+            const hasHomeLocation = savedLocations.some(loc => loc.type === 'home');
+            const hasOfficeLocation = savedLocations.some(loc => loc.type === 'office');
+            const hasAddressInput = addressInput.trim().length > 0;
+
+            const getLocationButtonStyle = (locationType) => {
+                const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
+                if (hasAddressInput) {
+                    return 'bg-orange-500';
+                } else if (hasLocation) {
+                    return 'bg-green-500';
+                } else {
+                    return 'bg-gray-500';
+                }
+            };
+
+            const getLocationButtonText = (locationType) => {
+                const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
+                const isHome = locationType === 'home';
+                if (hasAddressInput) {
+                    return isHome ? translations.saveHome : translations.saveOffice;
+                } else if (hasLocation) {
+                    return isHome ? translations.home : translations.office;
+                } else {
+                    return isHome ? translations.homeNotSet : translations.officeNotSet;
+                }
+            };
+
+            return (
+                <div className="quick-location-buttons">
+                    <div className="quick-buttons-container">
+                        <button
+                            onClick={() => onLocationButton('home')}
+                            className={`quick-location-btn ${getLocationButtonStyle('home')}`}
+                        >
+                            <div className="quick-btn-icon">
+                                <div className="icon-home">🏠</div>
+                            </div>
+                            <div className="quick-btn-text">
+                                {getLocationButtonText('home')}
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => onLocationButton('office')}
+                            className={`quick-location-btn ${getLocationButtonStyle('office')}`}
+                        >
+                            <div className="quick-btn-icon">
+                                <div className="icon-briefcase">💼</div>
+                            </div>
+                            <div className="quick-btn-text">
+                                {getLocationButtonText('office')}
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function MockAddressInput({ addressInput, setAddressInput, translations }) {
+            return (
+                <div className="address-input-container">
+                    <div className="address-input-wrapper">
+                        <div className="address-input-icon">
+                            <div className="icon-search">🔍</div>
+                        </div>
+                        <input
+                            type="text"
+                            value={addressInput}
+                            onChange={(e) => setAddressInput(e.target.value)}
+                            placeholder={translations.enterAddress}
+                            className="address-input-field"
+                            maxLength="200"
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        function MockLocationActions({ locationStatus, addressInput, isRelocating, isGeocodingAddress, onRelocate, onAddressConfirm, translations }) {
+            return (
+                <div className="location-actions">
+                    <div className="location-actions-container">
+                        <button
+                            onClick={onRelocate}
+                            disabled={isRelocating}
+                            className={`location-action-btn auto-location-btn ${
+                                isRelocating 
+                                    ? 'btn-loading' 
+                                    : locationStatus === 'success'
+                                        ? 'btn-success'
+                                        : locationStatus === 'error'
+                                            ? 'btn-warning'
+                                            : 'btn-primary'
+                            }`}
+                        >
+                            <div className="location-btn-content">
+                                {isRelocating ? (
+                                    <div className="loading-spinner"></div>
+                                ) : (
+                                    <>
+                                        <div className="location-btn-icon">
+                                            <div className="icon-map-pin">📍</div>
+                                        </div>
+                                        <div className="location-btn-text">
+                                            {translations.autoLocation}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </button>
+                        
+                        <button
+                            onClick={onAddressConfirm}
+                            disabled={!addressInput.trim() || isGeocodingAddress}
+                            className={`location-action-btn manual-location-btn ${
+                                addressInput.trim() ? 'btn-primary' : 'btn-disabled'
+                            }`}
+                        >
+                            <div className="location-btn-content">
+                                {isGeocodingAddress ? (
+                                    <div className="loading-spinner"></div>
+                                ) : (
+                                    <>
+                                        <div className="location-btn-icon">
+                                            <div className="icon-clock">⏰</div>
+                                        </div>
+                                        <div className="location-btn-text">
+                                            {translations.locateHere}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function TestLocationManager() {
+            const [state, setState] = React.useState(testState);
+
+            const handleLocationButton = (type) => {
+                console.log(`Location button clicked: ${type}`);
+                if (state.addressInput.trim()) {
+                    setState(prev => ({
+                        ...prev,
+                        savedLocations: [...prev.savedLocations.filter(loc => loc.type !== type), { type, address: prev.addressInput }]
+                    }));
+                }
+            };
+
+            const handleRelocate = () => {
+                setState(prev => ({ ...prev, isRelocating: true }));
+                setTimeout(() => {
+                    setState(prev => ({
+                        ...prev,
+                        isRelocating: false,
+                        locationStatus: 'success',
+                        userAddress: '台南市中西區中正路1號'
+                    }));
+                }, 2000);
+            };
+
+            const handleAddressConfirm = () => {
+                if (state.addressInput.trim()) {
+                    setState(prev => ({ ...prev, isGeocodingAddress: true }));
+                    setTimeout(() => {
+                        setState(prev => ({
+                            ...prev,
+                            isGeocodingAddress: false,
+                            locationStatus: 'success',
+                            userAddress: prev.addressInput
+                        }));
+                    }, 1500);
+                }
+            };
+
+            const setAddressInput = (value) => {
+                setState(prev => ({ ...prev, addressInput: value }));
+            };
+
+            return (
+                <div className="location-manager-mobile">
+                    <div className="location-manager-container">
+                        <div className="location-manager-card">
+                            <div className="location-section">
+                                <MockCurrentLocationDisplay 
+                                    locationStatus={state.locationStatus}
+                                    userAddress={state.userAddress}
+                                    translations={mockTranslations}
+                                />
+                            </div>
+                            
+                            <div className="location-section">
+                                <MockQuickLocationButtons 
+                                    savedLocations={state.savedLocations}
+                                    addressInput={state.addressInput}
+                                    onLocationButton={handleLocationButton}
+                                    translations={mockTranslations}
+                                />
+                            </div>
+                            
+                            <div className="location-section">
+                                <MockAddressInput 
+                                    addressInput={state.addressInput}
+                                    setAddressInput={setAddressInput}
+                                    translations={mockTranslations}
+                                />
+                            </div>
+                            
+                            <div className="location-section location-section-last">
+                                <MockLocationActions 
+                                    locationStatus={state.locationStatus}
+                                    addressInput={state.addressInput}
+                                    isRelocating={state.isRelocating}
+                                    isGeocodingAddress={state.isGeocodingAddress}
+                                    onRelocate={handleRelocate}
+                                    onAddressConfirm={handleAddressConfirm}
+                                    translations={mockTranslations}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 渲染測試組件
+        ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-test'));
+
+        // 測試控制函數
+        window.simulateLocationSuccess = () => {
+            testState = {
+                ...testState,
+                locationStatus: 'success',
+                userAddress: '台南市中西區中正路1號',
+                isRelocating: false
+            };
+            ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-test'));
+        };
+
+        window.simulateLocationError = () => {
+            testState = {
+                ...testState,
+                locationStatus: 'error',
+                userAddress: '',
+                isRelocating: false
+            };
+            ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-test'));
+        };
+
+        window.simulateLoading = () => {
+            testState = {
+                ...testState,
+                isRelocating: true,
+                locationStatus: 'loading'
+            };
+            ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-test'));
+        };
+
+        window.resetState = () => {
+            testState = {
+                locationStatus: 'idle',
+                userAddress: '',
+                savedLocations: [],
+                addressInput: '',
+                isRelocating: false,
+                isGeocodingAddress: false
+            };
+            ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-test'));
+        };
+
+        // 顯示視窗資訊
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            document.getElementById('viewport-size').textContent = `${width} x ${height}`;
+            
+            let deviceType = 'Desktop';
+            if (width <= 360) deviceType = 'Small Mobile';
+            else if (width <= 480) deviceType = 'Mobile';
+            else if (width <= 768) deviceType = 'Tablet';
+            
+            document.getElementById('device-type').textContent = deviceType;
+        }
+
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+    </script>
+</body>
+</html>

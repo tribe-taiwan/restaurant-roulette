@@ -1,0 +1,300 @@
+/* TouchOptimizer 樣式 */
+
+/* 觸控活動狀態 */
+.touch-active {
+    transform: scale(0.96);
+    opacity: 0.8;
+    transition: all 0.1s ease-out;
+}
+
+/* 設備類型樣式 */
+.is-mobile {
+    /* 移動端特定樣式 */
+}
+
+.is-tablet {
+    /* 平板特定樣式 */
+}
+
+.is-ios {
+    /* iOS 特定樣式 */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 單手操作模式 */
+.single-hand-mode {
+    /* 拇指區域優化 */
+}
+
+.single-hand-mode .thumb-zone-optimized {
+    /* 重要元素移到拇指可達區域 */
+}
+
+/* 確認對話框樣式 */
+.touch-confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.touch-confirmation-dialog {
+    background: var(--surface-color);
+    border-radius: var(--border-radius-large);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-lg);
+    max-width: 320px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp 0.3s ease-out;
+}
+
+.touch-confirmation-message {
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.5;
+}
+
+.touch-confirmation-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.touch-confirmation-cancel,
+.touch-confirmation-confirm {
+    flex: 1;
+    height: var(--button-height-medium);
+    border: none;
+    border-radius: var(--border-radius-medium);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    min-width: var(--touch-target-min);
+}
+
+.touch-confirmation-cancel {
+    background: var(--secondary-color);
+    color: var(--text-primary);
+}
+
+.touch-confirmation-cancel:hover {
+    background: color-mix(in srgb, var(--secondary-color) 85%, black);
+    transform: translateY(-1px);
+}
+
+.touch-confirmation-confirm {
+    background: var(--primary-color);
+    color: white;
+}
+
+.touch-confirmation-confirm:hover {
+    background: color-mix(in srgb, var(--primary-color) 85%, black);
+    transform: translateY(-1px);
+}
+
+/* 動畫 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 移動端觸控優化 */
+@media (max-width: 768px) {
+    /* 確保所有可點擊元素符合最小觸控標準 */
+    button,
+    [role="button"],
+    .clickable,
+    a {
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+    }
+    
+    /* 增加觸控區域間距 */
+    button + button,
+    [role="button"] + [role="button"],
+    .clickable + .clickable {
+        margin-top: var(--spacing-sm);
+    }
+    
+    /* 防止意外選取 */
+    * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    /* 允許文字輸入框選取 */
+    input,
+    textarea,
+    [contenteditable] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+    
+    /* 觸控回饋增強 */
+    .touch-active {
+        transform: scale(0.94);
+        transition: all 0.08s ease-out;
+    }
+    
+    /* 確認對話框移動端優化 */
+    .touch-confirmation-dialog {
+        margin: var(--spacing-md);
+        padding: var(--spacing-lg);
+    }
+    
+    .touch-confirmation-buttons {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .touch-confirmation-cancel,
+    .touch-confirmation-confirm {
+        height: var(--button-height-large);
+    }
+}
+
+/* 大螢幕單手操作優化 */
+@media (min-height: 667px) and (max-width: 768px) {
+    .single-hand-mode {
+        /* 拇指可達區域（螢幕下方 1/3） */
+    }
+    
+    .single-hand-mode [data-important-action] {
+        position: sticky;
+        bottom: var(--spacing-lg);
+        z-index: 100;
+        box-shadow: var(--shadow-xl);
+    }
+    
+    /* 拇指區域視覺提示 */
+    .thumb-zone-optimized::after {
+        content: '';
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 33vh;
+        background: linear-gradient(
+            to top,
+            rgba(var(--primary-color-rgb), 0.05) 0%,
+            transparent 100%
+        );
+        pointer-events: none;
+        z-index: -1;
+    }
+}
+
+/* 橫屏模式優化 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .touch-confirmation-dialog {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .touch-confirmation-buttons {
+        flex-direction: row;
+    }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+    .touch-confirmation-dialog {
+        border: 2px solid var(--text-primary);
+    }
+    
+    .touch-confirmation-cancel,
+    .touch-confirmation-confirm {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 減少動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .touch-active {
+        transform: none;
+        opacity: 0.9;
+    }
+    
+    .touch-confirmation-overlay {
+        animation: none;
+    }
+    
+    .touch-confirmation-dialog {
+        animation: none;
+    }
+}
+
+/* 深色模式優化 */
+@media (prefers-color-scheme: dark) {
+    .touch-confirmation-overlay {
+        background: rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* 無障礙支援 */
+@media (prefers-reduced-motion: no-preference) {
+    .touch-active {
+        animation: touchPulse 0.2s ease-out;
+    }
+}
+
+@keyframes touchPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.96);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 觸控目標大小檢查（開發模式） */
+.debug-touch-targets button:not([data-touch-optimized]),
+.debug-touch-targets [role="button"]:not([data-touch-optimized]),
+.debug-touch-targets .clickable:not([data-touch-optimized]) {
+    outline: 2px dashed red !important;
+    outline-offset: 2px;
+}
+
+.debug-touch-targets button[data-touch-optimized],
+.debug-touch-targets [role="button"][data-touch-optimized],
+.debug-touch-targets .clickable[data-touch-optimized] {
+    outline: 2px solid green !important;
+    outline-offset: 2px;
+}

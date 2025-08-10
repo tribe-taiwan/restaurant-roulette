@@ -1,0 +1,618 @@
+/* SearchSettings.css - 搜索設定組件樣式 */
+
+/* 統一風格距離控制組件樣式 */
+.garmin-distance-control {
+  background: var(--surface-color);
+  border-radius: var(--unified-border-radius);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--theme-shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.garmin-distance-control:hover {
+  box-shadow: var(--theme-shadow-lg);
+  transform: var(--hover-scale);
+}
+
+/* 大型距離顯示 - 支援品牌主題 */
+.distance-display {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  border-radius: var(--unified-border-radius);
+  color: white;
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.distance-display:hover {
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.distance-value {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.distance-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 大型單位切換器 - 統一設計 */
+.unit-switcher {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+  background: var(--surface-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--unified-border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.unit-button {
+  flex: 1;
+  height: var(--button-height-small);
+  min-height: var(--touch-target-min);
+  background: transparent;
+  border: none;
+  border-radius: var(--unified-border-radius);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.unit-button:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.unit-button:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+}
+
+.unit-button.active {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  color: white;
+  box-shadow: var(--theme-shadow-md);
+}
+
+.unit-button.active:hover {
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-lg);
+}
+
+/* 大型視覺化滑軌容器 */
+.slider-container {
+  position: relative;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 統一滑軌軌道 */
+.slider-track {
+  position: relative;
+  height: 8px;
+  background: var(--surface-secondary);
+  border-radius: var(--unified-border-radius);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+/* 統一滑軌進度條 */
+.slider-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--progress);
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+  border-radius: var(--unified-border-radius);
+  transition: width var(--transition-normal);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Garmin風格滑軌 */
+.garmin-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 統一 WebKit 滑軌拇指 */
+.garmin-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 2;
+}
+
+.garmin-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.garmin-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: var(--theme-shadow-xl);
+  filter: var(--active-brightness);
+}
+
+/* 統一 Firefox 滑軌拇指 */
+.garmin-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--transition-fast);
+}
+
+.garmin-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.garmin-slider::-moz-range-thumb:active {
+  transform: scale(1.2);
+  box-shadow: var(--theme-shadow-xl);
+  filter: var(--active-brightness);
+}
+
+/* 滑軌刻度標記 */
+.slider-marks {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  height: 20px;
+}
+
+.slider-mark {
+  position: absolute;
+  left: var(--position);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slider-mark::before {
+  content: '';
+  width: 2px;
+  height: 8px;
+  background: var(--text-muted);
+  border-radius: 1px;
+  margin-bottom: 2px;
+  transition: all var(--transition-fast);
+}
+
+.slider-mark.active::before {
+  background: var(--theme-accent);
+  height: 12px;
+  width: 3px;
+  box-shadow: var(--glow-accent);
+}
+
+.mark-label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.slider-mark.active .mark-label {
+  color: var(--theme-accent);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 0 4px rgba(var(--accent-color-rgb, 255, 107, 53), 0.5);
+}
+
+/* 用餐時段選擇器樣式 - Garmin風格大按鈕網格 */
+.meal-time-selector-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.meal-time-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+/* 統一風格大按鈕設計 */
+.meal-time-button {
+  flex: 1;
+  height: var(--button-height-xl); /* 72px */
+  min-height: var(--button-height-xl);
+  min-width: 100px;
+  background: var(--surface-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--unified-border-radius);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  
+  /* 確保觸控區域足夠大 */
+  padding: var(--spacing-sm);
+  
+  /* 統一陰影系統 */
+  box-shadow: var(--theme-shadow-md);
+}
+
+/* 按鈕內容垂直布局 */
+.meal-time-button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--spacing-xs);
+}
+
+/* 32px圖標設計 */
+.meal-time-icon {
+  font-size: var(--icon-size-xl); /* 32px */
+  line-height: 1;
+  margin-bottom: var(--spacing-xs);
+  transition: transform var(--transition-fast);
+}
+
+/* 按鈕文字標籤 */
+.meal-time-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+  transition: color var(--transition-normal);
+}
+
+/* 時間顯示 */
+.meal-time-time {
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1;
+  transition: color var(--transition-normal);
+}
+
+/* 統一懸停效果 */
+.meal-time-button:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-lg);
+  border-color: var(--theme-primary);
+  background: var(--surface-color);
+  filter: var(--hover-brightness);
+}
+
+.meal-time-button:hover .meal-time-icon {
+  transform: scale(1.1);
+}
+
+.meal-time-button:hover .meal-time-label {
+  color: var(--theme-primary);
+}
+
+/* 統一點擊效果 */
+.meal-time-button:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+/* 統一選中狀態 */
+.meal-time-button.selected {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  border-color: var(--theme-primary);
+  color: white;
+  box-shadow: var(--theme-shadow-lg);
+}
+
+.meal-time-button.selected .meal-time-label,
+.meal-time-button.selected .meal-time-time {
+  color: white;
+}
+
+.meal-time-button.selected:hover {
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-xl);
+  filter: var(--hover-brightness);
+}
+
+/* 統一選中狀態的脈衝動畫 */
+.meal-time-button.selected::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--theme-accent), var(--theme-primary));
+  border-radius: var(--unified-border-radius);
+  z-index: -1;
+  animation: unified-pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes unified-pulse-border {
+  0%, 100% { 
+    opacity: 0.5; 
+    transform: scale(1);
+    box-shadow: var(--glow-primary);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+    box-shadow: var(--glow-accent);
+  }
+}
+
+/* 觸控回饋動畫 */
+@keyframes touch-scale {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.meal-time-button:active {
+  animation: touch-scale 0.15s ease;
+}
+
+/* 設定顯示組件樣式 */
+.settings-display-container {
+  margin-bottom: 1rem;
+}
+
+.settings-display-container .bg-gray-800 {
+  background-color: rgba(31, 41, 55, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+/* 響應式設計 */
+@media (max-width: 640px) {
+  .garmin-distance-control {
+    padding: var(--spacing-lg);
+  }
+  
+  .distance-display {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .distance-value {
+    font-size: 28px; /* 手機上更大的字體 */
+  }
+  
+  .unit-switcher {
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .unit-button {
+    height: 48px; /* 手機上更大的觸控區域 */
+    min-height: 48px;
+    font-size: var(--font-size-lg);
+  }
+  
+  .garmin-slider::-webkit-slider-thumb {
+    width: 28px; /* 手機上更大的拇指 */
+    height: 28px;
+  }
+  
+  .garmin-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .slider-track {
+    height: 10px; /* 手機上稍厚的軌道 */
+  }
+  
+  /* 手機端用餐時段按鈕優化 */
+  .meal-time-selector-grid {
+    gap: var(--spacing-md); /* 手機上稍大的間距 */
+  }
+  
+  .meal-time-row {
+    gap: var(--spacing-md);
+  }
+  
+  .meal-time-button {
+    min-width: 90px; /* 手機上稍小的最小寬度 */
+    padding: var(--spacing-md);
+  }
+  
+  .meal-time-icon {
+    font-size: 28px; /* 手機上稍小的圖標 */
+  }
+  
+  .meal-time-label {
+    font-size: 13px; /* 手機上稍小的文字 */
+  }
+  
+  .meal-time-time {
+    font-size: 11px;
+  }
+}
+
+/* 統一無障礙支援 */
+@media (prefers-reduced-motion: reduce) {
+  .meal-time-button,
+  .meal-time-icon,
+  .meal-time-label,
+  .meal-time-time,
+  .unit-button,
+  .garmin-slider::-webkit-slider-thumb,
+  .garmin-slider::-moz-range-thumb,
+  .slider-progress,
+  .slider-mark::before,
+  .mark-label,
+  .garmin-distance-control,
+  .distance-display {
+    transition: none;
+    animation: none;
+  }
+  
+  .meal-time-button.selected::before {
+    animation: none;
+  }
+  
+  .meal-time-button:hover,
+  .unit-button:hover,
+  .garmin-distance-control:hover,
+  .distance-display:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+  .garmin-distance-control {
+    border: 2px solid currentColor;
+  }
+  
+  .distance-display {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .unit-button {
+    border: 1px solid currentColor;
+  }
+  
+  .unit-button.active {
+    border: 2px solid white;
+  }
+  
+  .slider-track {
+    border: 2px solid currentColor;
+  }
+  
+  .garmin-slider::-webkit-slider-thumb {
+    border: 3px solid currentColor;
+  }
+  
+  .garmin-slider::-moz-range-thumb {
+    border: 3px solid currentColor;
+  }
+  
+  .meal-time-button {
+    border: 3px solid currentColor;
+    box-shadow: var(--theme-shadow-md);
+  }
+  
+  .meal-time-button.selected {
+    border: 3px solid white;
+    background: var(--theme-primary);
+    box-shadow: 0 0 0 2px var(--theme-accent);
+  }
+  
+  .settings-display-container .bg-gray-800 {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 統一焦點指示器 */
+.unit-button:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+.garmin-slider:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 4px;
+  box-shadow: var(--focus-shadow);
+}
+
+.meal-time-button:focus-visible {
+  outline: 3px solid var(--theme-accent);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+  z-index: 10;
+}
+
+/* 觸控回饋動畫 */
+@keyframes touch-feedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.unit-button:active {
+  animation: touch-feedback 0.15s ease;
+}
+
+/* 統一滑軌動畫增強 */
+.slider-progress {
+  background: linear-gradient(90deg, 
+    var(--theme-primary) 0%, 
+    var(--theme-accent) 50%, 
+    var(--theme-secondary) 100%);
+  background-size: 200% 100%;
+  animation: unified-gradient-shift 3s ease-in-out infinite;
+}
+
+@keyframes unified-gradient-shift {
+  0%, 100% { 
+    background-position: 0% 50%;
+    filter: brightness(1);
+  }
+  50% { 
+    background-position: 100% 50%;
+    filter: brightness(1.1);
+  }
+}
+
+/* 距離顯示動畫 */
+.distance-value {
+  transition: all var(--transition-normal);
+}
+
+.distance-display:hover .distance-value {
+  transform: scale(1.05);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

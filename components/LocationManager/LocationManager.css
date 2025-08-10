@@ -1,0 +1,721 @@
+/* LocationManager 手機優先設計 CSS */
+
+/* 主容器 - 手機優先設計 */
+.location-manager-mobile {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  box-sizing: border-box;
+}
+
+/* 位置管理容器 */
+.location-manager-container {
+  width: 100%;
+  max-width: 480px; /* 適合手機螢幕的最大寬度 */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 移除間距，讓卡片內部控制 */
+}
+
+/* 統一移動端卡片設計 */
+.location-manager-card {
+  width: 100%;
+  background: var(--surface-color);
+  border-radius: var(--unified-border-radius);
+  box-shadow: var(--theme-shadow-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden; /* 確保子元素不會超出圓角 */
+  transition: all var(--transition-normal);
+  
+  /* 確保在手機螢幕內完整顯示 */
+  min-height: auto;
+  max-height: calc(100vh - 120px); /* 留出頂部和底部空間 */
+  
+  /* 垂直布局 */
+  display: flex;
+  flex-direction: column;
+}
+
+.location-manager-card:hover {
+  box-shadow: var(--theme-shadow-xl);
+  transform: var(--hover-scale);
+}
+
+/* 功能區塊分隔 */
+.location-section {
+  padding: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-color);
+  
+  /* 確保每個區塊都有足夠的觸控空間 */
+  min-height: var(--touch-target-min);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 最後一個區塊不需要底部邊框 */
+.location-section-last {
+  border-bottom: none;
+}
+
+/* 響應式設計 - 小螢幕優化 */
+@media (max-width: 480px) {
+  .location-manager-mobile {
+    padding: var(--spacing-sm);
+  }
+  
+  .location-manager-card {
+    border-radius: var(--unified-border-radius);
+    max-height: calc(100vh - 80px); /* 在小螢幕上留出更少空間 */
+  }
+  
+  .location-section {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .location-manager-mobile {
+    padding: var(--spacing-xs);
+  }
+  
+  .location-section {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 橫屏模式優化 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .location-manager-card {
+    max-height: calc(100vh - 40px);
+  }
+  
+  .location-section {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 大螢幕適配 - 保持手機優先但在大螢幕上居中 */
+@media (min-width: 768px) {
+  .location-manager-mobile {
+    padding: var(--spacing-xl);
+  }
+  
+  .location-manager-container {
+    max-width: 600px; /* 在平板上稍微放寬 */
+  }
+}
+
+/* 桌面端適配 */
+@media (min-width: 1024px) {
+  .location-manager-container {
+    max-width: 480px; /* 桌面端保持手機尺寸以維持一致性 */
+  }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+  .location-manager-card {
+    border: 2px solid var(--text-primary);
+  }
+  
+  .location-section {
+    border-bottom-width: 2px;
+  }
+}
+
+/* 減少動畫偏好支援 */
+@media (prefers-reduced-motion: reduce) {
+  .location-manager-card {
+    transition: none;
+  }
+}
+
+/* 深色模式適配 */
+@media (prefers-color-scheme: dark) {
+  .location-manager-card {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+  }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .location-section {
+    /* 在觸控設備上增加內邊距 */
+    padding: var(--spacing-xl);
+  }
+}
+
+/* 確保內容不會被系統UI遮擋 */
+@supports (padding: max(0px)) {
+  .location-manager-mobile {
+    padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+  }
+}
+
+/* iOS Safari 底部安全區域 */
+@supports (-webkit-touch-callout: none) {
+  .location-manager-mobile {
+    padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+  }
+}
+/* Curre
+ntLocationDisplay 組件樣式 */
+.current-location-display {
+  width: 100%;
+  margin-bottom: 0; /* 由父容器控制間距 */
+}
+
+.current-location-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--success-color), var(--theme-accent));
+  border-radius: var(--unified-border-radius);
+  color: white;
+  min-height: var(--button-height-medium);
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.current-location-content:hover {
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.current-location-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}
+
+.current-location-icon .icon-map-pin {
+  font-size: var(--icon-size-lg);
+  color: white;
+}
+
+.current-location-text {
+  flex: 1;
+  text-align: center;
+  min-width: 0; /* 允許文字截斷 */
+}
+
+.current-location-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.current-location-address {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  
+  /* 處理長地址的顯示 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 響應式調整 */
+@media (max-width: 480px) {
+  .current-location-content {
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+  
+  .current-location-label {
+    font-size: 12px;
+  }
+  
+  .current-location-address {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .current-location-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-xs);
+  }
+  
+  .current-location-text {
+    text-align: center;
+  }
+}/* Quick
+LocationButtons 組件樣式 */
+.quick-location-buttons {
+  width: 100%;
+}
+
+.quick-buttons-container {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.quick-location-btn {
+  flex: 1;
+  min-height: var(--button-height-large);
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--unified-border-radius);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  
+  /* 大按鈕設計 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  
+  /* 觸控優化 */
+  min-width: var(--touch-target-min);
+  touch-action: manipulation;
+  user-select: none;
+  
+  /* 統一陰影效果 */
+  box-shadow: var(--theme-shadow-md);
+}
+
+.quick-location-btn:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.quick-location-btn:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.quick-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}
+
+.quick-btn-icon .icon-home,
+.quick-btn-icon .icon-briefcase {
+  font-size: var(--icon-size-lg);
+  color: white;
+}
+
+.quick-btn-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  line-height: 1.2;
+  
+  /* 處理長文字 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* 統一按鈕狀態樣式 */
+.quick-location-btn.bg-gray-500 {
+  background: linear-gradient(135deg, var(--theme-secondary), var(--text-muted));
+}
+
+.quick-location-btn.bg-gray-500:hover {
+  background: linear-gradient(135deg, var(--text-muted), var(--theme-secondary));
+}
+
+.quick-location-btn.bg-orange-500 {
+  background: linear-gradient(135deg, var(--theme-accent), var(--warning-color));
+}
+
+.quick-location-btn.bg-orange-500:hover {
+  background: linear-gradient(135deg, var(--warning-color), var(--theme-accent));
+}
+
+.quick-location-btn.bg-green-500 {
+  background: linear-gradient(135deg, var(--success-color), var(--theme-primary));
+}
+
+.quick-location-btn.bg-green-500:hover {
+  background: linear-gradient(135deg, var(--theme-primary), var(--success-color));
+}
+
+/* 響應式調整 */
+@media (max-width: 480px) {
+  .quick-buttons-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .quick-location-btn {
+    min-height: var(--button-height-medium);
+    padding: var(--spacing-sm);
+  }
+  
+  .quick-btn-text {
+    font-size: 12px;
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .quick-location-btn {
+    min-height: var(--button-height-small);
+    gap: 2px;
+  }
+  
+  .quick-btn-icon {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+  
+  .quick-btn-icon .icon-home,
+  .quick-btn-icon .icon-briefcase {
+    font-size: var(--icon-size-md);
+  }
+  
+  .quick-btn-text {
+    font-size: 11px;
+  }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .quick-location-btn:hover {
+    transform: none;
+  }
+  
+  .quick-location-btn:active {
+    transform: scale(0.98);
+  }
+}/* Addres
+sInput 組件樣式 */
+.address-input-container {
+  width: 100%;
+}
+
+.address-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--surface-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  min-height: var(--button-height-medium);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.address-input-wrapper:focus-within {
+  border-color: var(--theme-primary);
+  box-shadow: var(--focus-shadow);
+}
+
+.address-input-wrapper:hover {
+  border-color: var(--theme-accent);
+  box-shadow: var(--theme-shadow-md);
+}
+
+.address-input-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 100%;
+  color: var(--text-secondary);
+}
+
+.address-input-icon .icon-search {
+  font-size: var(--icon-size-md);
+  color: var(--text-secondary);
+}
+
+.address-input-field {
+  flex: 1;
+  height: 100%;
+  padding: var(--spacing-lg) var(--spacing-md);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-primary);
+  
+  /* 移動端優化 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* 防止縮放 */
+  font-size: 16px; /* iOS Safari 防止縮放的最小字體大小 */
+}
+
+.address-input-field::placeholder {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+.address-input-field:focus {
+  outline: none;
+}
+
+/* 響應式調整 */
+@media (max-width: 480px) {
+  .address-input-wrapper {
+    min-height: var(--button-height-small);
+  }
+  
+  .address-input-icon {
+    width: 40px;
+  }
+  
+  .address-input-field {
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: 16px; /* 保持16px防止iOS縮放 */
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .address-input-icon {
+    width: 36px;
+  }
+  
+  .address-input-field {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* 深色模式適配 */
+@media (prefers-color-scheme: dark) {
+  .address-input-wrapper {
+    background: var(--garmin-dark-gray);
+    border-color: var(--garmin-gray);
+  }
+  
+  .address-input-field {
+    color: white;
+  }
+  
+  .address-input-field::placeholder {
+    color: var(--garmin-light-gray);
+  }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+  .address-input-wrapper {
+    border-width: 3px;
+  }
+  
+  .address-input-wrapper:focus-within {
+    border-color: var(--text-primary);
+  }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .address-input-field {
+    /* 增加觸控區域 */
+    padding: var(--spacing-lg);
+  }
+}/* Location
+Actions 組件樣式 */
+.location-actions {
+  width: 100%;
+}
+
+.location-actions-container {
+  display: flex;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.location-action-btn {
+  flex: 1;
+  min-height: var(--button-height-medium);
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--unified-border-radius);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  
+  /* 觸控優化 */
+  min-width: var(--touch-target-min);
+  touch-action: manipulation;
+  user-select: none;
+  
+  /* 統一陰影效果 */
+  box-shadow: var(--theme-shadow-md);
+}
+
+.location-action-btn:hover:not(:disabled) {
+  transform: var(--hover-transform);
+  box-shadow: var(--theme-shadow-lg);
+  filter: var(--hover-brightness);
+}
+
+.location-action-btn:active:not(:disabled) {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.location-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.location-btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 100%;
+}
+
+.location-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+}
+
+.location-btn-icon .icon-map-pin,
+.location-btn-icon .icon-clock {
+  font-size: var(--icon-size-md);
+  color: white;
+}
+
+.location-btn-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+}
+
+/* 載入動畫 */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 統一按鈕狀態樣式 */
+.location-action-btn.btn-primary {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+}
+
+.location-action-btn.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+}
+
+.location-action-btn.btn-success {
+  background: linear-gradient(135deg, var(--success-color), var(--theme-primary));
+}
+
+.location-action-btn.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--theme-primary), var(--success-color));
+}
+
+.location-action-btn.btn-warning {
+  background: linear-gradient(135deg, var(--warning-color), var(--error-color));
+}
+
+.location-action-btn.btn-warning:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--error-color), var(--warning-color));
+}
+
+.location-action-btn.btn-loading {
+  background: linear-gradient(135deg, var(--theme-secondary), var(--text-muted));
+  cursor: wait;
+}
+
+.location-action-btn.btn-disabled {
+  background: linear-gradient(135deg, var(--text-muted), var(--theme-secondary));
+  cursor: not-allowed;
+}
+
+/* 響應式調整 */
+@media (max-width: 480px) {
+  .location-actions-container {
+    gap: var(--spacing-sm);
+  }
+  
+  .location-action-btn {
+    min-height: var(--button-height-small);
+    padding: var(--spacing-sm);
+  }
+  
+  .location-btn-content {
+    gap: var(--spacing-xs);
+  }
+  
+  .location-btn-text {
+    font-size: var(--font-size-sm);
+  }
+  
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .location-actions-container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .location-action-btn {
+    flex: none;
+    width: 100%;
+  }
+  
+  .location-btn-text {
+    font-size: 12px;
+  }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .location-action-btn:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .location-action-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}

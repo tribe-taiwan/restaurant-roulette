@@ -1,0 +1,340 @@
+/* 統一視覺設計系統 - 支援多品牌主題 */
+:root {
+  /* 預設 Garmin 風格色彩（作為後備） */
+  --garmin-blue: #007ACC;
+  --garmin-green: #00A86B;
+  --garmin-orange: #FF6B35;
+  --garmin-gray: #4A5568;
+  --garmin-dark-gray: #2D3748;
+  --garmin-light-gray: #E2E8F0;
+  
+  /* 主要色彩 - 由品牌主題動態設定 */
+  --primary-color: var(--garmin-blue);
+  --secondary-color: var(--garmin-gray);
+  --accent-color: var(--garmin-orange);
+  --success-color: var(--garmin-green);
+  --warning-color: #F6AD55;
+  --error-color: #E53E3E;
+  
+  /* 表面色彩 - 支援深色主題 */
+  --surface-color: #FFFFFF;
+  --surface-secondary: #F7FAFC;
+  --surface-tertiary: #EDF2F7;
+  --border-color: var(--garmin-light-gray);
+  --text-primary: var(--garmin-dark-gray);
+  --text-secondary: var(--garmin-gray);
+  --text-muted: #A0AEC0;
+  
+  /* 品牌主題適配色彩 */
+  --theme-primary: var(--primary-color);
+  --theme-secondary: var(--secondary-color);
+  --theme-accent: var(--accent-color);
+  --theme-background: var(--background-color, #1a1a1a);
+  --theme-surface: var(--surface-color);
+  --theme-text-primary: var(--text-primary);
+  --theme-text-secondary: var(--text-secondary);
+  
+  /* 大按鈕尺寸規範 */
+  --button-height-small: 44px;
+  --button-height-medium: 52px;
+  --button-height-large: 60px;
+  --button-height-xl: 72px;
+  
+  /* 觸控區域標準 */
+  --touch-target-min: 44px;
+  --touch-padding: 12px;
+  
+  /* 統一圓角設計 - 12px 為主要標準 */
+  --border-radius-small: 8px;
+  --border-radius-medium: 12px;
+  --border-radius-large: 16px;
+  --border-radius-xl: 20px;
+  
+  /* 統一圓角標準 */
+  --unified-border-radius: 12px;
+  
+  /* 間距系統 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  
+  /* 字體大小 */
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  
+  /* 字體粗細 */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* 統一陰影系統 - 適應不同主題 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  
+  /* 主題適配陰影 */
+  --theme-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --theme-shadow-md: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --theme-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --theme-shadow-xl: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  
+  /* 發光效果 */
+  --glow-primary: 0 0 20px rgba(var(--primary-color-rgb, 0, 119, 204), 0.3);
+  --glow-accent: 0 0 20px rgba(var(--accent-color-rgb, 255, 107, 53), 0.3);
+  --glow-success: 0 0 20px rgba(var(--success-color-rgb, 0, 168, 107), 0.3);
+  
+  /* 過渡動畫 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  
+  /* 圖標尺寸 */
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+  --icon-size-xl: 32px;
+}
+
+/* 移動端優化 */
+@media (max-width: 768px) {
+  :root {
+    /* 在小螢幕上稍微增加觸控區域 */
+    --touch-target-min: 48px;
+    --touch-padding: 16px;
+  }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: var(--garmin-dark-gray);
+    --text-secondary: var(--garmin-dark-gray);
+  }
+}
+
+/* 品牌主題深色模式支援 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 深色模式下的表面色彩會由品牌主題覆蓋 */
+    --surface-color: var(--theme-background, var(--garmin-dark-gray));
+    --surface-secondary: var(--theme-surface, #1A202C);
+    --surface-tertiary: #2D3748;
+    --text-primary: var(--theme-text-primary, #FFFFFF);
+    --text-secondary: var(--theme-text-secondary, var(--garmin-light-gray));
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    
+    /* 深色模式陰影調整 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  }
+}
+/
+* 統一的互動效果系統 */
+:root {
+  /* 懸停效果變數 */
+  --hover-transform: translateY(-2px);
+  --hover-scale: scale(1.02);
+  --hover-shadow: var(--theme-shadow-lg);
+  --hover-brightness: brightness(1.1);
+  
+  /* 點擊效果變數 */
+  --active-transform: translateY(0);
+  --active-scale: scale(0.98);
+  --active-shadow: var(--theme-shadow-sm);
+  --active-brightness: brightness(0.9);
+  
+  /* 焦點效果變數 */
+  --focus-outline: 2px solid var(--accent-color);
+  --focus-outline-offset: 2px;
+  --focus-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 255, 107, 53), 0.3);
+}
+
+/* 統一按鈕基礎樣式 */
+.unified-button {
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.unified-button:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  filter: var(--hover-brightness);
+}
+
+.unified-button:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.unified-button:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+/* 統一卡片基礎樣式 */
+.unified-card {
+  background: var(--surface-color);
+  border-radius: var(--unified-border-radius);
+  box-shadow: var(--theme-shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.unified-card:hover {
+  box-shadow: var(--theme-shadow-lg);
+  transform: var(--hover-scale);
+}
+
+/* 統一輸入框基礎樣式 */
+.unified-input {
+  border-radius: var(--unified-border-radius);
+  border: 2px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
+  padding: var(--spacing-md);
+}
+
+.unified-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--focus-shadow);
+  outline: none;
+}
+
+.unified-input:hover {
+  border-color: var(--accent-color);
+}
+
+/* 主題色彩變體 */
+.unified-button--primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--theme-primary));
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.unified-button--secondary {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.unified-button--accent {
+  background: linear-gradient(135deg, var(--accent-color), var(--theme-accent));
+  color: white;
+  border-color: var(--accent-color);
+}
+
+/* 統一的載入動畫 */
+@keyframes unified-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes unified-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.unified-loading {
+  animation: unified-pulse 2s ease-in-out infinite;
+}
+
+.unified-shimmer {
+  background: linear-gradient(90deg, 
+    var(--surface-secondary) 0%, 
+    var(--surface-tertiary) 50%, 
+    var(--surface-secondary) 100%);
+  background-size: 200px 100%;
+  animation: unified-shimmer 1.5s ease-in-out infinite;
+}
+
+/* 統一的狀態指示器 */
+.unified-status--success {
+  color: var(--success-color);
+  background: rgba(var(--success-color-rgb, 0, 168, 107), 0.1);
+  border-color: var(--success-color);
+}
+
+.unified-status--warning {
+  color: var(--warning-color);
+  background: rgba(var(--warning-color-rgb, 246, 173, 85), 0.1);
+  border-color: var(--warning-color);
+}
+
+.unified-status--error {
+  color: var(--error-color);
+  background: rgba(var(--error-color-rgb, 229, 62, 62), 0.1);
+  border-color: var(--error-color);
+}
+
+/* 統一的響應式斷點 */
+@media (max-width: 480px) {
+  :root {
+    --unified-border-radius: 10px; /* 手機上稍小的圓角 */
+    --hover-transform: translateY(-1px); /* 手機上較小的懸停效果 */
+  }
+}
+
+@media (max-width: 768px) {
+  .unified-button {
+    min-height: var(--touch-target-min);
+    padding: var(--touch-padding);
+  }
+}
+
+/* 高對比度模式增強 */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: currentColor;
+    --theme-shadow-md: 0 0 0 2px currentColor;
+    --theme-shadow-lg: 0 0 0 3px currentColor;
+  }
+  
+  .unified-button {
+    border: 3px solid currentColor;
+  }
+  
+  .unified-card {
+    border: 2px solid currentColor;
+  }
+  
+  .unified-input {
+    border: 3px solid currentColor;
+  }
+}
+
+/* 減少動畫模式 */
+@media (prefers-reduced-motion: reduce) {
+  .unified-button,
+  .unified-card,
+  .unified-input,
+  .unified-loading,
+  .unified-shimmer {
+    transition: none;
+    animation: none;
+  }
+  
+  .unified-button:hover,
+  .unified-card:hover {
+    transform: none;
+  }
+}

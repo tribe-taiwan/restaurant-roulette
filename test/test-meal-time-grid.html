@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用餐時段大按鈕網格測試</title>
+    
+    <!-- 載入設計系統和樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+        
+        .status-display {
+            background: var(--surface-secondary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>用餐時段大按鈕網格測試</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Garmin風格大按鈕網格 (2行3列)</div>
+            <div class="status-display">
+                當前選擇: <span id="selected-meal-time">current</span>
+            </div>
+            <div id="meal-time-selector"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">測試說明</div>
+            <ul style="font-size: 14px; color: var(--text-secondary);">
+                <li>按鈕高度: 72px (符合設計規範)</li>
+                <li>圖標大小: 32px</li>
+                <li>垂直布局: 圖標在上，文字在下</li>
+                <li>2行3列網格布局</li>
+                <li>清晰的選中狀態和過渡動畫</li>
+                <li>適合手機觸控操作的間距</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 載入必要的工具函數 -->
+    <script src="../utils/mealTimeConfig.js"></script>
+    
+    <!-- 載入組件 -->
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    
+    <!-- 載入驗證腳本 -->
+    <script src="validate-meal-time-grid.js"></script>
+    
+    <script>
+        // 模擬翻譯對象
+        const mockTranslations = {
+            openNowFilter: '現在營業中',
+            anyTime: '不限時間',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐',
+            customTime: '自訂時間'
+        };
+        
+        // 測試狀態
+        let selectedMealTime = 'current';
+        
+        function setSelectedMealTime(mealTimeId) {
+            selectedMealTime = mealTimeId;
+            document.getElementById('selected-meal-time').textContent = mealTimeId;
+            renderMealTimeSelector();
+        }
+        
+        function renderMealTimeSelector() {
+            const container = document.getElementById('meal-time-selector');
+            
+            // 清空容器
+            container.innerHTML = '';
+            
+            // 創建組件
+            const component = MealTimeSelector({
+                selectedMealTime: selectedMealTime,
+                setSelectedMealTime: setSelectedMealTime,
+                translations: mockTranslations
+            });
+            
+            // 將組件添加到容器中
+            if (component) {
+                container.appendChild(component);
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMealTimeSelector();
+            
+            // 添加鍵盤導航測試
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    console.log('Tab navigation test');
+                }
+            });
+            
+            // 測試觸控回饋
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.classList.contains('meal-time-button')) {
+                    console.log('Touch feedback test');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

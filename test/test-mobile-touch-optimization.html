@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移動端觸控體驗優化測試</title>
+    
+    <!-- 載入共用組件樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 16px;
+            color: var(--primary-color);
+        }
+        
+        .test-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .test-button {
+            flex: 1;
+            min-height: 44px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: var(--border-radius-medium);
+            font-size: 16px;
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .test-button:hover {
+            background: color-mix(in srgb, var(--primary-color) 85%, black);
+            transform: translateY(-1px);
+        }
+        
+        .test-button.secondary {
+            background: var(--secondary-color);
+        }
+        
+        .test-button.success {
+            background: var(--success-color);
+        }
+        
+        .test-button.warning {
+            background: var(--warning-color);
+        }
+        
+        .test-slider {
+            width: 100%;
+            height: 44px;
+            margin: 20px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--surface-color);
+            border-radius: 22px;
+            outline: none;
+        }
+        
+        .test-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .test-slider::-moz-range-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stats-display {
+            background: var(--background-color);
+            padding: 16px;
+            border-radius: var(--border-radius-medium);
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .confirmation-test {
+            margin-top: 20px;
+        }
+        
+        .dangerous-button {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .loading-button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading-button.loading {
+            color: transparent;
+        }
+        
+        .loading-button.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+            max-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .debug-info {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        <div>設備類型: <span id="deviceType">檢測中...</span></div>
+        <div>觸控支援: <span id="touchSupport">檢測中...</span></div>
+        <div>震動支援: <span id="vibrateSupport">檢測中...</span></div>
+        <div>單手模式: <span id="singleHandMode">檢測中...</span></div>
+    </div>
+
+    <div class="test-container">
+        <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 40px;">
+            移動端觸控體驗優化測試
+        </h1>
+
+        <!-- 基本按鈕觸控測試 -->
+        <div class="test-section">
+            <div class="test-title">1. 基本按鈕觸控測試</div>
+            <div class="test-description">
+                測試按鈕是否符合最小觸控標準（44px），觸控回饋是否正常
+            </div>
+            
+            <div class="button-row">
+                <button class="test-button" data-test="basic-touch">標準按鈕</button>
+                <button class="test-button secondary" data-test="basic-touch">次要按鈕</button>
+            </div>
+            
+            <div class="button-row">
+                <button class="test-button success" data-test="basic-touch">成功按鈕</button>
+                <button class="test-button warning" data-test="basic-touch">警告按鈕</button>
+            </div>
+        </div>
+
+        <!-- 載入狀態測試 */
+        <div class="test-section">
+            <div class="test-title">2. 載入狀態視覺指示測試</div>
+            <div class="test-description">
+                測試載入狀態的視覺回饋和用戶體驗
+            </div>
+            
+            <button class="test-button loading-button" id="loadingButton" data-test="loading">
+                點擊測試載入狀態
+            </button>
+            
+            <button class="test-button" id="statusButton" data-test="status">
+                顯示狀態指示器
+            </button>
+        </div>
+
+        <!-- 防誤觸測試 */
+        <div class="test-section">
+            <div class="test-title">3. 防誤觸機制測試</div>
+            <div class="test-description">
+                測試快速點擊和滑動後點擊的防誤觸機制
+            </div>
+            
+            <button class="test-button" id="rapidClickButton" data-test="rapid-click">
+                快速連續點擊測試
+            </button>
+            
+            <div class="confirmation-test">
+                <button class="test-button dangerous-button" id="confirmButton" data-test="confirmation">
+                    需要確認的危險操作
+                </button>
+            </div>
+        </div>
+
+        <!-- 滑軌觸控測試 */
+        <div class="test-section">
+            <div class="test-title">4. 滑軌觸控測試</div>
+            <div class="test-description">
+                測試滑軌是否易於在移動端操作，觸控區域是否足夠大
+            </div>
+            
+            <input type="range" class="test-slider" id="testSlider" min="1" max="10" value="5" data-test="slider">
+            <div style="text-align: center; margin-top: 10px;">
+                當前值: <span id="sliderValue">5</span>
+            </div>
+        </div>
+
+        <!-- 單手操作測試 */
+        <div class="test-section">
+            <div class="test-title">5. 單手操作便利性測試</div>
+            <div class="test-description">
+                測試重要按鈕是否在拇指可達區域，單手操作是否便利
+            </div>
+            
+            <button class="test-button" data-important-action="true" data-test="thumb-reach">
+                重要操作按鈕（拇指區域）
+            </button>
+            
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: var(--background-color); border-radius: var(--border-radius-medium); margin: 20px 0;">
+                <button class="test-button" data-test="center-button">
+                    中央按鈕（測試可達性）
+                </button>
+            </div>
+        </div>
+
+        <!-- 觸控統計 -->
+        <div class="test-section">
+            <div class="test-title">6. 觸控統計資訊</div>
+            <div class="stats-display" id="touchStats">
+                載入統計資訊中...
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入腳本 -->
+    <script src="../components/shared/TouchOptimizer.js"></script>
+    <script src="../components/shared/LargeButton.js"></script>
+    <script src="../components/shared/StatusIndicator.js"></script>
+    
+    <script>
+        // 初始化觸控優化器
+        let touchOptimizer;
+        let touchCount = 0;
+        let lastTouchTime = 0;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 創建觸控優化器實例
+            touchOptimizer = new TouchOptimizer();
+            
+            // 更新調試資訊
+            updateDebugInfo();
+            
+            // 優化所有測試按鈕
+            optimizeTestButtons();
+            
+            // 設置事件監聽器
+            setupEventListeners();
+            
+            // 更新統計資訊
+            updateTouchStats();
+            
+            console.log('✅ 移動端觸控優化測試頁面已初始化');
+        });
+        
+        function updateDebugInfo() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const isTablet = /iPad|Android(?=.*\bMobile\b)/i.test(userAgent);
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const hasVibrate = 'vibrate' in navigator;
+            const screenHeight = window.screen.height;
+            const isLargeScreen = Math.max(screenHeight, window.screen.width) > 667;
+            
+            document.getElementById('deviceType').textContent = 
+                isMobile ? (isTablet ? '平板' : '手機') : '桌面';
+            document.getElementById('touchSupport').textContent = hasTouch ? '支援' : '不支援';
+            document.getElementById('vibrateSupport').textContent = hasVibrate ? '支援' : '不支援';
+            document.getElementById('singleHandMode').textContent = 
+                (isMobile && isLargeScreen) ? '啟用' : '停用';
+        }
+        
+        function optimizeTestButtons() {
+            const buttons = document.querySelectorAll('[data-test]');
+            buttons.forEach(button => {
+                if (!button.hasAttribute('data-touch-optimized')) {
+                    touchOptimizer.optimizeButton(button, {
+                        hapticFeedback: true,
+                        preventAccidental: true,
+                        confirmationRequired: button.classList.contains('dangerous-button')
+                    });
+                    button.setAttribute('data-touch-optimized', 'true');
+                }
+            });
+            
+            console.log(`✅ 已優化 ${buttons.length} 個測試按鈕`);
+        }
+        
+        function setupEventListeners() {
+            // 基本觸控測試
+            document.querySelectorAll('[data-test="basic-touch"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    touchCount++;
+                    showFeedback(this, '觸控成功！');
+                    updateTouchStats();
+                });
+            });
+            
+            // 載入狀態測試
+            document.getElementById('loadingButton').addEventListener('click', function() {
+                this.classList.add('loading');
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                    showFeedback(this, '載入完成！');
+                }, 2000);
+            });
+            
+            // 狀態指示器測試
+            document.getElementById('statusButton').addEventListener('click', function() {
+                const indicators = ['loading', 'success', 'error', 'warning', 'info'];
+                const randomType = indicators[Math.floor(Math.random() * indicators.length)];
+                
+                const statusIndicator = new StatusIndicator({
+                    type: randomType,
+                    message: `這是${randomType}狀態測試`,
+                    position: 'fixed',
+                    autoHide: randomType !== 'loading',
+                    autoHideDelay: 3000
+                });
+                
+                statusIndicator.show();
+                
+                if (randomType === 'loading') {
+                    setTimeout(() => {
+                        statusIndicator.updateStatus({
+                            type: 'success',
+                            message: '載入完成！',
+                            autoHide: true
+                        });
+                    }, 2000);
+                }
+            });
+            
+            // 快速點擊測試
+            let rapidClickCount = 0;
+            document.getElementById('rapidClickButton').addEventListener('click', function() {
+                rapidClickCount++;
+                this.textContent = `點擊次數: ${rapidClickCount}`;
+                
+                if (rapidClickCount >= 5) {
+                    showFeedback(this, '防誤觸機制正常工作！');
+                    rapidClickCount = 0;
+                    setTimeout(() => {
+                        this.textContent = '快速連續點擊測試';
+                    }, 2000);
+                }
+            });
+            
+            // 確認按鈕測試
+            document.getElementById('confirmButton').addEventListener('click', function() {
+                showFeedback(this, '確認機制已觸發！');
+            });
+            
+            // 滑軌測試
+            const slider = document.getElementById('testSlider');
+            const sliderValue = document.getElementById('sliderValue');
+            
+            slider.addEventListener('input', function() {
+                sliderValue.textContent = this.value;
+                
+                // 觸覺回饋
+                if (navigator.vibrate) {
+                    navigator.vibrate(5);
+                }
+            });
+            
+            // 拇指區域測試
+            document.querySelectorAll('[data-test="thumb-reach"], [data-test="center-button"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const rect = this.getBoundingClientRect();
+                    const screenHeight = window.innerHeight;
+                    const buttonCenter = rect.top + rect.height / 2;
+                    const thumbZone = screenHeight * 0.67; // 下方 1/3 為拇指區域
+                    
+                    const inThumbZone = buttonCenter > thumbZone;
+                    showFeedback(this, inThumbZone ? '在拇指可達區域！' : '不在拇指可達區域');
+                });
+            });
+        }
+        
+        function showFeedback(element, message) {
+            const originalText = element.textContent;
+            element.textContent = message;
+            element.style.background = 'var(--success-color)';
+            
+            setTimeout(() => {
+                element.textContent = originalText;
+                element.style.background = '';
+            }, 1500);
+        }
+        
+        function updateTouchStats() {
+            const stats = touchOptimizer ? touchOptimizer.getTouchStats() : {};
+            const statsDisplay = document.getElementById('touchStats');
+            
+            statsDisplay.innerHTML = `
+                <div>總觸控次數: ${touchCount}</div>
+                <div>單手模式: ${stats.singleHandMode ? '啟用' : '停用'}</div>
+                <div>觸覺回饋: ${stats.hapticEnabled ? '啟用' : '停用'}</div>
+                <div>防誤觸: ${stats.preventAccidental ? '啟用' : '停用'}</div>
+                <div>螢幕尺寸: ${window.innerWidth} x ${window.innerHeight}</div>
+                <div>設備像素比: ${window.devicePixelRatio}</div>
+                <div>觸控點數: ${navigator.maxTouchPoints || 0}</div>
+            `;
+        }
+        
+        // 監聽方向變化
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                updateDebugInfo();
+                updateTouchStats();
+            }, 100);
+        });
+        
+        // 監聽觸控事件統計
+        document.addEventListener('touchstart', function() {
+            lastTouchTime = Date.now();
+        });
+        
+        document.addEventListener('touchend', function() {
+            const touchDuration = Date.now() - lastTouchTime;
+            if (touchDuration > 50 && touchDuration < 2000) {
+                // 有效觸控
+            }
+        });
+    </script>
+</body>
+</html>

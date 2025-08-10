@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocationManager 重構測試</title>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-color: #3B82F6;
+            --secondary-color: #1E40AF;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --surface-color: #1F2937;
+            --text-secondary: #9CA3AF;
+        }
+        .glow-container {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4">
+    <div id="test-container"></div>
+
+    <!-- 載入子組件 -->
+    <script type="text/babel" src="../components/LocationManager/CurrentLocationDisplay.js"></script>
+    <script type="text/babel" src="../components/LocationManager/QuickLocationButtons.js"></script>
+    <script type="text/babel" src="../components/LocationManager/AddressInput.js"></script>
+    <script type="text/babel" src="../components/LocationManager/LocationActions.js"></script>
+    <script type="text/babel" src="../components/LocationManager/index.js"></script>
+    <script type="text/babel" src="../components/LocationManager.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 測試用的翻譯對象
+        const testTranslations = {
+            locationDetected: '位置偵測',
+            saveHomeTip: '儲存為住家',
+            saveOfficeTip: '儲存為公司',
+            useHomeTip: '使用住家位置',
+            useOfficeTip: '使用公司位置',
+            enterAddressTip: '請先輸入地址',
+            saveHome: '儲存住家',
+            saveOffice: '儲存公司',
+            home: '住家',
+            office: '公司',
+            homeNotSet: '住家未設定',
+            officeNotSet: '公司未設定',
+            enterAddress: '輸入地址或地標',
+            autoLocation: '自動定位',
+            manualLocationTip: '手動定位提示',
+            autoLocationTip: '自動定位提示',
+            locateHere: '定位這裡',
+            located: '已定位'
+        };
+
+        function TestApp() {
+            const [locationStatus, setLocationStatus] = useState('success');
+            const [userAddress, setUserAddress] = useState('台南市中西區中正路1號');
+            const [savedLocations, setSavedLocations] = useState([
+                { type: 'home', address: '台南市東區大學路1號' }
+            ]);
+            const [addressInput, setAddressInput] = useState('');
+            const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
+            const [isRelocating, setIsRelocating] = useState(false);
+
+            const handleRelocate = () => {
+                setIsRelocating(true);
+                setTimeout(() => setIsRelocating(false), 2000);
+            };
+
+            const handleAddressConfirm = () => {
+                setIsGeocodingAddress(true);
+                setTimeout(() => setIsGeocodingAddress(false), 1000);
+            };
+
+            const handleLocationButton = (type) => {
+                console.log('Location button clicked:', type);
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto">
+                    <h1 className="text-2xl font-bold mb-6 text-center">LocationManager 重構測試</h1>
+                    
+                    <div className="mb-8">
+                        <h2 className="text-lg font-semibold mb-4">測試控制</h2>
+                        <div className="flex gap-4 mb-4">
+                            <button 
+                                onClick={() => setLocationStatus(locationStatus === 'success' ? 'error' : 'success')}
+                                className="px-4 py-2 bg-blue-500 rounded"
+                            >
+                                切換定位狀態: {locationStatus}
+                            </button>
+                            <button 
+                                onClick={() => setUserAddress(userAddress ? '' : '台南市中西區中正路1號')}
+                                className="px-4 py-2 bg-green-500 rounded"
+                            >
+                                切換地址顯示
+                            </button>
+                        </div>
+                    </div>
+
+                    <LocationManager 
+                        locationStatus={locationStatus}
+                        userAddress={userAddress}
+                        savedLocations={savedLocations}
+                        addressInput={addressInput}
+                        setAddressInput={setAddressInput}
+                        isGeocodingAddress={isGeocodingAddress}
+                        onRelocate={handleRelocate}
+                        onAddressConfirm={handleAddressConfirm}
+                        onLocationButton={handleLocationButton}
+                        translations={testTranslations}
+                        isRelocating={isRelocating}
+                        selectedLanguage="zh-TW"
+                        userLocation={null}
+                    />
+
+                    <div className="mt-8 p-4 bg-gray-800 rounded">
+                        <h3 className="font-semibold mb-2">測試狀態</h3>
+                        <p>地址輸入: {addressInput}</p>
+                        <p>定位狀態: {locationStatus}</p>
+                        <p>重新定位中: {isRelocating ? '是' : '否'}</p>
+                        <p>地址解析中: {isGeocodingAddress ? '是' : '否'}</p>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TestApp />, document.getElementById('test-container'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+/* StatusIndicator 組件樣式 */
+.status-indicator {
+    /* 基礎樣式 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-medium);
+    font-family: inherit;
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-normal);
+    
+    /* 預設隱藏 */
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+/* 尺寸變體 */
+.status-indicator--small {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    min-height: 32px;
+}
+
+.status-indicator--medium {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    min-height: 40px;
+}
+
+.status-indicator--large {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    min-height: 48px;
+}
+
+/* 類型變體 */
+.status-indicator--loading {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.status-indicator--success {
+    background: var(--success-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.status-indicator--error {
+    background: var(--error-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.status-indicator--warning {
+    background: var(--warning-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.status-indicator--info {
+    background: var(--garmin-blue);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+/* 位置變體 */
+.status-indicator--fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 320px;
+}
+
+.status-indicator--absolute {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+}
+
+/* 內容容器 */
+.status-indicator__content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    max-width: 100%;
+}
+
+/* 圖標樣式 */
+.status-indicator__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-indicator--small .status-indicator__icon {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+}
+
+.status-indicator--medium .status-indicator__icon {
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+}
+
+.status-indicator--large .status-indicator__icon {
+    width: var(--icon-size-xl);
+    height: var(--icon-size-xl);
+}
+
+.status-indicator__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* 載入動畫 */
+.status-indicator__spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 訊息樣式 */
+.status-indicator__message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+/* 顯示狀態 */
+.status-indicator--visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 進入動畫 */
+.status-indicator--animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 退出動畫 */
+.status-indicator--animate-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* 移動端優化 */
+@media (max-width: 768px) {
+    .status-indicator--fixed {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        width: auto;
+    }
+    
+    .status-indicator__message {
+        max-width: none;
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* 在小螢幕上稍微減少內邊距 */
+    .status-indicator--large {
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    .status-indicator--medium {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+    .status-indicator {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 減少動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .status-indicator {
+        transition: opacity var(--transition-fast);
+    }
+    
+    .status-indicator--animate-in,
+    .status-indicator--animate-out {
+        transform: none;
+    }
+    
+    .status-indicator__spinner {
+        animation: none;
+    }
+}
+
+/* 多個指示器的堆疊 */
+.status-indicator--fixed + .status-indicator--fixed {
+    top: 80px;
+}
+
+.status-indicator--fixed:nth-child(3) {
+    top: 140px;
+}
+
+.status-indicator--fixed:nth-child(4) {
+    top: 200px;
+}
+
+/* 深色模式優化 */
+@media (prefers-color-scheme: dark) {
+    .status-indicator--loading {
+        background: color-mix(in srgb, var(--primary-color) 90%, white);
+    }
+    
+    .status-indicator--success {
+        background: color-mix(in srgb, var(--success-color) 90%, white);
+    }
+    
+    .status-indicator--error {
+        background: color-mix(in srgb, var(--error-color) 90%, white);
+    }
+    
+    .status-indicator--warning {
+        background: color-mix(in srgb, var(--warning-color) 90%, white);
+    }
+    
+    .status-indicator--info {
+        background: color-mix(in srgb, var(--garmin-blue) 90%, white);
+    }
+}
+
+/* 無障礙支援 */
+.status-indicator[role="alert"] {
+    /* 確保螢幕閱讀器能夠讀取 */
+}
+
+.status-indicator[aria-live="polite"] {
+    /* 禮貌地通知螢幕閱讀器 */
+}
+
+.status-indicator[aria-live="assertive"] {
+    /* 立即通知螢幕閱讀器 */
+}
+
+/* 成功和錯誤狀態的特殊效果 */
+.status-indicator--success.status-indicator--animate-in {
+    animation: successPulse 0.6s ease-out;
+}
+
+.status-indicator--error.status-indicator--animate-in {
+    animation: errorShake 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes errorShake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-2px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(2px);
+    }
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garmin風格距離控制測試</title>
+    
+    <!-- 載入設計系統和樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-header h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .test-info {
+            background: var(--surface-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .test-info h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-primary);
+        }
+        
+        .test-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Garmin風格距離控制測試</h1>
+            <p>測試大型視覺化距離控制界面</p>
+        </div>
+        
+        <div class="test-info">
+            <h3>測試重點：</h3>
+            <ul>
+                <li>大型距離顯示（24px字體，醒目顏色）</li>
+                <li>大按鈕單位切換器（44px高度）</li>
+                <li>易操作滑軌（8px高度，24px拇指）</li>
+                <li>平滑視覺回饋和動畫效果</li>
+                <li>手機觸控優化</li>
+            </ul>
+        </div>
+        
+        <!-- 距離控制組件測試 -->
+        <div id="distance-control-test"></div>
+        
+        <div class="test-info" style="margin-top: 20px;">
+            <h3>當前設定：</h3>
+            <p>基礎單位: <span id="current-base-unit">200m</span></p>
+            <p>倍數: <span id="current-multiplier">5</span></p>
+            <p>實際距離: <span id="actual-distance">1000m</span></p>
+        </div>
+    </div>
+
+    <!-- 載入組件 -->
+    <script src="../components/SearchSettings/DistanceControl.js"></script>
+    <script src="validate-garmin-distance-control.js"></script>
+    
+    <script>
+        // 測試狀態
+        let testState = {
+            baseUnit: 200,
+            unitMultiplier: 5
+        };
+        
+        // 更新狀態顯示
+        function updateStateDisplay() {
+            document.getElementById('current-base-unit').textContent = testState.baseUnit + (testState.baseUnit === 200 ? 'm' : 'km');
+            document.getElementById('current-multiplier').textContent = testState.unitMultiplier;
+            
+            const actualDistance = testState.baseUnit * testState.unitMultiplier;
+            const displayText = actualDistance >= 1000 ? `${actualDistance / 1000}km` : `${actualDistance}m`;
+            document.getElementById('actual-distance').textContent = displayText;
+        }
+        
+        // 狀態更新函數
+        function setBaseUnit(newBaseUnit) {
+            testState.baseUnit = newBaseUnit;
+            updateStateDisplay();
+            renderComponent();
+        }
+        
+        function setUnitMultiplier(newMultiplier) {
+            testState.unitMultiplier = newMultiplier;
+            updateStateDisplay();
+            renderComponent();
+        }
+        
+        // 渲染組件
+        function renderComponent() {
+            const container = document.getElementById('distance-control-test');
+            
+            // 創建React元素（模擬）
+            const element = DistanceControl({
+                baseUnit: testState.baseUnit,
+                setBaseUnit: setBaseUnit,
+                unitMultiplier: testState.unitMultiplier,
+                setUnitMultiplier: setUnitMultiplier
+            });
+            
+            // 清空容器並添加新元素
+            container.innerHTML = '';
+            if (element) {
+                container.appendChild(element);
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStateDisplay();
+            renderComponent();
+            
+            console.log('Garmin風格距離控制測試已載入');
+            console.log('測試功能：');
+            console.log('- 點擊單位切換器按鈕');
+            console.log('- 拖動滑軌調整倍數');
+            console.log('- 觀察動畫和視覺回饋');
+            console.log('- 檢查手機觸控體驗');
+            
+            // 延遲執行驗證，確保組件完全渲染
+            setTimeout(() => {
+                if (typeof window.validateGarminDistanceControl === 'function') {
+                    window.validateGarminDistanceControl();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

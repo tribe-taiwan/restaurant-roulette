@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchSettings 重構測試</title>
+    
+    <!-- 樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <!-- React -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary-color: #007ACC;
+            --accent-color: #00A86B;
+            --surface-color: #1f2937;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+        }
+        
+        body {
+            background: #111827;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .glow-container {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-6 text-center">SearchSettings 重構測試</h1>
+        
+        <div id="test-container"></div>
+        
+        <div class="mt-8 p-4 bg-gray-800 rounded-lg">
+            <h2 class="text-lg font-semibold mb-2">測試說明</h2>
+            <ul class="text-sm text-gray-300 space-y-1">
+                <li>• 測試距離控制組件的單位切換和滑軌功能</li>
+                <li>• 測試用餐時段選擇的大按鈕網格布局</li>
+                <li>• 測試設定狀態顯示組件</li>
+                <li>• 驗證組件間的狀態管理獨立性</li>
+                <li>• 檢查響應式設計和觸控體驗</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SearchSettings 子組件 -->
+    <script type="text/babel" src="../components/SearchSettings/DistanceControl.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/index.js"></script>
+    <script type="text/babel" src="../components/SearchSettings.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 模擬翻譯對象
+        const mockTranslations = {
+            openNowFilter: '現在營業中',
+            anyTime: '不限時間',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐'
+        };
+
+        // 模擬用餐時段配置
+        window.getMealTimeConfig = () => ({
+            breakfast: { start: 5, end: 10, displayTime: '5-10', icon: '🌅' },
+            lunch: { start: 10, end: 16, displayTime: '10-16', icon: '☀️' },
+            dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
+        });
+
+        function TestApp() {
+            const [selectedMealTime, setSelectedMealTime] = useState('current');
+            const [baseUnit, setBaseUnit] = useState(200);
+            const [unitMultiplier, setUnitMultiplier] = useState(5);
+
+            // 狀態變化日誌
+            useEffect(() => {
+                console.log('狀態更新:', {
+                    selectedMealTime,
+                    baseUnit,
+                    unitMultiplier,
+                    actualDistance: baseUnit * unitMultiplier
+                });
+            }, [selectedMealTime, baseUnit, unitMultiplier]);
+
+            return (
+                <div>
+                    <SearchSettings
+                        selectedMealTime={selectedMealTime}
+                        setSelectedMealTime={setSelectedMealTime}
+                        translations={mockTranslations}
+                        selectedLanguage="zh-TW"
+                        baseUnit={baseUnit}
+                        setBaseUnit={setBaseUnit}
+                        unitMultiplier={unitMultiplier}
+                        setUnitMultiplier={setUnitMultiplier}
+                    />
+                    
+                    {/* 狀態監控面板 */}
+                    <div className="mt-4 p-4 bg-gray-900 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-2">當前狀態</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span className="text-gray-400">用餐時段:</span>
+                                <span className="ml-2 text-yellow-400">{selectedMealTime}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-400">基礎單位:</span>
+                                <span className="ml-2 text-blue-400">{baseUnit}m</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-400">距離倍數:</span>
+                                <span className="ml-2 text-green-400">{unitMultiplier}</span>
+                            </div>
+                            <div className="md:col-span-3">
+                                <span className="text-gray-400">實際搜索距離:</span>
+                                <span className="ml-2 text-orange-400 font-bold">
+                                    {baseUnit * unitMultiplier >= 1000 
+                                        ? `${(baseUnit * unitMultiplier) / 1000}km`
+                                        : `${baseUnit * unitMultiplier}m`
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 等待組件載入完成後渲染
+        setTimeout(() => {
+            ReactDOM.render(<TestApp />, document.getElementById('test-container'));
+        }, 100);
+    </script>
+</body>
+</html>

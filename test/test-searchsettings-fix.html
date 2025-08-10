@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchSettings 修復測試</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 16px;
+            color: var(--primary-color);
+        }
+        
+        .error-log {
+            background: #2d1b1b;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #fca5a5;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .success-log {
+            background: #1b2d1b;
+            border: 1px solid #16a34a;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #86efac;
+        }
+        
+        .test-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-medium);
+            font-size: 16px;
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            margin: 8px;
+        }
+        
+        .test-button:hover {
+            background: color-mix(in srgb, var(--primary-color) 85%, black);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 40px;">
+            SearchSettings 修復測試
+        </h1>
+
+        <!-- 錯誤日誌 -->
+        <div class="test-section">
+            <div class="test-title">錯誤日誌</div>
+            <div id="errorLog" class="error-log" style="display: none;"></div>
+            <div id="successLog" class="success-log" style="display: none;"></div>
+        </div>
+
+        <!-- 測試控制 -->
+        <div class="test-section">
+            <div class="test-title">測試控制</div>
+            <button class="test-button" onclick="testSearchSettings()">測試 SearchSettings 組件</button>
+            <button class="test-button" onclick="testSubComponents()">測試子組件</button>
+            <button class="test-button" onclick="clearLogs()">清除日誌</button>
+        </div>
+
+        <!-- SearchSettings 渲染區域 -->
+        <div class="test-section">
+            <div class="test-title">SearchSettings 組件渲染</div>
+            <div id="searchSettingsContainer"></div>
+        </div>
+    </div>
+
+    <!-- 載入必要的腳本 -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <script src="../utils/mealTimeConfig.js"></script>
+    <script src="../components/shared/TouchOptimizer.js"></script>
+    <script src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script src="../components/SearchSettings/DistanceControl.js"></script>
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script type="text/babel" src="../components/SearchSettings.js"></script>
+    
+    <script>
+        // 錯誤捕獲
+        let errorCount = 0;
+        let successCount = 0;
+        
+        window.addEventListener('error', function(e) {
+            errorCount++;
+            logError(`JavaScript Error: ${e.message}\nFile: ${e.filename}\nLine: ${e.lineno}`);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            errorCount++;
+            logError(`Unhandled Promise Rejection: ${e.reason}`);
+        });
+        
+        function logError(message) {
+            const errorLog = document.getElementById('errorLog');
+            errorLog.style.display = 'block';
+            errorLog.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            errorLog.scrollTop = errorLog.scrollHeight;
+        }
+        
+        function logSuccess(message) {
+            const successLog = document.getElementById('successLog');
+            successLog.style.display = 'block';
+            successLog.textContent += `[${new Date().toLocaleTimeString()}] ✅ ${message}\n`;
+        }
+        
+        function clearLogs() {
+            document.getElementById('errorLog').textContent = '';
+            document.getElementById('errorLog').style.display = 'none';
+            document.getElementById('successLog').textContent = '';
+            document.getElementById('successLog').style.display = 'none';
+            errorCount = 0;
+            successCount = 0;
+        }
+        
+        // 模擬翻譯對象
+        const mockTranslations = {
+            openNowFilter: '現在營業',
+            anyTime: '任何時間',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐',
+            customTime: '自訂時間'
+        };
+        
+        // 模擬狀態
+        let mockState = {
+            selectedMealTime: 'lunch',
+            baseUnit: 1000,
+            unitMultiplier: 3
+        };
+        
+        function testSubComponents() {
+            try {
+                logSuccess('開始測試子組件...');
+                
+                // 測試 SettingsDisplay
+                if (typeof window.SettingsDisplay === 'function') {
+                    const settingsDisplay = window.SettingsDisplay({
+                        selectedMealTime: mockState.selectedMealTime,
+                        baseUnit: mockState.baseUnit,
+                        unitMultiplier: mockState.unitMultiplier,
+                        translations: mockTranslations
+                    });
+                    
+                    if (settingsDisplay && settingsDisplay.nodeType === Node.ELEMENT_NODE) {
+                        logSuccess('SettingsDisplay 返回有效的 DOM 元素');
+                    } else {
+                        logError('SettingsDisplay 返回無效的元素');
+                    }
+                } else {
+                    logError('SettingsDisplay 組件未載入');
+                }
+                
+                // 測試 DistanceControl
+                if (typeof window.DistanceControl === 'function') {
+                    const distanceControl = window.DistanceControl({
+                        baseUnit: mockState.baseUnit,
+                        setBaseUnit: (value) => { mockState.baseUnit = value; },
+                        unitMultiplier: mockState.unitMultiplier,
+                        setUnitMultiplier: (value) => { mockState.unitMultiplier = value; }
+                    });
+                    
+                    if (distanceControl && distanceControl.nodeType === Node.ELEMENT_NODE) {
+                        logSuccess('DistanceControl 返回有效的 DOM 元素');
+                    } else {
+                        logError('DistanceControl 返回無效的元素');
+                    }
+                } else {
+                    logError('DistanceControl 組件未載入');
+                }
+                
+                // 測試 MealTimeSelector
+                if (typeof window.MealTimeSelector === 'function') {
+                    const mealTimeSelector = window.MealTimeSelector({
+                        selectedMealTime: mockState.selectedMealTime,
+                        setSelectedMealTime: (value) => { mockState.selectedMealTime = value; },
+                        translations: mockTranslations
+                    });
+                    
+                    if (mealTimeSelector && mealTimeSelector.nodeType === Node.ELEMENT_NODE) {
+                        logSuccess('MealTimeSelector 返回有效的 DOM 元素');
+                    } else {
+                        logError('MealTimeSelector 返回無效的元素');
+                    }
+                } else {
+                    logError('MealTimeSelector 組件未載入');
+                }
+                
+            } catch (error) {
+                logError(`子組件測試失敗: ${error.message}`);
+            }
+        }
+        
+        function testSearchSettings() {
+            try {
+                logSuccess('開始測試 SearchSettings 組件...');
+                
+                const container = document.getElementById('searchSettingsContainer');
+                container.innerHTML = ''; // 清空容器
+                
+                if (typeof SearchSettings === 'function') {
+                    // 使用 React 渲染組件
+                    const searchSettingsProps = {
+                        selectedMealTime: mockState.selectedMealTime,
+                        setSelectedMealTime: (value) => { 
+                            mockState.selectedMealTime = value;
+                            logSuccess(`用餐時段已更改為: ${value}`);
+                        },
+                        translations: mockTranslations,
+                        selectedLanguage: 'zh',
+                        baseUnit: mockState.baseUnit,
+                        setBaseUnit: (value) => { 
+                            mockState.baseUnit = value;
+                            logSuccess(`基礎單位已更改為: ${value}`);
+                        },
+                        unitMultiplier: mockState.unitMultiplier,
+                        setUnitMultiplier: (value) => { 
+                            mockState.unitMultiplier = value;
+                            logSuccess(`距離倍數已更改為: ${value}`);
+                        }
+                    };
+                    
+                    // 使用 ReactDOM 渲染
+                    const root = ReactDOM.createRoot(container);
+                    root.render(React.createElement(SearchSettings, searchSettingsProps));
+                    
+                    logSuccess('SearchSettings 組件成功渲染！');
+                    
+                    // 延遲檢查子元素（等待 useEffect 執行）
+                    setTimeout(() => {
+                        const childElements = container.querySelectorAll('*');
+                        logSuccess(`SearchSettings 包含 ${childElements.length} 個子元素`);
+                    }, 500);
+                    
+                } else {
+                    logError('SearchSettings 組件未載入');
+                }
+                
+            } catch (error) {
+                logError(`SearchSettings 測試失敗: ${error.message}\n${error.stack}`);
+            }
+        }
+        
+        // 頁面載入完成後自動測試
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                logSuccess('頁面載入完成，開始自動測試...');
+                testSubComponents();
+                setTimeout(() => {
+                    testSearchSettings();
+                }, 1000); // 增加延遲等待 Babel 編譯完成
+            }, 500);
+        });
+    </script>
+</body>
+</html>

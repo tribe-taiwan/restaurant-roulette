@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主應用程序狀態檢查</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .status-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .status-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #dc143c;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 500;
+        }
+        
+        .status-value {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-pass {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .status-fail {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .log-container {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .refresh-button {
+            background: #dc143c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .refresh-button:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <h1 style="text-align: center; color: #dc143c; margin-bottom: 40px;">
+            主應用程序狀態檢查
+        </h1>
+
+        <!-- 控制按鈕 -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="refresh-button" onclick="checkStatus()">重新檢查</button>
+            <button class="refresh-button" onclick="openMainApp()">打開主應用</button>
+            <button class="refresh-button" onclick="clearLog()">清除日誌</button>
+        </div>
+
+        <!-- 組件狀態 -->
+        <div class="status-section">
+            <div class="status-title">組件載入狀態</div>
+            <div id="componentStatus">
+                <!-- 狀態項目將動態添加 -->
+            </div>
+        </div>
+
+        <!-- 錯誤狀態 -->
+        <div class="status-section">
+            <div class="status-title">錯誤監控</div>
+            <div id="errorStatus">
+                <!-- 錯誤狀態將動態添加 -->
+            </div>
+        </div>
+
+        <!-- 實時日誌 -->
+        <div class="status-section">
+            <div class="status-title">實時日誌</div>
+            <div class="log-container" id="realTimeLog">
+                <!-- 日誌將動態添加 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let errorCount = 0;
+        let warningCount = 0;
+        let logEntries = [];
+        
+        // 日誌函數
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                type: type
+            };
+            
+            logEntries.push(logEntry);
+            updateLogDisplay();
+        }
+        
+        function updateLogDisplay() {
+            const logContainer = document.getElementById('realTimeLog');
+            logContainer.innerHTML = logEntries.map(entry => {
+                const color = entry.type === 'error' ? '#fca5a5' : 
+                             entry.type === 'success' ? '#86efac' : 
+                             entry.type === 'warning' ? '#fbbf24' : '#ccc';
+                return `<div style="color: ${color}">[${entry.time}] ${entry.message}</div>`;
+            }).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLog() {
+            logEntries = [];
+            updateLogDisplay();
+        }
+        
+        // 錯誤監控
+        window.addEventListener('error', function(e) {
+            errorCount++;
+            addLog(`JavaScript 錯誤: ${e.message} (${e.filename}:${e.lineno})`, 'error');
+            updateErrorStatus();
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            errorCount++;
+            addLog(`未處理的 Promise 拒絕: ${e.reason}`, 'error');
+            updateErrorStatus();
+        });
+        
+        // 檢查組件狀態
+        function checkComponentStatus() {
+            const components = [
+                { name: 'React', check: () => typeof React !== 'undefined' },
+                { name: 'ReactDOM', check: () => typeof ReactDOM !== 'undefined' },
+                { name: 'getMealTimeConfig', check: () => typeof window.getMealTimeConfig === 'function' },
+                { name: 'TouchOptimizer', check: () => typeof window.TouchOptimizer === 'function' },
+                { name: 'SettingsDisplay', check: () => typeof window.SettingsDisplay === 'function' },
+                { name: 'DistanceControl', check: () => typeof window.DistanceControl === 'function' },
+                { name: 'MealTimeSelector', check: () => typeof window.MealTimeSelector === 'function' },
+                { name: 'SearchSettings', check: () => typeof window.SearchSettings === 'function' },
+                { name: 'LargeButton', check: () => typeof window.LargeButton === 'function' },
+                { name: 'StatusIndicator', check: () => typeof window.StatusIndicator === 'function' }
+            ];
+            
+            const statusContainer = document.getElementById('componentStatus');
+            statusContainer.innerHTML = '';
+            
+            let passCount = 0;
+            
+            components.forEach(component => {
+                const statusItem = document.createElement('div');
+                statusItem.className = 'status-item';
+                
+                const label = document.createElement('div');
+                label.className = 'status-label';
+                label.textContent = component.name;
+                
+                const value = document.createElement('div');
+                value.className = 'status-value';
+                
+                try {
+                    const isLoaded = component.check();
+                    if (isLoaded) {
+                        value.className += ' status-pass';
+                        value.textContent = '✓ 已載入';
+                        passCount++;
+                    } else {
+                        value.className += ' status-fail';
+                        value.textContent = '✗ 未載入';
+                    }
+                } catch (error) {
+                    value.className += ' status-fail';
+                    value.textContent = '✗ 錯誤';
+                    addLog(`檢查 ${component.name} 時發生錯誤: ${error.message}`, 'error');
+                }
+                
+                statusItem.appendChild(label);
+                statusItem.appendChild(value);
+                statusContainer.appendChild(statusItem);
+            });
+            
+            addLog(`組件狀態檢查完成: ${passCount}/${components.length} 已載入`, 
+                   passCount === components.length ? 'success' : 'warning');
+        }
+        
+        // 更新錯誤狀態
+        function updateErrorStatus() {
+            const errorContainer = document.getElementById('errorStatus');
+            errorContainer.innerHTML = '';
+            
+            const errorItem = document.createElement('div');
+            errorItem.className = 'status-item';
+            
+            const errorLabel = document.createElement('div');
+            errorLabel.className = 'status-label';
+            errorLabel.textContent = 'JavaScript 錯誤計數';
+            
+            const errorValue = document.createElement('div');
+            errorValue.className = 'status-value';
+            
+            if (errorCount === 0) {
+                errorValue.className += ' status-pass';
+                errorValue.textContent = '✓ 無錯誤';
+            } else if (errorCount < 5) {
+                errorValue.className += ' status-warning';
+                errorValue.textContent = `⚠ ${errorCount} 個錯誤`;
+            } else {
+                errorValue.className += ' status-fail';
+                errorValue.textContent = `✗ ${errorCount} 個錯誤`;
+            }
+            
+            errorItem.appendChild(errorLabel);
+            errorItem.appendChild(errorValue);
+            errorContainer.appendChild(errorItem);
+        }
+        
+        // 檢查狀態
+        function checkStatus() {
+            addLog('開始狀態檢查...', 'info');
+            checkComponentStatus();
+            updateErrorStatus();
+        }
+        
+        // 打開主應用
+        function openMainApp() {
+            addLog('正在打開主應用程序...', 'info');
+            window.open('../index.html', '_blank');
+        }
+        
+        // 頁面載入完成後自動檢查
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('頁面載入完成，開始初始檢查...', 'info');
+            setTimeout(checkStatus, 500);
+        });
+        
+        // 定期檢查（每30秒）
+        setInterval(() => {
+            addLog('執行定期狀態檢查...', 'info');
+            checkStatus();
+        }, 30000);
+    </script>
+</body>
+</html>

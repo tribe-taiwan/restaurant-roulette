@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchSettings 最終驗證</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .validation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .validation-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .validation-title {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 16px;
+            color: var(--primary-color);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .status-item {
+            padding: 12px;
+            border-radius: var(--border-radius-medium);
+            text-align: center;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .status-pass {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .status-fail {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .log-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ccc;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .demo-container {
+            border: 2px dashed #666;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="validation-container">
+        <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 40px;">
+            SearchSettings 最終驗證
+        </h1>
+
+        <!-- 驗證狀態 -->
+        <div class="validation-section">
+            <div class="validation-title">驗證狀態</div>
+            <div class="status-grid" id="statusGrid">
+                <!-- 狀態項目將動態添加 -->
+            </div>
+        </div>
+
+        <!-- 組件載入測試 -->
+        <div class="validation-section">
+            <div class="validation-title">組件載入測試</div>
+            <div class="log-container" id="loadingLog"></div>
+        </div>
+
+        <!-- React 集成測試 -->
+        <div class="validation-section">
+            <div class="validation-title">React 集成測試</div>
+            <div class="demo-container" id="reactDemo">
+                <!-- React 組件將渲染到這裡 -->
+            </div>
+            <div class="log-container" id="reactLog"></div>
+        </div>
+
+        <!-- 純 DOM 測試 -->
+        <div class="validation-section">
+            <div class="validation-title">純 DOM 組件測試</div>
+            <div class="demo-container" id="domDemo">
+                <!-- DOM 組件將添加到這裡 -->
+            </div>
+            <div class="log-container" id="domLog"></div>
+        </div>
+    </div>
+
+    <!-- 載入所有必要的腳本 -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+    
+    <script src="../utils/mealTimeConfig.js"></script>
+    <script src="../components/shared/TouchOptimizer.js"></script>
+    <script src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script src="../components/SearchSettings/DistanceControl.js"></script>
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script type="text/babel" src="../components/SearchSettings.js"></script>
+    
+    <script>
+        // 驗證結果
+        const validationResults = {
+            scriptsLoaded: false,
+            subComponentsWorking: false,
+            reactIntegration: false,
+            domOperations: false,
+            noErrors: true
+        };
+        
+        // 日誌函數
+        function logToContainer(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#fca5a5' : 
+                                  type === 'success' ? '#86efac' : 
+                                  type === 'warning' ? '#fbbf24' : '#ccc';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            container.appendChild(logEntry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // 更新狀態顯示
+        function updateStatus() {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.innerHTML = '';
+            
+            Object.entries(validationResults).forEach(([key, value]) => {
+                const statusItem = document.createElement('div');
+                statusItem.className = `status-item ${value ? 'status-pass' : 'status-fail'}`;
+                
+                const labels = {
+                    scriptsLoaded: '腳本載入',
+                    subComponentsWorking: '子組件功能',
+                    reactIntegration: 'React 集成',
+                    domOperations: 'DOM 操作',
+                    noErrors: '無錯誤'
+                };
+                
+                statusItem.textContent = `${labels[key]}: ${value ? '✓' : '✗'}`;
+                statusGrid.appendChild(statusItem);
+            });
+        }
+        
+        // 錯誤捕獲
+        window.addEventListener('error', function(e) {
+            validationResults.noErrors = false;
+            logToContainer('loadingLog', `JavaScript 錯誤: ${e.message}`, 'error');
+            updateStatus();
+        });
+        
+        // 測試腳本載入
+        function testScriptLoading() {
+            logToContainer('loadingLog', '開始測試腳本載入...', 'info');
+            
+            const requiredFunctions = [
+                'getMealTimeConfig',
+                'SettingsDisplay', 
+                'DistanceControl',
+                'MealTimeSelector'
+            ];
+            
+            let loadedCount = 0;
+            
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    logToContainer('loadingLog', `✓ ${funcName} 已載入`, 'success');
+                    loadedCount++;
+                } else {
+                    logToContainer('loadingLog', `✗ ${funcName} 未載入`, 'error');
+                }
+            });
+            
+            // 特別檢查 SearchSettings（React 組件，需要 Babel 編譯）
+            const checkSearchSettings = () => {
+                if (typeof window.SearchSettings === 'function') {
+                    logToContainer('loadingLog', `✓ SearchSettings 已載入`, 'success');
+                    loadedCount++;
+                    validationResults.scriptsLoaded = loadedCount === (requiredFunctions.length + 1);
+                    logToContainer('loadingLog', `腳本載入完成: ${loadedCount}/${requiredFunctions.length + 1}`, 
+                                  validationResults.scriptsLoaded ? 'success' : 'error');
+                    updateStatus();
+                } else {
+                    logToContainer('loadingLog', `⚠ SearchSettings 仍在編譯中，等待 Babel...`, 'warning');
+                    // 再次檢查
+                    setTimeout(checkSearchSettings, 1000);
+                }
+            };
+            
+            // 立即檢查一次，然後延遲檢查 SearchSettings
+            validationResults.scriptsLoaded = loadedCount === requiredFunctions.length;
+            logToContainer('loadingLog', `基礎腳本載入完成: ${loadedCount}/${requiredFunctions.length}`, 
+                          loadedCount === requiredFunctions.length ? 'success' : 'error');
+            
+            setTimeout(checkSearchSettings, 500);
+            updateStatus();
+        }
+        
+        // 測試子組件
+        function testSubComponents() {
+            logToContainer('domLog', '開始測試子組件...', 'info');
+            
+            const domDemo = document.getElementById('domDemo');
+            domDemo.innerHTML = '';
+            
+            const mockTranslations = {
+                openNowFilter: '現在營業',
+                anyTime: '任何時間',
+                breakfast: '早餐',
+                lunch: '午餐',
+                dinner: '晚餐'
+            };
+            
+            let workingComponents = 0;
+            
+            // 測試 SettingsDisplay
+            try {
+                const settingsDisplay = window.SettingsDisplay({
+                    selectedMealTime: 'lunch',
+                    baseUnit: 1000,
+                    unitMultiplier: 3,
+                    translations: mockTranslations
+                });
+                
+                if (settingsDisplay && settingsDisplay.nodeType === Node.ELEMENT_NODE) {
+                    domDemo.appendChild(settingsDisplay);
+                    logToContainer('domLog', '✓ SettingsDisplay 工作正常', 'success');
+                    workingComponents++;
+                } else {
+                    logToContainer('domLog', '✗ SettingsDisplay 返回無效元素', 'error');
+                }
+            } catch (error) {
+                logToContainer('domLog', `✗ SettingsDisplay 錯誤: ${error.message}`, 'error');
+            }
+            
+            // 測試 DistanceControl
+            try {
+                const distanceControl = window.DistanceControl({
+                    baseUnit: 1000,
+                    setBaseUnit: () => {},
+                    unitMultiplier: 3,
+                    setUnitMultiplier: () => {}
+                });
+                
+                if (distanceControl && distanceControl.nodeType === Node.ELEMENT_NODE) {
+                    domDemo.appendChild(distanceControl);
+                    logToContainer('domLog', '✓ DistanceControl 工作正常', 'success');
+                    workingComponents++;
+                } else {
+                    logToContainer('domLog', '✗ DistanceControl 返回無效元素', 'error');
+                }
+            } catch (error) {
+                logToContainer('domLog', `✗ DistanceControl 錯誤: ${error.message}`, 'error');
+            }
+            
+            // 測試 MealTimeSelector
+            try {
+                const mealTimeSelector = window.MealTimeSelector({
+                    selectedMealTime: 'lunch',
+                    setSelectedMealTime: () => {},
+                    translations: mockTranslations
+                });
+                
+                if (mealTimeSelector && mealTimeSelector.nodeType === Node.ELEMENT_NODE) {
+                    domDemo.appendChild(mealTimeSelector);
+                    logToContainer('domLog', '✓ MealTimeSelector 工作正常', 'success');
+                    workingComponents++;
+                } else {
+                    logToContainer('domLog', '✗ MealTimeSelector 返回無效元素', 'error');
+                }
+            } catch (error) {
+                logToContainer('domLog', `✗ MealTimeSelector 錯誤: ${error.message}`, 'error');
+            }
+            
+            validationResults.subComponentsWorking = workingComponents === 3;
+            validationResults.domOperations = workingComponents > 0;
+            
+            logToContainer('domLog', `子組件測試完成: ${workingComponents}/3 工作正常`, 
+                          validationResults.subComponentsWorking ? 'success' : 'warning');
+            
+            updateStatus();
+        }
+        
+        // 測試 React 集成
+        function testReactIntegration() {
+            logToContainer('reactLog', '開始測試 React 集成...', 'info');
+            
+            try {
+                const reactDemo = document.getElementById('reactDemo');
+                
+                if (typeof SearchSettings === 'function') {
+                    const mockProps = {
+                        selectedMealTime: 'lunch',
+                        setSelectedMealTime: (value) => {
+                            logToContainer('reactLog', `用餐時段更改為: ${value}`, 'info');
+                        },
+                        translations: {
+                            openNowFilter: '現在營業',
+                            anyTime: '任何時間',
+                            breakfast: '早餐',
+                            lunch: '午餐',
+                            dinner: '晚餐'
+                        },
+                        selectedLanguage: 'zh',
+                        baseUnit: 1000,
+                        setBaseUnit: (value) => {
+                            logToContainer('reactLog', `基礎單位更改為: ${value}`, 'info');
+                        },
+                        unitMultiplier: 3,
+                        setUnitMultiplier: (value) => {
+                            logToContainer('reactLog', `距離倍數更改為: ${value}`, 'info');
+                        }
+                    };
+                    
+                    const root = ReactDOM.createRoot(reactDemo);
+                    root.render(React.createElement(SearchSettings, mockProps));
+                    
+                    logToContainer('reactLog', '✓ SearchSettings React 組件渲染成功', 'success');
+                    validationResults.reactIntegration = true;
+                    
+                    // 延遲檢查子組件是否載入
+                    setTimeout(() => {
+                        const childElements = reactDemo.querySelectorAll('*');
+                        logToContainer('reactLog', `React 組件包含 ${childElements.length} 個子元素`, 'info');
+                        
+                        if (childElements.length > 5) {
+                            logToContainer('reactLog', '✓ React 組件子元素載入正常', 'success');
+                        } else {
+                            logToContainer('reactLog', '⚠ React 組件子元素可能未完全載入', 'warning');
+                        }
+                        
+                        updateStatus();
+                    }, 1000);
+                    
+                } else {
+                    logToContainer('reactLog', '✗ SearchSettings 函數未載入', 'error');
+                    validationResults.reactIntegration = false;
+                }
+                
+            } catch (error) {
+                logToContainer('reactLog', `✗ React 集成測試失敗: ${error.message}`, 'error');
+                validationResults.reactIntegration = false;
+            }
+            
+            updateStatus();
+        }
+        
+        // 執行所有測試
+        function runAllTests() {
+            updateStatus();
+            
+            setTimeout(() => {
+                testScriptLoading();
+                
+                setTimeout(() => {
+                    testSubComponents();
+                    
+                    setTimeout(() => {
+                        testReactIntegration();
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        // 頁面載入完成後執行測試
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -35,6 +35,12 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
 
+    <!-- 組件樣式 -->
+    <link rel="stylesheet" href="components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="components/shared/shared-components.css">
+    <link rel="stylesheet" href="components/LocationManager/LocationManager.css">
+    <link rel="stylesheet" href="components/SearchSettings/SearchSettings.css">
+
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
@@ -278,12 +284,29 @@
     <script src="utils/homeBaseUtils.js"></script>
     <script src="utils/slideNavigationHook.js"></script>
     <script src="_local/local-api.js"></script>
+    
+    <!-- 共用組件 -->
+    <script src="components/shared/TouchOptimizer.js"></script>
+    <script src="components/shared/LargeButton.js"></script>
+    <script src="components/shared/StatusIndicator.js"></script>
+    <script src="components/shared/MobileCard.js"></script>
     <script type="text/babel" src="hooks/useRestaurantHistory.js"></script>
     <script type="text/babel" src="components/LanguageSelector.js"></script>
     <script type="text/babel" src="components/SlideContainer.js"></script>
     <script type="text/babel" src="components/SlotMachine.js"></script>
     <script type="text/babel" src="components/RestaurantCard.js"></script>
+    <!-- LocationManager 子組件 -->
+    <script type="text/babel" src="components/LocationManager/CurrentLocationDisplay.js"></script>
+    <script type="text/babel" src="components/LocationManager/QuickLocationButtons.js"></script>
+    <script type="text/babel" src="components/LocationManager/AddressInput.js"></script>
+    <script type="text/babel" src="components/LocationManager/LocationActions.js"></script>
+    <script type="text/babel" src="components/LocationManager/index.js"></script>
     <script type="text/babel" src="components/LocationManager.js"></script>
+    
+    <!-- SearchSettings 子組件 -->
+    <script src="components/SearchSettings/DistanceControl.js"></script>
+    <script src="components/SearchSettings/MealTimeSelector.js"></script>
+    <script src="components/SearchSettings/SettingsDisplay.js"></script>
     <script type="text/babel" src="components/SearchSettings.js"></script>
     <script type="text/babel" src="components/StatusMessages.js"></script>
     <script type="text/babel" src="components/ThemeSwitcher.js"></script>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchSettings 簡單測試</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: 16px;
+            color: var(--primary-color);
+        }
+        
+        .log {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ccc;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success { color: #86efac; }
+        .error { color: #fca5a5; }
+        .warning { color: #fbbf24; }
+        
+        .test-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-medium);
+            font-size: 16px;
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            margin: 8px;
+        }
+        
+        .test-button:hover {
+            background: color-mix(in srgb, var(--primary-color) 85%, black);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 40px;">
+            SearchSettings 簡單測試
+        </h1>
+
+        <!-- 測試日誌 -->
+        <div class="test-section">
+            <div class="test-title">測試日誌</div>
+            <div id="testLog" class="log"></div>
+            <button class="test-button" onclick="clearLog()">清除日誌</button>
+            <button class="test-button" onclick="runTests()">重新測試</button>
+        </div>
+
+        <!-- 子組件測試區域 -->
+        <div class="test-section">
+            <div class="test-title">子組件測試</div>
+            <div id="subComponentsContainer"></div>
+        </div>
+    </div>
+
+    <!-- 載入腳本 -->
+    <script src="../utils/mealTimeConfig.js"></script>
+    <script src="../components/shared/TouchOptimizer.js"></script>
+    <script src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script src="../components/SearchSettings/DistanceControl.js"></script>
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testResults.push({ message: logEntry, type });
+            updateLogDisplay();
+        }
+        
+        function updateLogDisplay() {
+            const logElement = document.getElementById('testLog');
+            logElement.innerHTML = testResults.map(result => 
+                `<div class="${result.type}">${result.message}</div>`
+            ).join('');
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            testResults = [];
+            updateLogDisplay();
+        }
+        
+        // 模擬翻譯對象
+        const mockTranslations = {
+            openNowFilter: '現在營業',
+            anyTime: '任何時間',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐',
+            customTime: '自訂時間'
+        };
+        
+        // 模擬狀態
+        let mockState = {
+            selectedMealTime: 'lunch',
+            baseUnit: 1000,
+            unitMultiplier: 3
+        };
+        
+        function testSubComponents() {
+            log('開始測試子組件...', 'info');
+            
+            const container = document.getElementById('subComponentsContainer');
+            container.innerHTML = '';
+            
+            let successCount = 0;
+            let totalTests = 3;
+            
+            // 測試 SettingsDisplay
+            try {
+                if (typeof window.SettingsDisplay === 'function') {
+                    log('✓ SettingsDisplay 函數已載入', 'success');
+                    
+                    const settingsDisplay = window.SettingsDisplay({
+                        selectedMealTime: mockState.selectedMealTime,
+                        baseUnit: mockState.baseUnit,
+                        unitMultiplier: mockState.unitMultiplier,
+                        translations: mockTranslations
+                    });
+                    
+                    if (settingsDisplay && settingsDisplay.nodeType === Node.ELEMENT_NODE) {
+                        log('✓ SettingsDisplay 返回有效的 DOM 元素', 'success');
+                        
+                        // 添加到測試容器
+                        const wrapper = document.createElement('div');
+                        wrapper.style.marginBottom = '20px';
+                        wrapper.appendChild(settingsDisplay);
+                        container.appendChild(wrapper);
+                        
+                        successCount++;
+                    } else {
+                        log('✗ SettingsDisplay 返回無效元素', 'error');
+                    }
+                } else {
+                    log('✗ SettingsDisplay 函數未載入', 'error');
+                }
+            } catch (error) {
+                log(`✗ SettingsDisplay 測試失敗: ${error.message}`, 'error');
+            }
+            
+            // 測試 DistanceControl
+            try {
+                if (typeof window.DistanceControl === 'function') {
+                    log('✓ DistanceControl 函數已載入', 'success');
+                    
+                    const distanceControl = window.DistanceControl({
+                        baseUnit: mockState.baseUnit,
+                        setBaseUnit: (value) => { 
+                            mockState.baseUnit = value;
+                            log(`距離基礎單位更改為: ${value}`, 'info');
+                        },
+                        unitMultiplier: mockState.unitMultiplier,
+                        setUnitMultiplier: (value) => { 
+                            mockState.unitMultiplier = value;
+                            log(`距離倍數更改為: ${value}`, 'info');
+                        }
+                    });
+                    
+                    if (distanceControl && distanceControl.nodeType === Node.ELEMENT_NODE) {
+                        log('✓ DistanceControl 返回有效的 DOM 元素', 'success');
+                        
+                        // 添加到測試容器
+                        const wrapper = document.createElement('div');
+                        wrapper.style.marginBottom = '20px';
+                        wrapper.appendChild(distanceControl);
+                        container.appendChild(wrapper);
+                        
+                        successCount++;
+                    } else {
+                        log('✗ DistanceControl 返回無效元素', 'error');
+                    }
+                } else {
+                    log('✗ DistanceControl 函數未載入', 'error');
+                }
+            } catch (error) {
+                log(`✗ DistanceControl 測試失敗: ${error.message}`, 'error');
+            }
+            
+            // 測試 MealTimeSelector
+            try {
+                log(`檢查 window.MealTimeSelector: ${typeof window.MealTimeSelector}`, 'info');
+                log(`檢查 window.getMealTimeConfig: ${typeof window.getMealTimeConfig}`, 'info');
+                
+                if (typeof window.MealTimeSelector === 'function') {
+                    log('✓ MealTimeSelector 函數已載入', 'success');
+                    
+                    const mealTimeSelector = window.MealTimeSelector({
+                        selectedMealTime: mockState.selectedMealTime,
+                        setSelectedMealTime: (value) => { 
+                            mockState.selectedMealTime = value;
+                            log(`用餐時段更改為: ${value}`, 'info');
+                        },
+                        translations: mockTranslations
+                    });
+                    
+                    log(`MealTimeSelector 返回值類型: ${typeof mealTimeSelector}`, 'info');
+                    log(`MealTimeSelector 是否為 DOM 元素: ${mealTimeSelector && mealTimeSelector.nodeType === Node.ELEMENT_NODE}`, 'info');
+                    
+                    if (mealTimeSelector && mealTimeSelector.nodeType === Node.ELEMENT_NODE) {
+                        log('✓ MealTimeSelector 返回有效的 DOM 元素', 'success');
+                        
+                        // 添加到測試容器
+                        const wrapper = document.createElement('div');
+                        wrapper.style.marginBottom = '20px';
+                        wrapper.appendChild(mealTimeSelector);
+                        container.appendChild(wrapper);
+                        
+                        successCount++;
+                    } else {
+                        log(`✗ MealTimeSelector 返回無效元素: ${mealTimeSelector}`, 'error');
+                    }
+                } else {
+                    log('✗ MealTimeSelector 函數未載入', 'error');
+                    // 檢查全局對象
+                    log(`window 對象中的 MealTimeSelector 相關屬性:`, 'info');
+                    Object.keys(window).filter(key => key.toLowerCase().includes('meal')).forEach(key => {
+                        log(`  ${key}: ${typeof window[key]}`, 'info');
+                    });
+                }
+            } catch (error) {
+                log(`✗ MealTimeSelector 測試失敗: ${error.message}`, 'error');
+                log(`錯誤堆疊: ${error.stack}`, 'error');
+            }
+            
+            // 總結
+            log(`子組件測試完成: ${successCount}/${totalTests} 通過`, 
+                successCount === totalTests ? 'success' : 'warning');
+        }
+        
+        function testAppendChild() {
+            log('測試 appendChild 操作...', 'info');
+            
+            try {
+                const testContainer = document.createElement('div');
+                const testElement = document.createElement('span');
+                testElement.textContent = '測試元素';
+                
+                // 這應該成功
+                testContainer.appendChild(testElement);
+                log('✓ appendChild 正常 DOM 元素成功', 'success');
+                
+                // 測試無效參數
+                try {
+                    testContainer.appendChild(null);
+                    log('✗ appendChild(null) 應該失敗但沒有', 'error');
+                } catch (e) {
+                    log('✓ appendChild(null) 正確拋出錯誤', 'success');
+                }
+                
+                try {
+                    testContainer.appendChild('string');
+                    log('✗ appendChild(string) 應該失敗但沒有', 'error');
+                } catch (e) {
+                    log('✓ appendChild(string) 正確拋出錯誤', 'success');
+                }
+                
+            } catch (error) {
+                log(`✗ appendChild 測試失敗: ${error.message}`, 'error');
+            }
+        }
+        
+        function runTests() {
+            clearLog();
+            log('開始執行所有測試...', 'info');
+            
+            testAppendChild();
+            setTimeout(() => {
+                testSubComponents();
+            }, 100);
+        }
+        
+        // 頁面載入完成後自動執行測試
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                log('頁面載入完成，開始自動測試...', 'info');
+                runTests();
+            }, 500);
+        });
+        
+        // 錯誤捕獲
+        window.addEventListener('error', function(e) {
+            log(`JavaScript 錯誤: ${e.message} (${e.filename}:${e.lineno})`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            log(`未處理的 Promise 拒絕: ${e.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>
