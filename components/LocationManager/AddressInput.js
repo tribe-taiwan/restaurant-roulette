@@ -1,13 +1,13 @@
 // AddressInput.js - 大型地址輸入框子組件
 // 安全的模組化組件，提供地址輸入功能
 
-function AddressInput({ 
+function AddressInput({
   addressInput,
   setAddressInput,
   onAddressConfirm,
   onFocus,
   onBlur,
-  translations 
+  translations
 }) {
   try {
     const t = translations;
@@ -31,9 +31,7 @@ function AddressInput({
     return (
       <div className="address-input-container">
         <div className="address-input-wrapper">
-          <div className="address-input-icon">
-            <div className="icon-search"></div>
-          </div>
+          <div className="address-input-icon">🔍</div>
           <input
             type="text"
             value={addressInput}

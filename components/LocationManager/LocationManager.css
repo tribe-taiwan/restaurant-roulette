@@ -468,8 +468,9 @@ LocationButtons 組件樣式 */
   .quick-location-btn:active {
     transform: scale(0.98);
   }
-}/* Addres
-sInput 組件樣式 */
+}
+
+/* AddressInput 組件樣式 - 深色主題 */
 .address-input-container {
   width: 100%;
 }
@@ -478,8 +479,8 @@ sInput 組件樣式 */
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--surface-secondary);
-  border: 2px solid var(--border-color);
+  background: #1f2937; /* 深灰色背景 */
+  border: 2px solid #374151; /* 深色邊框 */
   border-radius: var(--unified-border-radius);
   transition: all var(--transition-normal);
   min-height: var(--button-height-medium);
@@ -488,15 +489,16 @@ sInput 組件樣式 */
 }
 
 .address-input-wrapper:focus-within {
-  border-color: var(--theme-primary);
-  box-shadow: var(--focus-shadow);
+  border-color: #3b82f6; /* 藍色焦點邊框 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .address-input-wrapper:hover {
-  border-color: var(--theme-accent);
+  border-color: #6b7280; /* 懸停時的邊框顏色 */
   box-shadow: var(--theme-shadow-md);
 }
 
+/* 簡化圖標實現 - 使用emoji圖標 */
 .address-input-icon {
   flex-shrink: 0;
   display: flex;
@@ -504,18 +506,8 @@ sInput 組件樣式 */
   justify-content: center;
   width: 48px;
   height: 100%;
-  color: var(--text-secondary);
-}
-
-.address-input-icon .icon-search {
-  width: var(--icon-size-md);
-  height: var(--icon-size-md);
-  color: var(--text-secondary);
-  /* Lucide Search 圖標 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  font-size: 20px;
+  color: #6b7280; /* 深灰色圖標 */
 }
 
 .address-input-field {
@@ -527,19 +519,19 @@ sInput 組件樣式 */
   outline: none;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-normal);
-  color: var(--text-primary);
-  
+  color: #000000; /* 黑色文字 */
+
   /* 移動端優化 */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  
+
   /* 防止縮放 */
   font-size: 16px; /* iOS Safari 防止縮放的最小字體大小 */
 }
 
 .address-input-field::placeholder {
-  color: var(--text-muted);
+  color: #6b7280; /* 深灰色佔位符 */
   font-weight: var(--font-weight-normal);
 }
 
@@ -552,11 +544,12 @@ sInput 組件樣式 */
   .address-input-wrapper {
     min-height: var(--button-height-small);
   }
-  
+
   .address-input-icon {
     width: 40px;
+    font-size: 18px; /* 小螢幕上稍小的圖標 */
   }
-  
+
   .address-input-field {
     padding: var(--spacing-md) var(--spacing-sm);
     font-size: 16px; /* 保持16px防止iOS縮放 */
@@ -567,26 +560,27 @@ sInput 組件樣式 */
 @media (max-width: 360px) {
   .address-input-icon {
     width: 36px;
+    font-size: 16px; /* 超小螢幕上更小的圖標 */
   }
-  
+
   .address-input-field {
     padding: var(--spacing-sm);
   }
 }
 
-/* 深色模式適配 */
+/* 深色模式適配 - 進一步加深背景 */
 @media (prefers-color-scheme: dark) {
   .address-input-wrapper {
-    background: var(--garmin-dark-gray);
-    border-color: var(--garmin-gray);
+    background: #111827; /* 更深的背景色 */
+    border-color: #374151; /* 保持深色邊框 */
   }
-  
+
   .address-input-field {
-    color: white;
+    color: #000000; /* 保持黑色文字 */
   }
-  
+
   .address-input-field::placeholder {
-    color: var(--garmin-light-gray);
+    color: #6b7280; /* 確保深灰色佔位符 */
   }
 }
 
@@ -594,10 +588,11 @@ sInput 組件樣式 */
 @media (prefers-contrast: high) {
   .address-input-wrapper {
     border-width: 3px;
+    border-color: #ffffff; /* 高對比度下使用白色邊框 */
   }
-  
+
   .address-input-wrapper:focus-within {
-    border-color: var(--text-primary);
+    border-color: #3b82f6; /* 高對比度下的焦點顏色 */
   }
 }
 
@@ -607,7 +602,9 @@ sInput 組件樣式 */
     /* 增加觸控區域 */
     padding: var(--spacing-lg);
   }
-}/* Location
+}
+
+/* Location
 Actions 組件樣式 */
 .location-actions {
   width: 100%;
