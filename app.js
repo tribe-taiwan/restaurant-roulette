@@ -468,7 +468,7 @@ function App() {
         let url;
         if (currentRestaurant.id) {
           // 使用 place_id 直接跳轉到相片頁面
-          url = `https://www.google.com/maps/place/?q=place_id:${currentRestaurant.id}&hl=${selectedLanguage === 'zh' ? 'zh-TW' : 'en'}&tab=photos`;
+          url = `https://www.google.com/maps/search/?api=1&query_place_id=${currentRestaurant.id}`;
         } else {
           // 回退到一般搜索
           url = `https://www.google.com/maps/search/${encodeURIComponent(currentRestaurant.name + ', ' + currentRestaurant.address)}/photos`;
