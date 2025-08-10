@@ -52,7 +52,7 @@ function SearchSettings({
 
     return (
       <div className="w-full max-w-2xl mx-auto">
-        {/* 整合區塊 */}
+        {/* 搜索範圍與用餐時段整合區塊 */}
         <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container">
           {/* 搜索範圍設定 */}
           <div className="mb-6">
