@@ -531,13 +531,20 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       { name: '西南區', lat: userLocation.lat - offsetDistance, lng: userLocation.lng - offsetDistance }
     ];
     
+    // 搜索策略：餐廳類型
+    const searchTypes = ['restaurant', 'meal_takeaway'];
+    
     // 根據是否為重複搜索來決定搜索區域數量
     const areasToSearch = options.attempt > 0 ? 
       searchAreas.slice(0, Math.min(3 + options.attempt, searchAreas.length)) : 
       searchAreas.slice(0, 4); // 預設搜索前4個區域
     
-    // 搜索策略：餐廳類型
-    const searchTypes = ['restaurant', 'meal_takeaway'];
+    // 計算總搜索次數：區域數 × 餐廳類型數
+    const totalSearchCalls = areasToSearch.length * searchTypes.length;
+    console.log(`🎯 搜索策略: ${areasToSearch.length}個區域 × ${searchTypes.length}種類型 = ${totalSearchCalls}次API調用`);
+    console.log(`📍 搜索區域: ${areasToSearch.map(area => area.name).join('、')}`);
+    console.log(`🍽️搜索類型: ${searchTypes.join('、')}`);
+    console.log(`📏 搜索半徑: ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`);
 
     for (const area of areasToSearch) {
       // 檢查是否已被中止
@@ -614,8 +621,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       };
       
       // 不再拋出錯誤，直接返回空陣列，讓上層處理擴大搜索
-      // 只在調試模式下輸出詳細資訊
-      console.log(`🔍 搜索範圍 ${currentRadius/1000}km 內未找到餐廳，將擴大搜索範圍`);
+      // 使用實際當前搜索半徑顯示
+      console.log(`📍 搜索範圍 ${currentRadius/1000}km 內未找到餐廳`);
       return [];
     }
 
@@ -1196,7 +1203,9 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
       searchRadius = baseRadius;
-      console.log(`🔍 第${attempt + 1}次嘗試: 基礎範圍 ${searchRadius/1000}km`);
+      const expectedAreas = Math.min(3 + attempt + 1, 9); // 預期搜索區域數
+      const expectedCalls = expectedAreas * 2; // 2種餐廳類型
+      console.log(`🔍 第${attempt + 1}次嘗試: 多區域搜索 (${searchRadius/1000}km範圍，約${expectedAreas}區域)`);
     } else {
       // 後續嘗試：使用baseUnit智能擴展範圍
       const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
