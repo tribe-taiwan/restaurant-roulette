@@ -67,6 +67,8 @@ function createTranslations(brandSubtitle) {
       enterAddressTip: "Please enter address first",
       autoLocationTip: "Use GPS for automatic location",
       manualLocationTip: "Locate based on entered address",
+      // 回民宿功能
+      BackToHotel: "Back to hotel",
       // 餐廳資訊和營業時間
       openingIn: "Opening in",
       hours: "hours",
@@ -131,6 +133,8 @@ function createTranslations(brandSubtitle) {
       enterAddressTip: "請先輸入地址",
       autoLocationTip: "使用GPS自動定位",
       manualLocationTip: "根據輸入地址進行定位",
+      // 回民宿功能
+      BackToHotel: "回民宿家",
       // 餐廳資訊和營業時間
       openingIn: "還有多久開業",
       hours: "小時",
@@ -206,6 +210,8 @@ function createTranslations(brandSubtitle) {
       // 候選餐廳相關
       candidates: "候補レストラン",
       clearList: "リストをクリア",
+      // 回民宿功能
+      BackToHotel: "宿へ",
       // 搜尋設定相關
       openNowFilter: "現在営業中",
       anyTime: "いつでも"
@@ -241,6 +247,8 @@ function createTranslations(brandSubtitle) {
       located: "위치설정 완료",
       pleaseEnterHomeAddress: "먼저 집 주소를 입력해주세요",
       pleaseEnterOfficeAddress: "먼저 사무실 주소를 입력해주세요",
+      // 回民宿功能
+      BackToHotel: "숙소로",
       // 餐廳資訊和營業時間
       openingIn: "개업까지 남은 시간",
       hours: "시간",
@@ -296,6 +304,8 @@ function createTranslations(brandSubtitle) {
       located: "Đã định vị",
       pleaseEnterHomeAddress: "Vui lòng nhập địa chỉ nhà trước",
       pleaseEnterOfficeAddress: "Vui lòng nhập địa chỉ văn phòng trước",
+      // 回民宿功能
+      BackToHotel: "Về khách sạn",
       // 餐廳資訊和營業時間
       openingIn: "Mở cửa sau",
       hours: "giờ",
@@ -351,6 +361,8 @@ function createTranslations(brandSubtitle) {
       located: "Sudah dikenal pasti",
       pleaseEnterHomeAddress: "Sila masukkan alamat rumah terlebih dahulu",
       pleaseEnterOfficeAddress: "Sila masukkan alamat pejabat terlebih dahulu",
+      // 回民宿功能
+      BackToHotel: "Ke hotel",
       // 餐廳資訊和營業時間
       openingIn: "Buka dalam",
       hours: "jam",
