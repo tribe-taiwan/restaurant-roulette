@@ -17,9 +17,7 @@ function CurrentLocationDisplay({
     return (
       <div className="current-location-display">
         <div className="current-location-content">
-          <div className="current-location-icon">
-            <div className="icon-map-pin"></div>
-          </div>
+          <div className="current-location-icon icon-map-pin"></div>
           <div className="current-location-text">
             <div className="current-location-label">
               {t.locationDetected}

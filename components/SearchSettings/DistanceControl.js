@@ -5,7 +5,8 @@ function DistanceControl({
   baseUnit,
   setBaseUnit,
   unitMultiplier,
-  setUnitMultiplier
+  setUnitMultiplier,
+  translations
 }) {
   try {
     // 距離配置
@@ -38,9 +39,9 @@ function DistanceControl({
       setUnitMultiplier(adjustedMultiplier);
     };
 
-    // 創建主容器
+    // 創建主容器（移除背景框架樣式）
     const container = document.createElement('div');
-    container.className = 'garmin-distance-control';
+    container.className = 'distance-control-content';
 
     // 大型距離顯示
     const distanceDisplay = document.createElement('div');
@@ -52,7 +53,7 @@ function DistanceControl({
     
     const distanceLabel = document.createElement('span');
     distanceLabel.className = 'distance-label';
-    distanceLabel.textContent = '搜索範圍';
+    distanceLabel.textContent = translations.searchRadius || '搜索範圍';
     
     distanceDisplay.appendChild(distanceValue);
     distanceDisplay.appendChild(distanceLabel);

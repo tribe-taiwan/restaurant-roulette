@@ -74,9 +74,7 @@ function QuickLocationButtons({
             data-important-action={shouldShowActiveState ? "true" : "false"}
             aria-label={getLocationButtonTip('home')}
           >
-            <div className="quick-btn-icon">
-              <div className="icon-home"></div>
-            </div>
+            <div className="quick-btn-icon icon-home"></div>
             <div className="quick-btn-text">
               {getLocationButtonText('home')}
             </div>
@@ -91,9 +89,7 @@ function QuickLocationButtons({
             data-important-action={shouldShowActiveState ? "true" : "false"}
             aria-label={getLocationButtonTip('office')}
           >
-            <div className="quick-btn-icon">
-              <div className="icon-briefcase"></div>
-            </div>
+            <div className="quick-btn-icon icon-briefcase"></div>
             <div className="quick-btn-text">
               {getLocationButtonText('office')}
             </div>

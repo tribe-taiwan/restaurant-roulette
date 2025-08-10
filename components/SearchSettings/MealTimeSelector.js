@@ -16,19 +16,18 @@ function MealTimeSelector({
       dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
     };
 
-    // 定義用餐時段選項 - 2行3列網格布局
+    // 定義用餐時段選項 - 2行2列網格布局，移除自訂選項
     const mealTimeOptions = [
       // 第一行
       [
-        { id: 'current', label: t.openNowFilter, icon: '🕐', time: '' },
-        { id: 'all', label: t.anyTime, icon: '🌍', time: '' },
-        { id: 'breakfast', label: t.breakfast, icon: mealTimeConfig.breakfast.icon, time: mealTimeConfig.breakfast.displayTime }
+        { id: 'current', label: t.openNowFilter, icon: 'clock', time: '' },
+        { id: 'all', label: t.anyTime, icon: 'globe', time: '' }
       ],
       // 第二行
       [
-        { id: 'lunch', label: t.lunch, icon: mealTimeConfig.lunch.icon, time: mealTimeConfig.lunch.displayTime },
-        { id: 'dinner', label: t.dinner, icon: mealTimeConfig.dinner.icon, time: mealTimeConfig.dinner.displayTime },
-        { id: 'custom', label: t.customTime || '自訂', icon: '⚙️', time: '' }
+        { id: 'breakfast', label: t.breakfast, icon: '', time: mealTimeConfig.breakfast.displayTime },
+        { id: 'lunch', label: t.lunch, icon: '', time: mealTimeConfig.lunch.displayTime },
+        { id: 'dinner', label: t.dinner, icon: '', time: mealTimeConfig.dinner.displayTime }
       ]
     ];
 
@@ -53,15 +52,21 @@ function MealTimeSelector({
         const content = document.createElement('div');
         content.className = 'meal-time-button-content';
         
-        const icon = document.createElement('div');
-        icon.className = 'meal-time-icon';
-        icon.textContent = mealTime.icon;
+        // 只有當有圖標時才創建圖標元素
+        if (mealTime.icon) {
+          const icon = document.createElement('div');
+          if (mealTime.icon === 'clock' || mealTime.icon === 'globe') {
+            icon.className = `meal-time-icon lucide-${mealTime.icon}`;
+          } else {
+            icon.className = 'meal-time-icon';
+            icon.textContent = mealTime.icon;
+          }
+          content.appendChild(icon);
+        }
         
         const label = document.createElement('span');
-        label.className = 'meal-time-label';
+        label.className = mealTime.icon ? 'meal-time-label' : 'meal-time-label-large';
         label.textContent = mealTime.label;
-        
-        content.appendChild(icon);
         content.appendChild(label);
         
         if (mealTime.time) {

@@ -25,7 +25,7 @@ function loadLocationManagerComponents() {
 
       return components;
     }
-    
+
     // Node.js 環境
     return {
       CurrentLocationDisplay: require('./CurrentLocationDisplay'),
@@ -41,7 +41,7 @@ function loadLocationManagerComponents() {
 
 // 匯出組件載入器
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = loadLocationManagerComponents;
+  module.exports = { LocationManager, loadLocationManagerComponents };
 } else if (typeof window !== 'undefined') {
   window.loadLocationManagerComponents = loadLocationManagerComponents;
 }

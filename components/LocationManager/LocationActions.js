@@ -19,14 +19,16 @@ function LocationActions({
     const hasAddressInput = addressInput.trim().length > 0;
     const shouldShowActiveState = hasAddressInput || isInputFocused;
     
-    // 獲取手動定位按鈕樣式
+    // 獲取手動定位按鈕樣式 - 使用簡單背景色，不使用漸層
     const getManualLocationButtonStyle = () => {
-      if (manualLocationState === 'success') {
-        return 'bg-[var(--success-color)] hover:bg-green-600';
+      if (!addressInput.trim() && !isInputFocused) {
+        return 'btn-disabled';
+      } else if (manualLocationState === 'success') {
+        return 'btn-success-solid';
       } else if (shouldShowActiveState) {
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
+        return 'btn-blue-solid';
       } else {
-        return 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]';
+        return 'btn-gray-solid';
       }
     };
     
@@ -77,9 +79,7 @@ function LocationActions({
                 </>
               ) : (
                 <>
-                  <div className="location-btn-icon">
-                    <div className="icon-map-pin"></div>
-                  </div>
+                  <div className="location-btn-icon icon-map-pin"></div>
                   <div className="location-btn-text">
                     {t.autoLocation}
                   </div>
@@ -92,7 +92,7 @@ function LocationActions({
           <button
             onClick={handleManualLocation}
             disabled={!addressInput.trim() || isGeocodingAddress}
-            className={`location-action-btn manual-location-btn ${getManualLocationButtonStyle()} ${(!addressInput.trim() && !isInputFocused) ? 'btn-disabled' : ''}`}
+            className={`location-action-btn manual-location-btn ${getManualLocationButtonStyle()}`}
             title={t.manualLocationTip}
             data-touch-optimized="true"
             data-important-action={shouldShowActiveState ? "true" : "false"}
@@ -109,9 +109,7 @@ function LocationActions({
                 </>
               ) : (
                 <>
-                  <div className="location-btn-icon">
-                    <div className="icon-clock"></div>
-                  </div>
+                  <div className="location-btn-icon icon-clock"></div>
                   <div className="location-btn-text">
                     {getManualLocationButtonText()}
                   </div>

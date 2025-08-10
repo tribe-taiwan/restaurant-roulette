@@ -1,6 +1,22 @@
 /* SearchSettings.css - 搜索設定組件樣式 */
 
-/* 統一風格距離控制組件樣式 */
+/* 距離控制組件內容（無框架版本） */
+.distance-control-content {
+  /* 使用統一寬度系統 */
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  
+  /* 響應式和性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-auto);
+}
+
+/* 統一風格距離控制組件樣式（保留給需要框架的地方） */
 .garmin-distance-control {
   background: var(--surface-color);
   border-radius: var(--unified-border-radius);
@@ -84,8 +100,9 @@
 
 .unit-button {
   flex: 1;
-  height: var(--button-height-small);
-  min-height: var(--touch-target-min);
+  height: 44px; /* 統一高度 */
+  min-height: 44px; /* 統一最小高度 */
+  max-height: 44px; /* 統一最大高度 */
   background: transparent;
   border: none;
   border-radius: var(--unified-border-radius);
@@ -283,20 +300,22 @@
 /* 統一風格大按鈕設計 */
 .meal-time-button {
   flex: 1;
-  height: var(--button-height-xl); /* 72px */
-  min-height: var(--button-height-xl);
+  height: 72px; /* 統一高度 */
+  min-height: 72px; /* 統一最小高度 */
+  max-height: 72px; /* 統一最大高度 */
   min-width: 100px;
   background: var(--surface-secondary);
+  color: var(--text-primary); /* 修復白底白字問題 */
   border: 2px solid var(--border-color);
   border-radius: var(--unified-border-radius);
   cursor: pointer;
   transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
-  
+
   /* 確保觸控區域足夠大 */
   padding: var(--spacing-sm);
-  
+
   /* 統一陰影系統 */
   box-shadow: var(--theme-shadow-md);
 }
@@ -319,10 +338,41 @@
   transition: transform var(--transition-fast);
 }
 
+/* Lucide 圖標樣式 - 默認白色 */
+.meal-time-icon.lucide-clock {
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12,6 12,12 16,14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: var(--text-primary);
+}
+
+.meal-time-icon.lucide-globe {
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' x2='22' y1='12' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: var(--text-primary);
+}
+
 /* 按鈕文字標籤 */
 .meal-time-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+  transition: color var(--transition-normal);
+}
+
+/* 大標籤樣式（無圖標時使用） */
+.meal-time-label-large {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   text-align: center;
   line-height: 1.2;
@@ -348,11 +398,14 @@
   filter: var(--hover-brightness);
 }
 
-.meal-time-button:hover .meal-time-icon {
+.meal-time-button:hover .meal-time-icon,
+.meal-time-button:hover .meal-time-icon.lucide-clock,
+.meal-time-button:hover .meal-time-icon.lucide-globe {
   transform: scale(1.1);
 }
 
-.meal-time-button:hover .meal-time-label {
+.meal-time-button:hover .meal-time-label,
+.meal-time-button:hover .meal-time-label-large {
   color: var(--theme-primary);
 }
 
@@ -371,7 +424,17 @@
   box-shadow: var(--theme-shadow-lg);
 }
 
+/* 選中狀態下的 Lucide 圖標 - 白色 */
+.meal-time-button.selected .meal-time-icon.lucide-clock {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12,6 12,12 16,14'/%3E%3C/svg%3E");
+}
+
+.meal-time-button.selected .meal-time-icon.lucide-globe {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' x2='22' y1='12' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+}
+
 .meal-time-button.selected .meal-time-label,
+.meal-time-button.selected .meal-time-label-large,
 .meal-time-button.selected .meal-time-time {
   color: white;
 }
@@ -381,6 +444,15 @@
   transform: var(--hover-transform);
   box-shadow: var(--theme-shadow-xl);
   filter: var(--hover-brightness);
+}
+
+/* 懸停狀態下的 Lucide 圖標 - 保持白色 */
+.meal-time-button:hover .meal-time-icon.lucide-clock {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12,6 12,12 16,14'/%3E%3C/svg%3E");
+}
+
+.meal-time-button:hover .meal-time-icon.lucide-globe {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' x2='22' y1='12' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
 }
 
 /* 統一選中狀態的脈衝動畫 */
@@ -488,8 +560,18 @@
     font-size: 28px; /* 手機上稍小的圖標 */
   }
   
+  .meal-time-icon.lucide-clock,
+  .meal-time-icon.lucide-globe {
+    width: 28px;
+    height: 28px;
+  }
+  
   .meal-time-label {
     font-size: 13px; /* 手機上稍小的文字 */
+  }
+  
+  .meal-time-label-large {
+    font-size: 18px; /* 手機上的大標籤 */
   }
   
   .meal-time-time {

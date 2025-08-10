@@ -238,8 +238,14 @@ ntLocationDisplay 組件樣式 */
 }
 
 .current-location-icon .icon-map-pin {
-  font-size: var(--icon-size-lg);
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   color: white;
+  /* Lucide Map Pin 圖標 - 白色 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .current-location-text {
@@ -354,10 +360,26 @@ LocationButtons 組件樣式 */
   height: var(--icon-size-lg);
 }
 
-.quick-btn-icon .icon-home,
-.quick-btn-icon .icon-briefcase {
-  font-size: var(--icon-size-lg);
+.icon-home {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   color: white;
+  /* Lucide Home 圖標 - 白色 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9,22 9,12 15,12 15,22'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.icon-briefcase {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  color: white;
+  /* Lucide Briefcase 圖標 - 白色 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='14' x='2' y='7' rx='2' ry='2'/%3E%3Cpath d='M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .quick-btn-text {
@@ -426,9 +448,10 @@ LocationButtons 組件樣式 */
     height: var(--icon-size-md);
   }
   
-  .quick-btn-icon .icon-home,
-  .quick-btn-icon .icon-briefcase {
-    font-size: var(--icon-size-md);
+  .icon-home,
+  .icon-briefcase {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
   }
   
   .quick-btn-text {
@@ -461,6 +484,7 @@ sInput 組件樣式 */
   transition: all var(--transition-normal);
   min-height: var(--button-height-medium);
   box-shadow: var(--theme-shadow-sm);
+  width: 100%;
 }
 
 .address-input-wrapper:focus-within {
@@ -484,8 +508,14 @@ sInput 組件樣式 */
 }
 
 .address-input-icon .icon-search {
-  font-size: var(--icon-size-md);
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   color: var(--text-secondary);
+  /* Lucide Search 圖標 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .address-input-field {
@@ -642,10 +672,26 @@ Actions 組件樣式 */
   height: var(--icon-size-md);
 }
 
-.location-btn-icon .icon-map-pin,
-.location-btn-icon .icon-clock {
-  font-size: var(--icon-size-md);
+.location-btn-icon.icon-map-pin {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   color: white;
+  /* Lucide Map Pin 圖標 - 白色 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.location-btn-icon.icon-clock {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  color: white;
+  /* Lucide Clock 圖標 - 白色 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12,6 12,12 16,14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .location-btn-text {
@@ -700,8 +746,37 @@ Actions 組件樣式 */
 }
 
 .location-action-btn.btn-disabled {
-  background: linear-gradient(135deg, var(--text-muted), var(--theme-secondary));
-  cursor: not-allowed;
+  background: var(--text-muted) !important;
+  cursor: not-allowed !important;
+  color: white !important;
+}
+
+/* 實色按鈕樣式（無漸層，用於手動定位） */
+.location-action-btn.btn-success-solid {
+  background: var(--success-color) !important;
+  color: white !important;
+}
+
+.location-action-btn.btn-success-solid:hover:not(:disabled) {
+  background: #10b981 !important; /* 稍深的綠色 */
+}
+
+.location-action-btn.btn-blue-solid {
+  background: #2563eb !important; /* 藍色 */
+  color: white !important;
+}
+
+.location-action-btn.btn-blue-solid:hover:not(:disabled) {
+  background: #1d4ed8 !important; /* 稍深的藍色 */
+}
+
+.location-action-btn.btn-gray-solid {
+  background: var(--text-muted) !important;
+  color: white !important;
+}
+
+.location-action-btn.btn-gray-solid:hover:not(:disabled) {
+  background: var(--theme-secondary) !important;
 }
 
 /* 響應式調整 */

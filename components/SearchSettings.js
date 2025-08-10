@@ -13,7 +13,7 @@ function SearchSettings({
 }) {
   // 使用 useRef 來存儲 DOM 容器
   const containerRef = React.useRef(null);
-  
+
   // 使用 useEffect 來處理 DOM 操作
   React.useEffect(() => {
     // 安全檢查
@@ -21,26 +21,26 @@ function SearchSettings({
       console.warn('SearchSettings: containerRef.current 不存在');
       return;
     }
-    
+
     // 延遲執行，確保所有腳本都已載入
     const timeoutId = setTimeout(() => {
       try {
         // 清空容器
         containerRef.current.innerHTML = '';
-        
+
         // 確保子組件已載入
         const missingComponents = [];
         if (typeof window.DistanceControl !== 'function') missingComponents.push('DistanceControl');
         if (typeof window.MealTimeSelector !== 'function') missingComponents.push('MealTimeSelector');
         if (typeof window.SettingsDisplay !== 'function') missingComponents.push('SettingsDisplay');
-        
+
         if (missingComponents.length > 0) {
           console.warn('SearchSettings 子組件尚未完全載入:', missingComponents);
-          
+
           const loadingText = document.createElement('div');
           loadingText.className = 'text-center text-[var(--text-secondary)]';
           loadingText.textContent = `載入搜索設定組件中... (缺少: ${missingComponents.join(', ')})`;
-          
+
           if (containerRef.current) {
             containerRef.current.appendChild(loadingText);
           }
@@ -49,7 +49,7 @@ function SearchSettings({
 
         let componentsLoaded = 0;
 
-        // 設定狀態顯示
+        // 設定顯示組件
         if (typeof window.SettingsDisplay === 'function') {
           try {
             console.log('🔧 載入 SettingsDisplay...');
@@ -59,9 +59,9 @@ function SearchSettings({
               unitMultiplier,
               translations
             });
-            
-            if (settingsDisplay && 
-                typeof settingsDisplay === 'object' && 
+
+            if (settingsDisplay &&
+                typeof settingsDisplay === 'object' &&
                 settingsDisplay.nodeType === Node.ELEMENT_NODE &&
                 containerRef.current) {
               containerRef.current.appendChild(settingsDisplay);
@@ -74,7 +74,7 @@ function SearchSettings({
             console.error('❌ SettingsDisplay 載入失敗:', error);
           }
         }
-        
+
         // 距離控制組件
         if (typeof window.DistanceControl === 'function') {
           try {
@@ -83,11 +83,12 @@ function SearchSettings({
               baseUnit,
               setBaseUnit,
               unitMultiplier,
-              setUnitMultiplier
+              setUnitMultiplier,
+              translations
             });
-            
-            if (distanceControl && 
-                typeof distanceControl === 'object' && 
+
+            if (distanceControl &&
+                typeof distanceControl === 'object' &&
                 distanceControl.nodeType === Node.ELEMENT_NODE &&
                 containerRef.current) {
               containerRef.current.appendChild(distanceControl);
@@ -100,7 +101,7 @@ function SearchSettings({
             console.error('❌ DistanceControl 載入失敗:', error);
           }
         }
-        
+
         // 用餐時段選擇組件
         if (typeof window.MealTimeSelector === 'function') {
           try {
@@ -110,9 +111,9 @@ function SearchSettings({
               setSelectedMealTime,
               translations
             });
-            
-            if (mealTimeSelector && 
-                typeof mealTimeSelector === 'object' && 
+
+            if (mealTimeSelector &&
+                typeof mealTimeSelector === 'object' &&
                 mealTimeSelector.nodeType === Node.ELEMENT_NODE &&
                 containerRef.current) {
               containerRef.current.appendChild(mealTimeSelector);
@@ -125,17 +126,17 @@ function SearchSettings({
             console.error('❌ MealTimeSelector 載入失敗:', error);
           }
         }
-        
+
         console.log(`SearchSettings: 成功載入 ${componentsLoaded} 個子組件`);
-        
+
       } catch (error) {
         console.error('SearchSettings component error:', error);
-        
+
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
           const errorText = document.createElement('div');
           errorText.className = 'text-center text-red-400';
-          errorText.textContent = '搜索設定組件載入失敗，請重新整理頁面';
+          errorText.textContent = '搜索設定組件發生錯誤，請重新整理頁面';
           containerRef.current.appendChild(errorText);
         }
       }
@@ -172,4 +173,9 @@ function SearchSettings({
       </div>
     );
   }
+}
+
+// 註冊到全域範圍
+if (typeof window !== 'undefined') {
+  window.SearchSettings = SearchSettings;
 }
