@@ -51,62 +51,11 @@ function SettingsDisplay({
       return iconMap[selectedMealTime] || '⚙️';
     };
 
-    // 創建 DOM 元素而不是 JSX
+    // 創建空的容器，不顯示任何內容
     const container = document.createElement('div');
     container.className = 'settings-display-container';
-    
-    const displayCard = document.createElement('div');
-    displayCard.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg';
-    
-    // 距離設定顯示
-    const distanceSection = document.createElement('div');
-    distanceSection.className = 'flex items-center gap-2';
-    
-    const distanceLabel = document.createElement('span');
-    distanceLabel.className = 'text-sm text-[var(--text-secondary)]';
-    distanceLabel.textContent = '搜索範圍:';
-    
-    const distanceValue = document.createElement('span');
-    distanceValue.className = 'text-[var(--accent-color)] font-bold';
-    distanceValue.textContent = getDistanceDisplayText();
-    
-    distanceSection.appendChild(distanceLabel);
-    distanceSection.appendChild(distanceValue);
-    
-    // 分隔線
-    const separator = document.createElement('div');
-    separator.className = 'w-px h-6 bg-gray-600';
-    
-    // 用餐時段設定顯示
-    const mealTimeSection = document.createElement('div');
-    mealTimeSection.className = 'flex items-center gap-2';
-    
-    const mealTimeLabel = document.createElement('span');
-    mealTimeLabel.className = 'text-sm text-[var(--text-secondary)]';
-    mealTimeLabel.textContent = '用餐時段:';
-    
-    const mealTimeDisplay = document.createElement('div');
-    mealTimeDisplay.className = 'flex items-center gap-1';
-    
-    const mealTimeIcon = document.createElement('span');
-    mealTimeIcon.className = 'text-sm';
-    mealTimeIcon.textContent = getMealTimeIcon();
-    
-    const mealTimeText = document.createElement('span');
-    mealTimeText.className = 'text-[var(--accent-color)] font-medium';
-    mealTimeText.textContent = getMealTimeDisplayText();
-    
-    mealTimeDisplay.appendChild(mealTimeIcon);
-    mealTimeDisplay.appendChild(mealTimeText);
-    mealTimeSection.appendChild(mealTimeLabel);
-    mealTimeSection.appendChild(mealTimeDisplay);
-    
-    // 組裝所有元素
-    displayCard.appendChild(distanceSection);
-    displayCard.appendChild(separator);
-    displayCard.appendChild(mealTimeSection);
-    container.appendChild(displayCard);
-    
+    container.style.display = 'none'; // 隱藏整個組件
+
     return container;
   } catch (error) {
     console.error('SettingsDisplay component error:', error);
