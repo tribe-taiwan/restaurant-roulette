@@ -11,66 +11,99 @@ function SearchSettings({
   unitMultiplier,
   setUnitMultiplier
 }) {
-  // 安全檢查
-  if (!translations) {
-    console.warn('SearchSettings: translations 未提供');
-    return React.createElement('div', {
-      className: 'text-center text-red-400'
-    }, '搜索設定組件載入失敗：缺少翻譯資源');
-  }
+  // 使用 useRef 來存儲 DOM 容器
+  const containerRef = React.useRef(null);
 
-  // 檢查子組件是否已載入
-  const missingComponents = [];
-  if (typeof window.DistanceControl !== 'function') missingComponents.push('DistanceControl');
-  if (typeof window.MealTimeSelector !== 'function') missingComponents.push('MealTimeSelector');
-  if (typeof window.SettingsDisplay !== 'function') missingComponents.push('SettingsDisplay');
+  // 使用 useEffect 來處理 DOM 操作
+  React.useEffect(() => {
+    // 安全檢查
+    if (!containerRef.current) {
+      console.warn('SearchSettings: containerRef.current 不存在');
+      return;
+    }
 
-  if (missingComponents.length > 0) {
-    console.warn('SearchSettings 子組件尚未完全載入:', missingComponents);
-    return React.createElement('div', {
-      className: 'text-center text-[var(--text-secondary)]'
-    }, `載入搜索設定組件中... (缺少: ${missingComponents.join(', ')})`);
-  }
+    // 安全檢查 translations
+    if (!translations) {
+      console.warn('SearchSettings: translations 未提供');
+      containerRef.current.innerHTML = `
+        <div class="text-center text-red-400">
+          搜索設定組件載入失敗：缺少翻譯資源
+        </div>
+      `;
+      return;
+    }
 
-  try {
-    // 直接使用 React 組件
-    return React.createElement('div', {
-      className: 'search-settings-container'
-    }, [
-      // 距離控制組件
-      React.createElement(window.DistanceControl, {
-        key: 'distance-control',
+    // 檢查子組件是否已載入
+    const missingComponents = [];
+    if (typeof window.DistanceControl !== 'function') missingComponents.push('DistanceControl');
+    if (typeof window.MealTimeSelector !== 'function') missingComponents.push('MealTimeSelector');
+    if (typeof window.SettingsDisplay !== 'function') missingComponents.push('SettingsDisplay');
+
+    if (missingComponents.length > 0) {
+      console.warn('SearchSettings 子組件尚未完全載入:', missingComponents);
+      containerRef.current.innerHTML = `
+        <div class="text-center text-[var(--text-secondary)]">
+          載入搜索設定組件中... (缺少: ${missingComponents.join(', ')})
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      // 清空容器
+      containerRef.current.innerHTML = '';
+
+      // 創建子組件（這些函數返回 DOM 元素，不是 React 元素）
+      const distanceControlElement = window.DistanceControl({
         baseUnit,
         setBaseUnit,
         unitMultiplier,
         setUnitMultiplier,
         translations
-      }),
+      });
 
-      // 用餐時段選擇組件
-      React.createElement(window.MealTimeSelector, {
-        key: 'meal-time-selector',
+      const mealTimeSelectorElement = window.MealTimeSelector({
         selectedMealTime,
         setSelectedMealTime,
         translations
-      }),
+      });
 
-      // 設定顯示組件
-      React.createElement(window.SettingsDisplay, {
-        key: 'settings-display',
+      const settingsDisplayElement = window.SettingsDisplay({
         selectedMealTime,
         baseUnit,
         unitMultiplier,
         translations
-      })
-    ]);
+      });
 
-  } catch (error) {
-    console.error('SearchSettings 組件渲染失敗:', error);
-    return React.createElement('div', {
-      className: 'text-center text-red-400'
-    }, `搜索設定組件渲染失敗：${error.message}`);
-  }
+      // 將 DOM 元素添加到容器
+      if (distanceControlElement && distanceControlElement.nodeType === Node.ELEMENT_NODE) {
+        containerRef.current.appendChild(distanceControlElement);
+      }
+
+      if (mealTimeSelectorElement && mealTimeSelectorElement.nodeType === Node.ELEMENT_NODE) {
+        containerRef.current.appendChild(mealTimeSelectorElement);
+      }
+
+      if (settingsDisplayElement && settingsDisplayElement.nodeType === Node.ELEMENT_NODE) {
+        containerRef.current.appendChild(settingsDisplayElement);
+      }
+
+      console.log('✅ SearchSettings 所有子組件載入完成');
+
+    } catch (error) {
+      console.error('SearchSettings 組件載入失敗:', error);
+      containerRef.current.innerHTML = `
+        <div class="text-center text-red-400">
+          搜索設定組件載入失敗：${error.message}
+        </div>
+      `;
+    }
+  }, [selectedMealTime, setSelectedMealTime, translations, baseUnit, setBaseUnit, unitMultiplier, setUnitMultiplier]);
+
+  return React.createElement('div', {
+    ref: containerRef,
+    className: 'search-settings-container'
+  });
 }
 
 // 安全的模組載入函數
