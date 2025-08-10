@@ -559,17 +559,20 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     }
     
     if (allRestaurants.length === 0) {
+      // 使用實際當前搜索半徑，而不是配置中的固定值
+      const currentRadius = options.currentRadius || GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius;
       const errorDetails = {
         errorType: 'NoRestaurantsFound',
         errorMessage: '搜索範圍內無餐廳',
-        searchRadius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
+        searchRadius: currentRadius,
+        configRadius: GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius,
         userLocation: userLocation,
         timestamp: new Date().toISOString(),
         totalResults: 0,
         attempt: options.attempt || 0
       };
       
-      throw new Error(`在您附近 ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
+      throw new Error(`在您附近 ${currentRadius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
     }
 
     // 隨機打亂餐廳列表順序，增加多樣性
@@ -1143,20 +1146,24 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
       searchRadius = baseRadius;
-      // 移除多樣化搜索日誌
+      console.log(`🔍 第${attempt + 1}次嘗試: 基礎範圍 ${searchRadius/1000}km`);
     } else {
       // 後續嘗試：使用baseUnit智能擴展範圍
       const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
       searchRadius = baseRadius + (baseUnit * expansionMultiplier);
-      // 移除智能擴展搜索日誌
+      console.log(`🔍 第${attempt + 1}次嘗試: 擴展範圍 ${searchRadius/1000}km (基礎${baseRadius/1000}km + 擴展${(baseUnit * expansionMultiplier)/1000}km)`);
     }
 
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
     try {
-      // 獲取餐廳列表，傳入搜索選項和 abortSignal
-      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, { ...searchOptions, abortSignal });
+      // 獲取餐廳列表，傳入搜索選項、當前搜索半徑和 abortSignal
+      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, { 
+        ...searchOptions, 
+        currentRadius: searchRadius,
+        abortSignal 
+      });
 
       // 重要：將所有搜索到的餐廳加入快取
       if (restaurants.length > 0) {

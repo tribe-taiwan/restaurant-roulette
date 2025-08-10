@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- heading "舞鶴台南民宿" [level=1]
+- button "English"
+- button "中文"
+- button "日本語"
+- button "한국어"
+- button "Tiếng Việt"
+- button "Bahasa Melayu"
+- text:  
+- link "舞鶴台南民宿 Logo":
+  - /url: https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751
+  - img "舞鶴台南民宿 Logo"
+- link "線上訂房":
+  - /url: https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html
+  - img "線上訂房"
+- link "":
+  - /url: https://www.instagram.com/tainanbnb_maizuru/
+- link "":
+  - /url: https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW
+- text: 😴打烊了
+- button "😋甲崩喔"
+- text:  請允許位置訪問以獲取附近餐廳。
+- button "📋 複製錯誤訊息"
+- group: 技術詳情 ▼
+- strong: 錯誤：
+- text: "定位失敗。技術資訊: {\"errorType\":\"LocationError\",\"errorMessage\":\"用戶位置不可用\",\"timestamp\":\"2025-08-10T04:52:05.368Z\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/139.0.7258.5 Safari/537.36\",\"geolocationSupported\":true}"
+- button "📋 複製錯誤訊息"
+- button "住家未設定"
+- button "公司未設定"
+- button "設為起點"
+- button " 🏠 回民宿"
+- textbox "輸入地點名稱或地址"
+- button " 自動定位"
+- button " 手動定位" [disabled]
+- button "200m"
+- button "1km"
+- slider: "1"
+- text: 200m
+- button " 現在營業中"
+- button " 不限時間"
+- button " 早餐"
+- button " 午餐"
+- button " 晚餐"
+- contentinfo:
+  - text: © 2025
+  - link "tribe.org.tw":
+    - /url: https://tribe.org.tw
+  - text: All rights reserved. Restaurant Roulette - Discover amazing food near you
+```
