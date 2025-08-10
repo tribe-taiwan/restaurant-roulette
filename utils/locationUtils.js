@@ -9,6 +9,41 @@ const logger = {
   debug: (message, ...args) => console.log('🔍', message, ...args)
 };
 
+/**
+ * 判斷是否為網路相關錯誤（需要重試）
+ */
+function isNetworkError(status) {
+  const networkErrors = [
+    'ERROR',
+    'REQUEST_DENIED', 
+    'UNKNOWN_ERROR',
+    'OVER_QUERY_LIMIT'
+  ];
+  return networkErrors.includes(status);
+}
+
+/**
+ * API 調用重試機制 - 區分網路失敗和搜不到餐廳
+ * @param {Function} apiCall - 要執行的 API 調用函數
+ * @param {Object} options - 重試選項
+ */
+async function retryApiCall(apiCall, options = {}) {
+  const { 
+    retryDelay = 5000         // 統一5秒延遲
+  } = options;
+  
+  try {
+    return await apiCall();
+  } catch (error) {
+    // 網路問題重試一次
+    console.log(`🔄 網路問題，${retryDelay/1000}秒後重試`);
+    await new Promise(resolve => setTimeout(resolve, retryDelay));
+    
+    // 第二次嘗試
+    return await apiCall();
+  }
+}
+
 // Google Places JavaScript API 配置
 // 使用 window 物件讓它可以被動態修改
 window.GOOGLE_PLACES_CONFIG = {
@@ -525,17 +560,23 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
         };
         
         try {
-          // 使用 Promise 包裝 PlacesService 回調
-          const results = await new Promise((resolve, reject) => {
-            placesService.nearbySearch(request, (results, status) => {
-              if (status === google.maps.places.PlacesServiceStatus.OK) {
-                resolve(results || []);
-              } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-                resolve([]);
-              } else {
-                console.warn(`⚠️ ${area.name} ${type} 搜索失敗:`, status);
-                resolve([]);
-              }
+          // 使用 Promise 包裝 PlacesService 回調，包含重試邏輯
+          const results = await retryApiCall(async () => {
+            return new Promise((resolve, reject) => {
+              placesService.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                  resolve(results || []);
+                } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                  resolve([]);
+                } else if (isNetworkError(status)) {
+                  // 網路問題，拋出錯誤以觸發重試
+                  reject(new Error(`Network error: ${status}`));
+                } else {
+                  // API 問題（如配額用完），不重試
+                  console.warn(`⚠️ ${area.name} ${type} 搜索失敗:`, status);
+                  resolve([]);
+                }
+              });
             });
           });
           
@@ -572,7 +613,10 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
         attempt: options.attempt || 0
       };
       
-      throw new Error(`在您附近 ${currentRadius/1000}km 範圍內未找到餐廳。請嘗試擴大搜索範圍。技術資訊: ${JSON.stringify(errorDetails)}`);
+      // 不再拋出錯誤，直接返回空陣列，讓上層處理擴大搜索
+      // 只在調試模式下輸出詳細資訊
+      console.log(`🔍 搜索範圍 ${currentRadius/1000}km 內未找到餐廳，將擴大搜索範圍`);
+      return [];
     }
 
     // 隨機打亂餐廳列表順序，增加多樣性
@@ -621,14 +665,20 @@ async function getPlaceDetails(placeId, language = 'zh-TW') {
       language: language
     };
     
-    return new Promise((resolve) => {
-      placesService.getDetails(request, (place, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          resolve(place);
-        } else {
-          console.warn('⚠️ 無法獲取地點詳細資訊:', status);
-          resolve(null);
-        }
+    return await retryApiCall(async () => {
+      return new Promise((resolve, reject) => {
+        placesService.getDetails(request, (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            resolve(place);
+          } else if (isNetworkError(status)) {
+            // 網路問題，拋出錯誤以觸發重試
+            reject(new Error(`Network error in getDetails: ${status}`));
+          } else {
+            // API 問題（如找不到地點），不重試
+            console.warn('⚠️ 無法獲取地點詳細資訊:', status);
+            resolve(null);
+          }
+        });
       });
     });
     
@@ -1185,7 +1235,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
       if (availableRestaurants.length === 0 && restaurants.length > 0) {
         const openCount = restaurants.filter(r => isRestaurantOpenInTimeSlot(r, selectedMealTime)).length;
         const notShownCount = restaurants.filter(r => !history.shown_restaurants.includes(r.id)).length;
-        console.log(`🔍 搜索調試: 找到${restaurants.length}家餐廳，${openCount}家營業中，${notShownCount}家未顯示過，已顯示${history.shown_restaurants.length}家`);
+        console.log(`📊 搜索結果: 找到${restaurants.length}家餐廳，${openCount}家營業中，${notShownCount}家未顯示過，已顯示${history.shown_restaurants.length}家`);
       }
 
       if (availableRestaurants.length > 0) {
@@ -1211,10 +1261,11 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         return selectedRestaurant;
       }
 
-      console.log(`⚠️ 第${attempt + 1}次搜索未找到合適餐廳，繼續嘗試...`);
+      // 沒有可用餐廳，繼續下一次嘗試（不輸出警告，因為這是正常的擴大搜索流程）
 
     } catch (error) {
-      console.error(`❌ 第${attempt + 1}次搜索失敗:`, error);
+      // 只有真正的 API/網路錯誤才會到這裡
+      console.error(`❌ 第${attempt + 1}次搜索發生錯誤:`, error);
 
       // 如果是最後一次嘗試，拋出錯誤
       if (attempt === maxAttempts - 1) {
