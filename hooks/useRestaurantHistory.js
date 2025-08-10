@@ -29,16 +29,16 @@ function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
         shouldClear = true;
         reason = '首次定位完成';
       } else {
-        // 計算兩個位置之間的距離
+        // 任何位置變更都清除餐廳歷史（移除錯誤的5公里邏輯）
         const distance = calculateDistance(
           previousLocation.lat, previousLocation.lng,
           userLocation.lat, userLocation.lng
         );
 
-        // 如果距離超過5公里，認為是有意義的地點變更，清除餐廳歷史
-        if (distance > 5000) { // 5公里
+        // 只要位置有變更就清除（移除距離限制）
+        if (distance > 0) {
           shouldClear = true;
-          reason = `地點變更超過5km (${Math.round(distance/1000)}km)`;
+          reason = `位置變更 (${Math.round(distance)}m)`;
         }
       }
 

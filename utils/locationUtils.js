@@ -534,10 +534,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     // 搜索策略：餐廳類型
     const searchTypes = ['restaurant', 'meal_takeaway'];
     
-    // 根據是否為重複搜索來決定搜索區域數量
-    const areasToSearch = options.attempt > 0 ? 
-      searchAreas.slice(0, Math.min(3 + options.attempt, searchAreas.length)) : 
-      searchAreas.slice(0, 4); // 預設搜索前4個區域
+    // 🎯 修復：第一次Landing直接搜索所有9個區域
+    const areasToSearch = searchAreas; // 直接使用所有9個區域
     
     // 計算總搜索次數：區域數 × 餐廳類型數
     const totalSearchCalls = areasToSearch.length * searchTypes.length;
@@ -1230,7 +1228,8 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
       searchRadius = baseRadius;
-      const expectedAreas = Math.min(3 + attempt + 1, 9); // 預期搜索區域數
+      // 🎯 修復：第一次Landing直接搜9個區域，獲得最大覆蓋範圍
+      const expectedAreas = 9; // 直接使用9個區域，不再逐步增加
       const expectedCalls = expectedAreas * 2; // 2種餐廳類型
       console.log(`🔍 第${attempt + 1}次嘗試: 多區域搜索 (${searchRadius/1000}km範圍，約${expectedAreas}區域)`);
     } else {
