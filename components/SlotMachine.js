@@ -77,8 +77,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     }, [getSlideAnimationConfig]);
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
-    const [fastAnimationLevel, setFastAnimationLevel] = React.useState(1); // 1-5 漸進式減速級別
-    const [fastSequenceCache, setFastSequenceCache] = React.useState([]); // 預先準備的快速動畫序列
+    const [apiWaitingLevel, setApiWaitingLevel] = React.useState(1); // 1-5 API等待動畫級別
+    const [apiWaitingSequenceCache, setApiWaitingSequenceCache] = React.useState([]); // 預先準備的API等待動畫序列
     const [touchStart, setTouchStart] = React.useState(null);
     const [touchEnd, setTouchEnd] = React.useState(null);
 
@@ -386,7 +386,23 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       "./assets/image/slot-machine/slot (3).jpg",
       "./assets/image/slot-machine/slot (4).jpg",
       "./assets/image/slot-machine/slot (5).jpg",
-      "./assets/image/slot-machine/slot (6).jpg"
+      "./assets/image/slot-machine/slot (6).jpg",
+      "./assets/image/slot-machine/slot (7).jpg",
+      "./assets/image/slot-machine/slot (8).jpg",
+      "./assets/image/slot-machine/slot (9).jpg",
+      "./assets/image/slot-machine/slot (10).jpg",
+      "./assets/image/slot-machine/slot (11).jpg",
+      "./assets/image/slot-machine/slot (12).jpg",
+      "./assets/image/slot-machine/slot (13).jpg",
+      "./assets/image/slot-machine/slot (14).jpg",
+      "./assets/image/slot-machine/slot (15).jpg",
+      "./assets/image/slot-machine/slot (16).jpg",
+      "./assets/image/slot-machine/slot (17).jpg",
+      "./assets/image/slot-machine/slot (18).jpg",
+      "./assets/image/slot-machine/slot (19).jpg",
+      "./assets/image/slot-machine/slot (20).jpg",
+      "./assets/image/slot-machine/slot (21).jpg",
+      "./assets/image/slot-machine/slot (22).jpg"
     ]);
 
     // 自動偵測可用的slot圖片數量 - 支援多種格式且無數量限制
@@ -452,26 +468,26 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const midPosition = Math.floor((totalImages - 3) * itemWidth);
 
       // 🎯 新的動畫時間計算：每張圖片固定顯示時間
-      const fastTotalDuration = timePerImage * imageCount; // fast模式總時間
-      const slowTotalDuration = timePerImage * totalImages; // slow模式總時間
+      const apiWaitingTotalDuration = timePerImage * imageCount * 5; // slot_apiWaiting模式總時間（增加循環時間）
+      const apiReceivedTotalDuration = timePerImage * totalImages; // slot_apiReceived模式總時間
       
-      // 🎯 快速動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
-      const fastScrollDistance = imageCount * itemWidth;
+      // 🎯 API等待動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
+      const apiWaitingScrollDistance = imageCount * itemWidth;
 
-      console.log(`🎯 動畫參數: ${imageCount}張圖，每張${timePerImage}s，fast總時間${fastTotalDuration}s，slow總時間${slowTotalDuration}s`);
+      console.log(`🎯 動畫參數: ${imageCount}張圖，每張${timePerImage}s，apiWaiting總時間${apiWaitingTotalDuration}s，apiReceived總時間${apiReceivedTotalDuration}s`);
 
       // 動態創建CSS keyframes - 使用GPU加速的transform3d
       const keyframes = `
-        @keyframes scrollFastDynamic {
+        @keyframes scrollApiWaitingDynamic {
           0% {
             transform: translate3d(0, 0, 0);
           }
           100% {
-            transform: translate3d(-${fastScrollDistance}px, 0, 0);
+            transform: translate3d(-${apiWaitingScrollDistance}px, 0, 0);
           }
         }
 
-        @keyframes scrollSlowStopDynamic {
+        @keyframes scrollApiReceivedStopDynamic {
           0% {
             transform: translate3d(0, 0, 0);
             animation-timing-function: ease-out;
@@ -485,15 +501,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           }
         }
         
-        /* 漸進式減速動畫 - 使用新的時間計算 */
-        .animate-scroll-fast-dynamic-1 { animation: scrollFastDynamic ${(fastTotalDuration * 0.8).toFixed(2)}s linear infinite; }
-        .animate-scroll-fast-dynamic-2 { animation: scrollFastDynamic ${(fastTotalDuration * 1.0).toFixed(2)}s linear infinite; }
-        .animate-scroll-fast-dynamic-3 { animation: scrollFastDynamic ${(fastTotalDuration * 1.2).toFixed(2)}s linear infinite; }
-        .animate-scroll-fast-dynamic-4 { animation: scrollFastDynamic ${(fastTotalDuration * 1.4).toFixed(2)}s linear infinite; }
-        .animate-scroll-fast-dynamic-5 { animation: scrollFastDynamic ${(fastTotalDuration * 1.6).toFixed(2)}s linear infinite; }
+        /* API等待動畫 - 使用新的時間計算 */
+        .animate-scroll-api-waiting-dynamic-1 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 0.8).toFixed(2)}s linear infinite; }
+        .animate-scroll-api-waiting-dynamic-2 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.0).toFixed(2)}s linear infinite; }
+        .animate-scroll-api-waiting-dynamic-3 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.2).toFixed(2)}s linear infinite; }
+        .animate-scroll-api-waiting-dynamic-4 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.4).toFixed(2)}s linear infinite; }
+        .animate-scroll-api-waiting-dynamic-5 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.6).toFixed(2)}s linear infinite; }
         
-        /* 最終慢速動畫 */
-        .animate-scroll-slow-stop-dynamic { animation: scrollSlowStopDynamic ${slowTotalDuration.toFixed(2)}s ease-out forwards; }
+        /* API接收過渡動畫 */
+        .animate-scroll-api-received-stop-dynamic { animation: scrollApiReceivedStopDynamic ${apiReceivedTotalDuration.toFixed(2)}s ease-out forwards; }
       `;
 
       // 移除舊的動畫樣式
@@ -510,8 +526,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       
       // 返回時間參數供其他地方使用
       return {
-        fastDuration: fastTotalDuration,
-        slowDuration: slowTotalDuration,
+        apiWaitingDuration: apiWaitingTotalDuration,
+        apiReceivedDuration: apiReceivedTotalDuration,
         timePerImage
       };
     }, []);
@@ -536,10 +552,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setSlotImages(shuffledImages);
           console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
           
-          // 🎯 預先準備 fast 動畫序列，避免動畫開始時的計算延遲
-          const preparedFastSequence = [...shuffledImages]; // 使用單組圖片，依賴CSS infinite循環
-          setFastSequenceCache(preparedFastSequence);
-          console.log('🚀 [DEBUG] 預先準備 fast 序列:', preparedFastSequence.length, '張圖片');
+          // 🎯 預先準備 API等待動畫序列，避免動畫開始時的計算延遲
+          const preparedApiWaitingSequence = [...shuffledImages]; // 使用單組圖片，依賴CSS infinite循環
+          setApiWaitingSequenceCache(preparedApiWaitingSequence);
+          console.log('🚀 [DEBUG] 預先準備 API等待序列:', preparedApiWaitingSequence.length, '張圖片');
           
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
           createDynamicAnimation(detectedImages.length, 0.5);
@@ -609,69 +625,98 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
      * 3. isSpinning=false → 停止動畫，顯示最終結果
      */
     React.useEffect(() => {
+      console.log('🎯 動畫狀態檢查:', { 
+        isSpinning, 
+        currentPhase: animationPhase,
+        hasFinalRestaurant: !!finalRestaurant, 
+        hasImage: !!(finalRestaurant?.image) 
+      });
+      
       if (isSpinning) {
-        if (finalRestaurant && finalRestaurant.image) {
+        if (animationPhase === 'slot_apiWaiting' && finalRestaurant && finalRestaurant.image) {
           // =====================================
-          // 情況：API已返回結果，執行最終動畫
+          // 情況：API等待模式中 + API已返回 → 立即切換到API接收模式
           // =====================================
-          setAnimationPhase('slow');
+          console.log('🐌 slot_apiWaiting->slot_apiReceived 轉換觸發 - API已返回，開始最終過渡');
+          setAnimationPhase('slot_apiReceived');
 
-          // 🎲 每次轉動都亂數排序，增加隨機性
+          // 🎲 每次轉動都亂數排序
           const shuffledSlots = shuffleArray(slotImages);
 
-          // 構建最終序列：確保餐廳圖片在正確位置
+          // 🔗 構建最終序列：基於fast序列確保視覺連續性
           const finalSequence = [];
+          
+          // 使用與slot_apiWaiting模式相同的序列基礎
+          if (apiWaitingSequenceCache.length > 0) {
+            finalSequence.push(...apiWaitingSequenceCache);
+            console.log('🔗 使用slot_apiWaiting序列快取:', apiWaitingSequenceCache.length, '張');
+          } else {
+            finalSequence.push(...shuffledSlots);
+            console.log('⚠️ Fallback: 使用shuffled slots');
+          }
 
-          // 從當前循環位置開始的完整循環（亂數排序）
-          finalSequence.push(...shuffledSlots);
-
-          // 添加額外的slot圖片確保足夠的滾動距離（亂數排序）
-          finalSequence.push(...shuffledSlots.slice(0, 2));
-
+          // 添加過渡圖片
+          finalSequence.push(...finalSequence.slice(0, 2));
+          
           // 餐廳圖片作為最後一張
           finalSequence.push(finalRestaurant.image);
 
+          console.log('🔗 最終序列長度:', finalSequence.length, '張，餐廳圖片將緊接滑入');
           setScrollingNames(finalSequence);
 
-          // 設置動畫結束計時器 - 使用新的時間計算
-          const animationResult = createDynamicAnimation(slotImages.length, 0.5);
-          const slowAnimationDuration = animationResult.slowDuration * 1000; // 轉換為毫秒
+          // 動畫時間計算
+          const actualSequenceLength = finalSequence.length - 1;
+          const animationResult = createDynamicAnimation(actualSequenceLength, 0.5);
+          const apiReceivedAnimationDuration = animationResult.apiReceivedDuration * 1000;
+          
+          console.log('🎯 slot_apiReceived動畫: 序列長度', actualSequenceLength, '動畫時間', apiReceivedAnimationDuration/1000, '秒');
           
           setTimeout(() => {
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
-          }, slowAnimationDuration + 50); // 稍微延長一點確保動畫完成
+          }, apiReceivedAnimationDuration + 50);
 
-        } else {
+        } else if (animationPhase !== 'slot_apiWaiting') {
           // =====================================
-          // 情況：等待API返回，顯示載入動畫
+          // 情況：首次開始轉動 → 立即進入API等待模式
           // =====================================
+          console.log('⚡ 啟動slot_apiWaiting模式 - 等待API返回中...');
           
-          // 🚀 使用 requestAnimationFrame 確保動畫啟動的流暢性
           requestAnimationFrame(() => {
-            setAnimationPhase('fast');
-            setFastAnimationLevel(1); // 重置為最快級別
+            setAnimationPhase('slot_apiWaiting');
+            setApiWaitingLevel(1);
 
-            // 🎯 直接使用預先準備的快取序列，避免臨時計算
-            if (fastSequenceCache.length > 0) {
-              setScrollingNames(fastSequenceCache);
-              console.log('⚡ 使用預先準備的 fast 序列，長度:', fastSequenceCache.length);
+            // 使用多組預備序列確保連續動畫
+            let waitingSequence = [];
+            if (apiWaitingSequenceCache.length > 0) {
+              // 重複多次確保足夠的滾動長度
+              for (let i = 0; i < 5; i++) {
+                waitingSequence.push(...apiWaitingSequenceCache);
+              }
+              setScrollingNames(waitingSequence);
+              console.log('⚡ slot_apiWaiting模式: 使用多組序列，總長度:', waitingSequence.length, '（', apiWaitingSequenceCache.length, 'x5）');
             } else {
-              // 🔧 Fallback: 如果快取還沒準備好，使用簡化邏輯
-              setScrollingNames([...slotImages]);
-              console.log('⚠️ Fallback: 直接使用 slotImages');
+              // Fallback: 重複slotImages
+              for (let i = 0; i < 5; i++) {
+                waitingSequence.push(...slotImages);
+              }
+              setScrollingNames(waitingSequence);
+              console.log('⚠️ slot_apiWaiting模式: Fallback多組slotImages，總長度:', waitingSequence.length);
             }
           });
         }
+        // 如果已經在slot_apiWaiting模式且API未返回，維持等待狀態
+        
       } else {
         // =====================================
-        // 情況：停止動畫，回到靜止狀態
+        // 情況：停止轉動 → 停止所有動畫
         // =====================================
+        console.log('🛑 停止動畫 - 回到靜止狀態');
         setAnimationPhase('idle');
-        setFastAnimationLevel(1); // 重置動畫級別
+        setApiWaitingLevel(1);
         setScrollingNames([]);
       }
-    }, [isSpinning, finalRestaurant, shuffleArray]);
+    }, [isSpinning, finalRestaurant, animationPhase, apiWaitingSequenceCache, slotImages, shuffleArray, createDynamicAnimation]);
 
     // 🚫 移除漸進式減速邏輯，使用固定速度避免卡頓
     // 漸進式變速會導致動畫中斷和視覺跳躍，改用單一固定速度
@@ -679,12 +724,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 獲取當前動畫類別 - 使用固定速度避免變速卡頓
     const getAnimationClass = () => {
       switch (animationPhase) {
-        case 'fast':
-          // 🎯 使用固定速度的快速動畫，避免變速導致的卡頓
-          return 'animate-scroll-fast-dynamic-2'; // 固定使用level-2速度
-        case 'slow':
-          // 🎯 使用動態生成的慢速動畫
-          return 'animate-scroll-slow-stop-dynamic';
+        case 'slot_apiWaiting':
+          // 🎯 使用固定速度的等待API動畫，避免變速導致的卡頓
+          return 'animate-scroll-api-waiting-dynamic-2'; // 固定使用level-2速度
+        case 'slot_apiReceived':
+          // 🎯 使用動態生成的API接收過渡動畫
+          return 'animate-scroll-api-received-stop-dynamic';
         default:
           return '';
       }
