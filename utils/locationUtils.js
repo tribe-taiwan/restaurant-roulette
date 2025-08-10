@@ -1223,10 +1223,10 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     if (abortSignal?.aborted) {
       throw new DOMException('搜尋被中止', 'AbortError');
     }
-    
-    let searchRadius = originalRadius;
+
+    let searchRadius;
     let searchOptions = { attempt: attempt };
-    
+
     // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
     if (attempt < 5) {
       searchRadius = baseRadius;
@@ -1244,11 +1244,12 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
     try {
-      // 獲取餐廳列表，傳入搜索選項、當前搜索半徑和 abortSignal
-      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, { 
-        ...searchOptions, 
+      // 獲取餐廳列表，傳入搜索選項、當前搜索半徑、嘗試次數和 abortSignal
+      const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, {
+        ...searchOptions,
         currentRadius: searchRadius,
-        abortSignal 
+        attempt: attempt, // 🎯 關鍵修復：傳遞嘗試次數
+        abortSignal
       });
 
       // 重要：將所有搜索到的餐廳加入快取

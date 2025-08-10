@@ -157,16 +157,26 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setPreloadedImages(prevPool => {
           const newPool = new Map();
 
-          // 無限滑動：維持當前餐廳前後各10張，總共21張
+          // 動態預載入範圍：基於可用餐廳數量，上限200家
           const allRestaurants = [...restaurantHistory, currentRestaurant].filter(Boolean);
           const currentIndex = allRestaurants.length - 1; // 當前餐廳在歷史的最後
+
+          // 計算總可用餐廳數量
+          const totalAvailableCount = cachedRestaurants.filter(cached => {
+            return !allRestaurants.some(existing => existing.id === cached.id);
+          }).length;
+
+          // 動態計算預載入範圍：最少21張，最多200張
+          const minRange = 21;
+          const maxRange = Math.min(Math.max(totalAvailableCount + allRestaurants.length, minRange), 200);
+          const halfRange = Math.floor(maxRange / 2);
 
           // 🎯 關鍵：計算預載入池中實際可用的未來餐廳數量
           let availableFutureRestaurants = 0;
 
-          // 預載入範圍：前10家（歷史）+ 當前 + 後10家（候補）
+          // 動態預載入範圍：前N家（歷史）+ 當前 + 後N家（候補）
           let skippedNegativeCount = 0;
-          for (let offset = -10; offset <= 10; offset++) {
+          for (let offset = -halfRange; offset <= halfRange; offset++) {
             const index = currentIndex + offset;
 
             // 跳過負數索引（統計數量）
@@ -278,9 +288,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             }, 200); // 延遲200ms執行，避免阻塞UI
           }
 
-          // 保持原有的日誌格式，但添加可用餐廳數量
+          // 顯示動態預載入池狀態
           const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
-          console.log(`🔄 預載入池: ${newPool.size}張圖片，${availableFutureRestaurants}家可用餐廳 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
+          console.log(`🔄 預載入池: ${newPool.size}張圖片，範圍${maxRange}家(±${halfRange})，可用${availableFutureRestaurants}家 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
           return newPool;
         });
 
