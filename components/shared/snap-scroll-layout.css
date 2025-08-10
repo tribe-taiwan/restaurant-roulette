@@ -1,0 +1,523 @@
+/* 滑動對齊布局系統 - 確保每個功能區塊完整顯示 */
+
+/* ===== 主要滑動容器 - 響應式設計 ===== */
+.snap-scroll-container {
+  /* 基礎設定 */
+  overflow-y: auto;
+  
+  /* 平滑滾動 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  
+  /* 性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+  
+  /* 確保不被系統UI遮擋 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 手機端：完整滑動對齊 */
+@media (max-width: 767px) {
+  .snap-scroll-container {
+    scroll-snap-type: y mandatory;
+    height: 100vh;
+    height: 100dvh; /* 動態視窗高度 */
+  }
+}
+
+/* 平板端：部分滑動對齊 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .snap-scroll-container {
+    scroll-snap-type: y proximity; /* 較寬鬆的對齊 */
+    height: auto; /* 允許自然高度 */
+    min-height: 100vh;
+  }
+}
+
+/* 桌面端：傳統滾動 */
+@media (min-width: 1024px) {
+  .snap-scroll-container {
+    scroll-snap-type: none; /* 禁用滑動對齊 */
+    height: auto; /* 自然高度 */
+    min-height: 100vh;
+  }
+}
+
+/* ===== 功能區塊容器 - 響應式設計 ===== */
+.snap-section {
+  /* 基礎布局 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  /* 統一內邊距 */
+  padding: var(--fluid-spacing-xl);
+  box-sizing: border-box;
+  
+  /* 性能優化 */
+  contain: layout style;
+  transform: var(--gpu-acceleration);
+}
+
+/* 手機端：完整視窗高度 + 滑動對齊 */
+@media (max-width: 767px) {
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100vh;
+    min-height: 100dvh; /* 動態視窗高度 */
+  }
+}
+
+/* 平板端：部分視窗高度 + 寬鬆對齊 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .snap-section {
+    scroll-snap-align: start;
+    min-height: 80vh; /* 不強制佔滿整個視窗 */
+    justify-content: flex-start; /* 內容靠上對齊 */
+    padding-top: var(--fluid-spacing-2xl);
+  }
+}
+
+/* 桌面端：自然高度 + 無對齊 */
+@media (min-width: 1024px) {
+  .snap-section {
+    min-height: auto; /* 自然高度 */
+    justify-content: flex-start; /* 內容靠上對齊 */
+    padding: var(--fluid-spacing-2xl) var(--fluid-spacing-xl);
+  }
+}
+
+/* ===== 區塊內容容器 ===== */
+.snap-section-content {
+  width: 100%;
+  max-width: 480px; /* 統一最大寬度 */
+  margin: 0 auto;
+  
+  /* 確保內容不會超出視窗 */
+  max-height: calc(100vh - var(--fluid-spacing-xl) * 2);
+  max-height: calc(100dvh - var(--fluid-spacing-xl) * 2);
+  overflow-y: auto;
+  
+  /* 性能優化 */
+  contain: layout;
+}
+
+/* ===== 區塊類型樣式 ===== */
+.snap-section--hero {
+  background: linear-gradient(135deg, var(--background-color) 0%, var(--surface-color) 100%);
+}
+
+.snap-section--location {
+  background: linear-gradient(135deg, var(--surface-color) 0%, var(--background-color) 100%);
+}
+
+.snap-section--settings {
+  background: linear-gradient(135deg, var(--background-color) 0%, var(--surface-color) 100%);
+}
+
+.snap-section--results {
+  background: linear-gradient(135deg, var(--surface-color) 0%, var(--background-color) 100%);
+}
+
+/* ===== 滑動指示器 - 響應式顯示 ===== */
+.snap-scroll-indicator {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  /* 性能優化 */
+  contain: layout style;
+}
+
+/* 桌面端隱藏滑動指示器 */
+@media (min-width: 1024px) {
+  .snap-scroll-indicator {
+    display: none;
+  }
+}
+
+.snap-scroll-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.snap-scroll-dot.active {
+  background: var(--theme-accent);
+  transform: scale(1.5);
+  box-shadow: 0 0 8px rgba(var(--accent-color-rgb, 255, 107, 53), 0.5);
+}
+
+.snap-scroll-dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.2);
+}
+
+/* ===== 滑動提示 - 僅手機端顯示 ===== */
+.snap-scroll-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  
+  /* 動畫 */
+  animation: bounce-hint 2s ease-in-out infinite;
+}
+
+/* 平板和桌面端隱藏滑動提示 */
+@media (min-width: 768px) {
+  .snap-scroll-hint {
+    display: none;
+  }
+}
+
+.snap-scroll-hint-icon {
+  font-size: 24px;
+  animation: bounce-icon 2s ease-in-out infinite;
+}
+
+@keyframes bounce-hint {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+}
+
+@keyframes bounce-icon {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+
+/* ===== 響應式調整 ===== */
+@media (max-width: 480px) {
+  .snap-section {
+    padding: var(--fluid-spacing-lg);
+  }
+  
+  .snap-section-content {
+    max-width: 100%;
+    max-height: calc(100vh - var(--fluid-spacing-lg) * 2);
+    max-height: calc(100dvh - var(--fluid-spacing-lg) * 2);
+  }
+  
+  .snap-scroll-indicator {
+    right: 12px;
+  }
+  
+  .snap-scroll-hint {
+    bottom: 12px;
+    font-size: 12px;
+  }
+  
+  .snap-scroll-hint-icon {
+    font-size: 20px;
+  }
+}
+
+/* 超小螢幕優化 */
+@media (max-width: 360px) {
+  .snap-section {
+    padding: var(--fluid-spacing-md);
+  }
+  
+  .snap-section-content {
+    max-height: calc(100vh - var(--fluid-spacing-md) * 2);
+    max-height: calc(100dvh - var(--fluid-spacing-md) * 2);
+  }
+}
+
+/* 橫屏模式優化 */
+@media (orientation: landscape) and (max-height: 600px) {
+  .snap-section {
+    padding: var(--fluid-spacing-md);
+    justify-content: flex-start;
+    padding-top: var(--fluid-spacing-lg);
+  }
+  
+  .snap-section-content {
+    max-height: calc(100vh - var(--fluid-spacing-lg));
+    max-height: calc(100dvh - var(--fluid-spacing-lg));
+  }
+  
+  .snap-scroll-hint {
+    display: none; /* 橫屏時隱藏提示 */
+  }
+}
+
+/* 大螢幕適配 */
+@media (min-width: 768px) {
+  .snap-section-content {
+    max-width: 600px; /* 平板上稍微放寬 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .snap-section-content {
+    max-width: 480px; /* 桌面端保持手機尺寸 */
+  }
+}
+
+/* ===== 無障礙優化 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .snap-scroll-container {
+    scroll-behavior: auto;
+  }
+  
+  .snap-scroll-hint,
+  .snap-scroll-hint-icon {
+    animation: none;
+  }
+  
+  .snap-scroll-dot {
+    transition: none;
+  }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+  .snap-scroll-dot {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid currentColor;
+  }
+  
+  .snap-scroll-dot.active {
+    background: var(--theme-accent);
+    border: 2px solid white;
+  }
+}
+
+/* ===== 觸控優化 ===== */
+@media (hover: none) and (pointer: coarse) {
+  .snap-scroll-dot {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .snap-scroll-indicator {
+    gap: 12px;
+  }
+}
+
+/* ===== 滑動手勢支援 ===== */
+.snap-scroll-container {
+  /* 支援觸控滑動 */
+  touch-action: pan-y;
+  
+  /* 防止過度滾動 */
+  overscroll-behavior: contain;
+}
+
+/* ===== 載入狀態 ===== */
+.snap-section.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.snap-section.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid var(--theme-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 10;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ===== 過渡動畫 ===== */
+.snap-section-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.snap-section-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.snap-section-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.snap-section-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* ===== 內容對齊修正 ===== */
+.unified-width-container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 var(--fluid-spacing-md);
+  box-sizing: border-box;
+}
+
+/* 確保所有主要組件使用統一寬度 */
+.location-manager-mobile,
+.search-settings-container,
+.slot-machine-container,
+.hero-banner-container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-left: var(--fluid-spacing-md);
+  padding-right: var(--fluid-spacing-md);
+  box-sizing: border-box;
+}
+
+/* 統一間距系統 */
+.unified-spacing {
+  margin-bottom: var(--fluid-spacing-xl);
+}
+
+.unified-spacing:last-child {
+  margin-bottom: 0;
+}/* ===== 設
+備特定優化 ===== */
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .snap-scroll-dot {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .snap-scroll-indicator {
+    gap: 12px;
+  }
+}
+
+/* iOS 設備特殊優化 */
+.ios-device .snap-scroll-container {
+  /* iOS Safari 的滾動優化 */
+  -webkit-overflow-scrolling: touch;
+  /* 防止橡皮筋效果 */
+  overscroll-behavior: contain;
+}
+
+.ios-device .snap-section {
+  /* iOS 的安全區域適配 */
+  padding-left: max(var(--fluid-spacing-xl), env(safe-area-inset-left));
+  padding-right: max(var(--fluid-spacing-xl), env(safe-area-inset-right));
+}
+
+/* Android 設備優化 */
+.android-device .snap-scroll-container {
+  /* Android 的滾動優化 */
+  scroll-behavior: smooth;
+}
+
+/* Safari 瀏覽器優化 */
+.safari-browser .snap-section {
+  /* Safari 的渲染優化 */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+}
+
+/* 僅觸控設備（無滑鼠懸停） */
+.touch-only .snap-scroll-indicator {
+  /* 觸控設備上的指示器更大 */
+  right: 15px;
+}
+
+.touch-only .snap-scroll-dot {
+  width: 14px;
+  height: 14px;
+}
+
+/* 混合設備（觸控+滑鼠） */
+.touch-optimized.hover-enabled .snap-scroll-dot:hover {
+  transform: scale(1.3);
+}
+
+/* 高像素密度螢幕優化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .snap-scroll-dot {
+    /* 高密度螢幕上的更精細邊框 */
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* 特定瀏覽器優化 */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari 特定 */
+  .snap-scroll-container {
+    /* 防止選擇文字時的問題 */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+}
+
+@supports (-moz-appearance: none) {
+  /* Firefox 特定 */
+  .snap-scroll-container {
+    /* Firefox 的滾動優化 */
+    scrollbar-width: thin;
+  }
+}
+
+/* 設備方向特定優化 */
+@media (orientation: portrait) and (max-width: 767px) {
+  /* 手機豎屏：完整滑動體驗 */
+  .snap-scroll-hint {
+    display: flex;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  /* 手機/平板橫屏：調整布局 */
+  .snap-section {
+    padding: var(--fluid-spacing-md) var(--fluid-spacing-xl);
+  }
+  
+  .snap-scroll-hint {
+    display: none; /* 橫屏時隱藏提示 */
+  }
+}

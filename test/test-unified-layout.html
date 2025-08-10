@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統一布局系統測試</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/shared/responsive-performance.css">
+    <link rel="stylesheet" href="../components/shared/unified-layout.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        /* 測試用的邊框，幫助視覺化寬度 */
+        .test-border {
+            border: 2px dashed rgba(255, 107, 53, 0.5);
+            position: relative;
+        }
+        
+        .test-border::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: rgba(255, 107, 53, 0.8);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .width-indicator {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+        }
+        
+        .test-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+        
+        /* 模擬語言選擇器 */
+        .mock-language-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .mock-language-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .mock-lang-btn {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* 模擬Hero Banner */
+        .mock-hero-banner {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .mock-hero-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .mock-hero-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        /* 模擬Slot Machine */
+        .mock-slot-machine {
+            background: linear-gradient(135deg, #ffd23f, #ff6b35);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- 寬度指示器 -->
+    <div class="width-indicator" id="widthIndicator">
+        視窗寬度: <span id="windowWidth">--</span>px<br>
+        設備類型: <span id="deviceType">--</span><br>
+        最大寬度: <span id="maxWidth">--</span>px
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">統一布局系統測試</div>
+    </div>
+
+    <!-- 語言選擇器測試 -->
+    <div class="test-section">
+        <div class="language-selector-container unified-main-container unified-section test-border" data-label="語言選擇器">
+            <div class="mock-language-selector">
+                <h3>語言選擇</h3>
+                <div class="mock-language-buttons">
+                    <button class="mock-lang-btn">中文</button>
+                    <button class="mock-lang-btn">English</button>
+                    <button class="mock-lang-btn">日本語</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Banner 測試 -->
+    <div class="test-section">
+        <div class="hero-banner-container unified-main-container unified-section test-border" data-label="Hero Banner">
+            <div class="mock-hero-banner">
+                <div class="mock-hero-title">🍽️ 甲崩喔</div>
+                <div class="mock-hero-subtitle">台南美食輪盤</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LocationManager 測試 -->
+    <div class="test-section">
+        <div class="location-manager-mobile unified-main-container unified-section test-border" data-label="LocationManager">
+            <div class="location-manager-container">
+                <div class="location-manager-card">
+                    <div class="location-section">
+                        <div class="current-location-display">
+                            <div class="current-location-content">
+                                <div class="current-location-icon">📍</div>
+                                <div class="current-location-text">
+                                    <div class="current-location-label">當前位置</div>
+                                    <div class="current-location-address">台南市中西區中山路123號</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="location-section">
+                        <div class="quick-location-buttons">
+                            <div class="quick-buttons-container">
+                                <button class="quick-location-btn bg-gray-500">
+                                    <div class="quick-btn-icon">🏠</div>
+                                    <div class="quick-btn-text">住家</div>
+                                </button>
+                                <button class="quick-location-btn bg-orange-500">
+                                    <div class="quick-btn-icon">💼</div>
+                                    <div class="quick-btn-text">公司</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="location-section location-section-last">
+                        <div class="address-input-container">
+                            <div class="address-input-wrapper">
+                                <div class="address-input-icon">🔍</div>
+                                <input type="text" class="address-input-field" placeholder="輸入地址或地標">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SearchSettings 測試 -->
+    <div class="test-section">
+        <div class="search-settings-container unified-main-container unified-section test-border" data-label="SearchSettings">
+            <div class="garmin-distance-control">
+                <div class="distance-display">
+                    <span class="distance-value">1.5</span>
+                    <span class="distance-label">公里範圍</span>
+                </div>
+                
+                <div class="unit-switcher">
+                    <button class="unit-button active">公里</button>
+                    <button class="unit-button">英里</button>
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-track">
+                        <div class="slider-progress" style="--progress: 30%;"></div>
+                        <input type="range" class="garmin-slider" min="1" max="10" value="3">
+                    </div>
+                </div>
+                
+                <div class="meal-time-selector-grid">
+                    <div class="meal-time-row">
+                        <button class="meal-time-button">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">🌅</div>
+                                <div class="meal-time-label">早餐</div>
+                                <div class="meal-time-time">06:00-10:00</div>
+                            </div>
+                        </button>
+                        <button class="meal-time-button selected">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">☀️</div>
+                                <div class="meal-time-label">午餐</div>
+                                <div class="meal-time-time">11:00-14:00</div>
+                            </div>
+                        </button>
+                        <button class="meal-time-button">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">🌙</div>
+                                <div class="meal-time-label">晚餐</div>
+                                <div class="meal-time-time">17:00-21:00</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slot Machine 測試 -->
+    <div class="test-section">
+        <div class="slot-machine-container unified-main-container unified-section test-border" data-label="Slot Machine">
+            <div class="mock-slot-machine">
+                <h3>🎰 老虎機結果</h3>
+                <p>阿明牛肉麵</p>
+                <p>距離: 0.8公里</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 更新寬度指示器
+        function updateWidthIndicator() {
+            const width = window.innerWidth;
+            let deviceType = 'desktop';
+            let maxWidth = '600px';
+            
+            if (width < 768) {
+                deviceType = 'mobile';
+                maxWidth = '480px';
+            } else if (width < 1024) {
+                deviceType = 'tablet';
+                maxWidth = '600px';
+            }
+            
+            document.getElementById('windowWidth').textContent = width;
+            document.getElementById('deviceType').textContent = deviceType;
+            document.getElementById('maxWidth').textContent = maxWidth;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateWidthIndicator();
+            
+            // 監聽視窗大小變化
+            window.addEventListener('resize', function() {
+                updateWidthIndicator();
+            });
+        });
+        
+        // 測試寬度一致性
+        function testWidthConsistency() {
+            const containers = document.querySelectorAll('.unified-main-container');
+            const widths = [];
+            
+            containers.forEach((container, index) => {
+                const rect = container.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(container);
+                
+                widths.push({
+                    index: index,
+                    label: container.dataset.label || `Container ${index}`,
+                    width: rect.width,
+                    maxWidth: computedStyle.maxWidth,
+                    marginLeft: computedStyle.marginLeft,
+                    marginRight: computedStyle.marginRight,
+                    paddingLeft: computedStyle.paddingLeft,
+                    paddingRight: computedStyle.paddingRight
+                });
+            });
+            
+            console.log('📏 寬度一致性測試結果:', widths);
+            
+            // 檢查寬度是否一致
+            const firstWidth = widths[0]?.width;
+            const allSameWidth = widths.every(w => Math.abs(w.width - firstWidth) < 1);
+            
+            if (allSameWidth) {
+                console.log('✅ 所有容器寬度一致:', firstWidth, 'px');
+            } else {
+                console.log('❌ 容器寬度不一致:', widths.map(w => `${w.label}: ${w.width}px`));
+            }
+            
+            return widths;
+        }
+        
+        // 3秒後自動測試
+        setTimeout(() => {
+            testWidthConsistency();
+        }, 3000);
+        
+        // 視窗大小變化時重新測試
+        window.addEventListener('resize', () => {
+            setTimeout(testWidthConsistency, 100);
+        });
+    </script>
+</body>
+</html>

@@ -22,8 +22,8 @@ function QuickLocationButtons({
       const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
 
       if (shouldShowActiveState) {
-        // 橘色狀態 - 有輸入或聚焦就顯示可儲存狀態
-        return 'bg-orange-500 hover:bg-orange-600';
+        // 藍色狀態 - 有輸入或聚焦就顯示可儲存狀態
+        return 'bg-blue-600 hover:bg-blue-700 text-white';
       } else if (hasLocation) {
         // 綠色狀態 - 已儲存
         return 'bg-[var(--success-color)] hover:bg-green-600';

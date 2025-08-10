@@ -1,0 +1,225 @@
+/* 統一布局系統 - 解決寬度和間距不一致問題 */
+
+/* ===== 統一寬度系統 ===== */
+:root {
+  /* 統一最大寬度 */
+  --unified-max-width: 600px; /* 桌面端稍微放寬 */
+  --unified-mobile-max-width: 480px; /* 手機端保持緊湊 */
+  
+  /* 統一間距 */
+  --unified-section-spacing: 2rem; /* 區塊間距 */
+  --unified-content-padding: 1.5rem; /* 內容內邊距 */
+}
+
+/* ===== 主要內容容器 ===== */
+.unified-main-container {
+  width: 100%;
+  max-width: var(--unified-max-width);
+  margin: 0 auto;
+  padding: 0 var(--unified-content-padding);
+  box-sizing: border-box;
+}
+
+/* 手機端使用較小的最大寬度 */
+@media (max-width: 767px) {
+  .unified-main-container {
+    max-width: var(--unified-mobile-max-width);
+  }
+}
+
+/* ===== 統一區塊間距 ===== */
+.unified-section {
+  margin-bottom: var(--unified-section-spacing);
+}
+
+.unified-section:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== 統一組件寬度 ===== */
+.location-manager-mobile,
+.search-settings-container,
+.hero-banner-container,
+.language-selector-container,
+.slot-machine-container {
+  width: 100%;
+  max-width: var(--unified-max-width);
+  margin: 0 auto;
+  padding: 0 var(--unified-content-padding);
+  box-sizing: border-box;
+}
+
+/* 手機端統一寬度 */
+@media (max-width: 767px) {
+  .location-manager-mobile,
+  .search-settings-container,
+  .hero-banner-container,
+  .language-selector-container,
+  .slot-machine-container {
+    max-width: var(--unified-mobile-max-width);
+  }
+}
+
+/* ===== 修正LocationManager寬度問題 ===== */
+.location-manager-container {
+  width: 100%;
+  max-width: 100%; /* 移除之前的480px限制 */
+  margin: 0;
+  padding: 0; /* 移除額外的內邊距 */
+  box-sizing: border-box;
+}
+
+/* ===== 修正SearchSettings寬度問題 ===== */
+.garmin-distance-control {
+  width: 100%;
+  max-width: 100%; /* 確保與父容器一致 */
+  margin: 0 auto var(--unified-section-spacing) auto;
+  box-sizing: border-box;
+}
+
+/* ===== 語言選擇器置中 ===== */
+.language-selector,
+.language-selector-container {
+  width: 100%;
+  max-width: var(--unified-max-width);
+  margin: 0 auto;
+  padding: 0 var(--unified-content-padding);
+  box-sizing: border-box;
+  text-align: center; /* 確保內容置中 */
+}
+
+/* 語言選擇器內部元素置中 */
+.language-selector > *,
+.language-selector-container > * {
+  margin: 0 auto;
+}
+
+/* ===== Hero Banner 置中 ===== */
+.hero-banner,
+.hero-banner-container {
+  width: 100%;
+  max-width: var(--unified-max-width);
+  margin: 0 auto;
+  padding: 0 var(--unified-content-padding);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* ===== Slot Machine 置中 ===== */
+.slot-machine,
+.slot-machine-container {
+  width: 100%;
+  max-width: var(--unified-max-width);
+  margin: 0 auto;
+  padding: 0 var(--unified-content-padding);
+  box-sizing: border-box;
+}
+
+/* ===== 桌面端特殊處理 ===== */
+@media (min-width: 1024px) {
+  /* 桌面端移除滑動容器的影響 */
+  body {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  
+  /* 確保主要內容區域正常滾動 */
+  #root {
+    min-height: 100vh;
+    overflow-y: visible;
+  }
+  
+  /* 桌面端統一間距 - 所有區塊使用相同間距 */
+  .unified-section,
+  .content-section,
+  .location-manager-mobile,
+  .search-settings-container,
+  .hero-banner-container,
+  .language-selector-container,
+  .slot-machine-container {
+    margin-bottom: 3rem; /* 統一的區塊間距 */
+  }
+  
+  /* 桌面端統一內邊距和寬度 */
+  .unified-main-container,
+  .search-settings-container,
+  .hero-banner-container,
+  .language-selector-container,
+  .slot-machine-container {
+    max-width: var(--unified-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2rem;
+    box-sizing: border-box;
+  }
+  
+  /* LocationManager特殊處理 - 因為多層容器結構 */
+  .location-manager-mobile {
+    max-width: var(--unified-max-width) !important;
+    margin: 0 auto 3rem auto !important;
+    padding: 0 2rem !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* 確保內部容器不會覆蓋統一寬度 */
+  .location-manager-container,
+  .garmin-distance-control {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* ===== 修正現有組件的寬度問題 ===== */
+
+/* LocationManager 修正 */
+.location-manager-mobile {
+  /* 移除之前的寬度限制，使用統一系統 */
+  max-width: var(--unified-max-width);
+}
+
+.location-manager-mobile .location-manager-container {
+  /* 確保內部容器不再限制寬度 */
+  max-width: 100%;
+  padding: 0;
+}
+
+/* SearchSettings 修正 */
+.search-settings-container .garmin-distance-control {
+  /* 確保距離控制組件使用全寬 */
+  max-width: 100%;
+}
+
+/* 確保所有卡片組件使用統一寬度 */
+.card,
+.glow-container,
+.location-manager-card,
+.fluid-card {
+  width: 100%;
+  max-width: 100%; /* 使用父容器的寬度 */
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* ===== 響應式調整 ===== */
+@media (max-width: 480px) {
+  :root {
+    --unified-content-padding: 1rem;
+    --unified-section-spacing: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --unified-content-padding: 1.5rem;
+    --unified-section-spacing: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --unified-content-padding: 2rem;
+    --unified-section-spacing: 3rem;
+  }
+}

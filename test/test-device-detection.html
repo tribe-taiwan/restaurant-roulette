@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設備檢測測試</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .detection-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .detection-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 15px;
+        }
+        
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detection-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detection-label {
+            font-weight: 600;
+        }
+        
+        .detection-value {
+            color: #ffd23f;
+            font-family: monospace;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-true {
+            background: #4caf50;
+        }
+        
+        .status-false {
+            background: #f44336;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .json-output {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #ff6b35; margin-bottom: 40px;">
+            🔍 設備檢測測試
+        </h1>
+        
+        <!-- 基本設備信息 -->
+        <div class="detection-card">
+            <div class="detection-title">📱 基本設備信息</div>
+            <div class="detection-item">
+                <span class="detection-label">螢幕尺寸</span>
+                <span class="detection-value" id="screenSize">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">視窗尺寸</span>
+                <span class="detection-value" id="viewportSize">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">像素密度</span>
+                <span class="detection-value" id="pixelRatio">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">方向</span>
+                <span class="detection-value" id="orientation">載入中...</span>
+            </div>
+        </div>
+        
+        <!-- 觸控和交互能力 -->
+        <div class="detection-card">
+            <div class="detection-title">👆 觸控和交互能力</div>
+            <div class="detection-item">
+                <span class="detection-label">觸控支援</span>
+                <span class="detection-value" id="touchSupport">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">滑鼠懸停</span>
+                <span class="detection-value" id="hoverSupport">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">僅觸控設備</span>
+                <span class="detection-value" id="touchOnly">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">最大觸控點</span>
+                <span class="detection-value" id="maxTouchPoints">載入中...</span>
+            </div>
+        </div>
+        
+        <!-- User Agent 檢測 -->
+        <div class="detection-card">
+            <div class="detection-title">🌐 User Agent 檢測</div>
+            <div class="detection-item">
+                <span class="detection-label">移動設備</span>
+                <span class="detection-value" id="mobileUA">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">平板設備</span>
+                <span class="detection-value" id="tabletUA">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">iOS 設備</span>
+                <span class="detection-value" id="iosUA">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">Android 設備</span>
+                <span class="detection-value" id="androidUA">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">瀏覽器</span>
+                <span class="detection-value" id="browser">載入中...</span>
+            </div>
+        </div>
+        
+        <!-- 媒體查詢檢測 -->
+        <div class="detection-card">
+            <div class="detection-title">📺 媒體查詢檢測</div>
+            <div class="detection-item">
+                <span class="detection-label">手機媒體查詢</span>
+                <span class="detection-value" id="mobileMedia">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">平板媒體查詢</span>
+                <span class="detection-value" id="tabletMedia">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">桌面媒體查詢</span>
+                <span class="detection-value" id="desktopMedia">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">高對比度模式</span>
+                <span class="detection-value" id="highContrast">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">減少動畫偏好</span>
+                <span class="detection-value" id="reducedMotion">載入中...</span>
+            </div>
+        </div>
+        
+        <!-- 最終設備類型判斷 -->
+        <div class="detection-card">
+            <div class="detection-title">🎯 最終設備類型判斷</div>
+            <div class="detection-item">
+                <span class="detection-label">檢測結果</span>
+                <span class="detection-value" id="finalDeviceType">載入中...</span>
+            </div>
+            <div class="detection-item">
+                <span class="detection-label">滑動對齊啟用</span>
+                <span class="detection-value" id="snapEnabled">載入中...</span>
+            </div>
+        </div>
+        
+        <!-- 控制按鈕 -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="refresh-btn" onclick="updateDetection()">🔄 重新檢測</button>
+            <button class="refresh-btn" onclick="toggleFullscreen()">📺 全螢幕測試</button>
+            <button class="refresh-btn" onclick="showRawData()">📋 顯示原始數據</button>
+        </div>
+        
+        <!-- 原始數據顯示 -->
+        <div class="detection-card" id="rawDataCard" style="display: none;">
+            <div class="detection-title">📋 原始檢測數據</div>
+            <div class="json-output" id="rawDataOutput"></div>
+        </div>
+    </div>
+
+    <!-- 載入腳本 -->
+    <script src="../utils/snapScrollManager.js"></script>
+    <script src="../utils/responsiveLayoutManager.js"></script>
+    
+    <script>
+        // 設備檢測函數（複製自滑動管理器）
+        function detectDeviceType() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const userAgent = navigator.userAgent.toLowerCase();
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            
+            // 檢查 User Agent 中的設備標識
+            const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+            const isTabletUA = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
+            const isDesktopUA = !isMobileUA && !isTabletUA;
+            
+            // 檢查媒體查詢
+            const isMobileMedia = window.matchMedia('(max-width: 767px)').matches;
+            const isTabletMedia = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+            const isDesktopMedia = window.matchMedia('(min-width: 1024px)').matches;
+            
+            // 檢查觸控能力
+            const hasTouchOnly = hasTouch && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+            const hasHover = window.matchMedia('(hover: hover)').matches;
+            
+            // 檢查方向和比例
+            const isPortrait = height > width;
+            const aspectRatio = width / height;
+            
+            // 檢查瀏覽器
+            const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+            const isAndroid = /android/i.test(userAgent);
+            const isSafari = /safari/i.test(userAgent) && !/chrome/i.test(userAgent);
+            const isChrome = /chrome/i.test(userAgent);
+            const isFirefox = /firefox/i.test(userAgent);
+            const isEdge = /edge/i.test(userAgent);
+            
+            // 檢查特殊偏好
+            const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            // 綜合判斷邏輯
+            let deviceType = 'desktop';
+            
+            // 手機判斷：小螢幕 + 觸控 + 移動端 UA + 豎屏傾向
+            if ((width < 768 || isMobileUA) && hasTouch && !isTabletUA) {
+                deviceType = 'mobile';
+            }
+            // 平板判斷：中等螢幕 + 觸控 + 平板 UA 或 大螢幕觸控設備
+            else if (((width >= 768 && width < 1024) || isTabletUA) && hasTouch && !hasHover) {
+                deviceType = 'tablet';
+            }
+            // 桌面判斷：大螢幕 + 滑鼠懸停 + 非觸控主要操作
+            else if (width >= 1024 && hasHover && !hasTouchOnly) {
+                deviceType = 'desktop';
+            }
+            // 混合設備（如 Surface）：根據螢幕大小和主要交互方式
+            else if (hasTouch && hasHover) {
+                if (width < 768) {
+                    deviceType = 'mobile';
+                } else if (width < 1024) {
+                    deviceType = 'tablet';
+                } else {
+                    deviceType = 'desktop'; // 大螢幕觸控設備當作桌面處理
+                }
+            }
+            
+            return {
+                type: deviceType,
+                width: width,
+                height: height,
+                hasTouch: hasTouch,
+                hasHover: hasHover,
+                hasTouchOnly: hasTouchOnly,
+                devicePixelRatio: devicePixelRatio,
+                isPortrait: isPortrait,
+                aspectRatio: aspectRatio,
+                userAgent: {
+                    isMobile: isMobileUA,
+                    isTablet: isTabletUA,
+                    isDesktop: isDesktopUA,
+                    isIOS: isIOS,
+                    isAndroid: isAndroid,
+                    isSafari: isSafari,
+                    isChrome: isChrome,
+                    isFirefox: isFirefox,
+                    isEdge: isEdge,
+                    raw: userAgent
+                },
+                mediaQuery: {
+                    isMobile: isMobileMedia,
+                    isTablet: isTabletMedia,
+                    isDesktop: isDesktopMedia
+                },
+                preferences: {
+                    highContrast: prefersHighContrast,
+                    reducedMotion: prefersReducedMotion
+                }
+            };
+        }
+        
+        // 格式化布林值顯示
+        function formatBoolean(value) {
+            const indicator = value ? 
+                '<span class="status-indicator status-true"></span>' : 
+                '<span class="status-indicator status-false"></span>';
+            return indicator + (value ? '是' : '否');
+        }
+        
+        // 更新檢測結果
+        function updateDetection() {
+            const detection = detectDeviceType();
+            
+            // 基本設備信息
+            document.getElementById('screenSize').textContent = 
+                `${screen.width}×${screen.height}`;
+            document.getElementById('viewportSize').textContent = 
+                `${detection.width}×${detection.height}`;
+            document.getElementById('pixelRatio').textContent = 
+                detection.devicePixelRatio;
+            document.getElementById('orientation').textContent = 
+                detection.isPortrait ? '豎屏' : '橫屏';
+            
+            // 觸控和交互能力
+            document.getElementById('touchSupport').innerHTML = 
+                formatBoolean(detection.hasTouch);
+            document.getElementById('hoverSupport').innerHTML = 
+                formatBoolean(detection.hasHover);
+            document.getElementById('touchOnly').innerHTML = 
+                formatBoolean(detection.hasTouchOnly);
+            document.getElementById('maxTouchPoints').textContent = 
+                navigator.maxTouchPoints || '0';
+            
+            // User Agent 檢測
+            document.getElementById('mobileUA').innerHTML = 
+                formatBoolean(detection.userAgent.isMobile);
+            document.getElementById('tabletUA').innerHTML = 
+                formatBoolean(detection.userAgent.isTablet);
+            document.getElementById('iosUA').innerHTML = 
+                formatBoolean(detection.userAgent.isIOS);
+            document.getElementById('androidUA').innerHTML = 
+                formatBoolean(detection.userAgent.isAndroid);
+            
+            // 瀏覽器檢測
+            let browserName = '未知';
+            if (detection.userAgent.isChrome) browserName = 'Chrome';
+            else if (detection.userAgent.isSafari) browserName = 'Safari';
+            else if (detection.userAgent.isFirefox) browserName = 'Firefox';
+            else if (detection.userAgent.isEdge) browserName = 'Edge';
+            
+            document.getElementById('browser').textContent = browserName;
+            
+            // 媒體查詢檢測
+            document.getElementById('mobileMedia').innerHTML = 
+                formatBoolean(detection.mediaQuery.isMobile);
+            document.getElementById('tabletMedia').innerHTML = 
+                formatBoolean(detection.mediaQuery.isTablet);
+            document.getElementById('desktopMedia').innerHTML = 
+                formatBoolean(detection.mediaQuery.isDesktop);
+            document.getElementById('highContrast').innerHTML = 
+                formatBoolean(detection.preferences.highContrast);
+            document.getElementById('reducedMotion').innerHTML = 
+                formatBoolean(detection.preferences.reducedMotion);
+            
+            // 最終判斷
+            document.getElementById('finalDeviceType').textContent = 
+                detection.type === 'mobile' ? '📱 手機' :
+                detection.type === 'tablet' ? '📱 平板' : '💻 桌面';
+            
+            const snapEnabled = detection.type !== 'desktop';
+            document.getElementById('snapEnabled').innerHTML = 
+                formatBoolean(snapEnabled);
+            
+            // 儲存原始數據
+            window.lastDetection = detection;
+            
+            console.log('🔍 設備檢測結果:', detection);
+        }
+        
+        // 顯示原始數據
+        function showRawData() {
+            const card = document.getElementById('rawDataCard');
+            const output = document.getElementById('rawDataOutput');
+            
+            if (card.style.display === 'none') {
+                card.style.display = 'block';
+                output.textContent = JSON.stringify(window.lastDetection, null, 2);
+            } else {
+                card.style.display = 'none';
+            }
+        }
+        
+        // 全螢幕測試
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    setTimeout(updateDetection, 100);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    setTimeout(updateDetection, 100);
+                });
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDetection();
+            
+            // 監聽視窗大小變化
+            window.addEventListener('resize', function() {
+                setTimeout(updateDetection, 100);
+            });
+            
+            // 監聽方向變化
+            window.addEventListener('orientationchange', function() {
+                setTimeout(updateDetection, 200);
+            });
+        });
+    </script>
+</body>
+</html>

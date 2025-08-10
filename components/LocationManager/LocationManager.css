@@ -1,22 +1,31 @@
 /* LocationManager 手機優先設計 CSS */
 
-/* 主容器 - 手機優先設計 */
+/* 主容器 - 使用統一寬度系統 */
 .location-manager-mobile {
   width: 100%;
   max-width: 100vw;
   margin: 0 auto;
-  padding: var(--spacing-md);
+  /* 移除內邊距，由統一系統控制 */
+  padding: 0;
   box-sizing: border-box;
+  
+  /* 響應式和性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
 }
 
-/* 位置管理容器 */
+/* 位置管理容器 - 使用統一寬度系統 */
 .location-manager-container {
   width: 100%;
-  max-width: 480px; /* 適合手機螢幕的最大寬度 */
-  margin: 0 auto;
+  max-width: 100%; /* 使用父容器的寬度 */
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0; /* 移除間距，讓卡片內部控制 */
+  
+  /* 移除內邊距，由統一系統控制 */
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* 統一移動端卡片設計 */
@@ -31,11 +40,16 @@
   
   /* 確保在手機螢幕內完整顯示 */
   min-height: auto;
-  max-height: calc(100vh - 120px); /* 留出頂部和底部空間 */
+  max-height: calc(100vh - var(--fluid-spacing-xl) * 2);
   
   /* 垂直布局 */
   display: flex;
   flex-direction: column;
+  
+  /* 響應式和性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-auto);
 }
 
 .location-manager-card:hover {
@@ -45,7 +59,7 @@
 
 /* 功能區塊分隔 */
 .location-section {
-  padding: var(--spacing-xl);
+  padding: var(--fluid-spacing-xl);
   border-bottom: 1px solid var(--border-color);
   
   /* 確保每個區塊都有足夠的觸控空間 */
@@ -53,6 +67,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  
+  /* 性能優化 */
+  contain: layout;
 }
 
 /* 最後一個區塊不需要底部邊框 */
@@ -98,21 +115,41 @@
   }
 }
 
-/* 大螢幕適配 - 保持手機優先但在大螢幕上居中 */
+/* 大螢幕適配 - 使用統一寬度系統 */
 @media (min-width: 768px) {
   .location-manager-mobile {
-    padding: var(--spacing-xl);
+    /* 移除內邊距，由統一系統控制 */
+    padding: 0;
   }
   
   .location-manager-container {
-    max-width: 600px; /* 在平板上稍微放寬 */
+    /* 使用統一寬度系統 */
+    max-width: 100%;
+    padding: 0;
   }
 }
 
 /* 桌面端適配 */
 @media (min-width: 1024px) {
+  /* 強制統一寬度 - 與其他區塊一致 */
+  .location-manager-mobile {
+    max-width: 600px !important;
+    margin: 0 auto 3rem auto !important;
+    padding: 0 2rem !important;
+    box-sizing: border-box !important;
+  }
+  
   .location-manager-container {
-    max-width: 480px; /* 桌面端保持手機尺寸以維持一致性 */
+    /* 移除內部容器的寬度限制 */
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* 確保卡片使用全寬 */
+  .location-manager-card {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -178,7 +215,7 @@ ntLocationDisplay 組件樣式 */
   justify-content: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: linear-gradient(135deg, var(--success-color), var(--theme-accent));
+  background: linear-gradient(135deg, var(--theme-primary), var(--success-color));
   border-radius: var(--unified-border-radius);
   color: white;
   min-height: var(--button-height-medium);

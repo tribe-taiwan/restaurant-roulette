@@ -1,0 +1,541 @@
+/* 響應式布局和性能優化系統 */
+
+/* ===== 響應式布局基礎 ===== */
+:root {
+  /* 響應式斷點 */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1200px;
+  
+  /* 流體間距系統 */
+  --fluid-spacing-xs: clamp(4px, 1vw, 8px);
+  --fluid-spacing-sm: clamp(8px, 2vw, 12px);
+  --fluid-spacing-md: clamp(12px, 3vw, 16px);
+  --fluid-spacing-lg: clamp(16px, 4vw, 24px);
+  --fluid-spacing-xl: clamp(20px, 5vw, 32px);
+  
+  /* 流體字體大小 */
+  --fluid-text-xs: clamp(12px, 2.5vw, 14px);
+  --fluid-text-sm: clamp(14px, 3vw, 16px);
+  --fluid-text-base: clamp(16px, 3.5vw, 18px);
+  --fluid-text-lg: clamp(18px, 4vw, 20px);
+  --fluid-text-xl: clamp(20px, 4.5vw, 24px);
+  --fluid-text-2xl: clamp(24px, 5vw, 32px);
+  
+  /* 容器最大寬度 */
+  --container-xs: 100%;
+  --container-sm: 480px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1200px;
+  
+  /* 性能優化變數 */
+  --gpu-acceleration: translateZ(0);
+  --will-change-transform: transform;
+  --will-change-opacity: opacity;
+  --will-change-auto: auto;
+}
+
+/* ===== 容器查詢支援 ===== */
+@supports (container-type: inline-size) {
+  .responsive-container {
+    container-type: inline-size;
+    container-name: main-container;
+  }
+  
+  @container main-container (max-width: 480px) {
+    .container-responsive {
+      padding: var(--fluid-spacing-sm);
+      gap: var(--fluid-spacing-sm);
+    }
+  }
+  
+  @container main-container (min-width: 481px) {
+    .container-responsive {
+      padding: var(--fluid-spacing-lg);
+      gap: var(--fluid-spacing-md);
+    }
+  }
+}
+
+/* ===== 基礎響應式容器 ===== */
+.responsive-container {
+  width: 100%;
+  max-width: var(--container-lg);
+  margin: 0 auto;
+  padding: var(--fluid-spacing-md);
+  box-sizing: border-box;
+  
+  /* 性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+}
+
+/* ===== 手機優先響應式網格 ===== */
+.responsive-grid {
+  display: grid;
+  gap: var(--fluid-spacing-md);
+  width: 100%;
+  
+  /* 預設單列布局（手機） */
+  grid-template-columns: 1fr;
+  
+  /* 性能優化 */
+  contain: layout;
+}
+
+/* 平板布局 */
+@media (min-width: 768px) {
+  .responsive-grid--tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 桌面布局 */
+@media (min-width: 1024px) {
+  .responsive-grid--desktop {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== 流體卡片系統 ===== */
+.fluid-card {
+  width: 100%;
+  background: var(--surface-color);
+  border-radius: var(--unified-border-radius);
+  box-shadow: var(--theme-shadow-md);
+  border: 1px solid var(--border-color);
+  
+  /* 流體內邊距 */
+  padding: var(--fluid-spacing-lg);
+  
+  /* 性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-auto);
+  
+  /* 響應式最小高度 */
+  min-height: clamp(120px, 20vh, 200px);
+  
+  /* 確保在小螢幕上完整顯示 */
+  max-height: calc(100vh - var(--fluid-spacing-xl) * 2);
+  overflow-y: auto;
+  
+  /* 平滑滾動 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== 響應式按鈕系統 ===== */
+.responsive-button {
+  /* 流體尺寸 */
+  min-height: clamp(44px, 8vw, 60px);
+  padding: var(--fluid-spacing-sm) var(--fluid-spacing-lg);
+  
+  /* 流體字體 */
+  font-size: var(--fluid-text-base);
+  
+  /* 響應式圓角 */
+  border-radius: clamp(8px, 2vw, var(--unified-border-radius));
+  
+  /* 性能優化 */
+  contain: layout style;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-transform);
+  
+  /* 觸控優化 */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* 統一過渡 */
+  transition: transform var(--transition-fast), 
+              box-shadow var(--transition-fast),
+              filter var(--transition-fast);
+}
+
+/* ===== 響應式輸入框系統 ===== */
+.responsive-input {
+  width: 100%;
+  min-height: clamp(44px, 8vw, 52px);
+  padding: var(--fluid-spacing-md);
+  font-size: clamp(16px, 3.5vw, 18px); /* 防止iOS縮放 */
+  border-radius: clamp(8px, 2vw, var(--unified-border-radius));
+  
+  /* 性能優化 */
+  contain: layout style;
+  transform: var(--gpu-acceleration);
+  
+  /* 移動端優化 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* ===== 響應式圖標系統 ===== */
+.responsive-icon {
+  width: clamp(16px, 4vw, 32px);
+  height: clamp(16px, 4vw, 32px);
+  
+  /* 性能優化 */
+  contain: layout size;
+  transform: var(--gpu-acceleration);
+}
+
+/* ===== 視窗高度優化 ===== */
+.viewport-height-container {
+  /* 使用動態視窗高度 */
+  min-height: 100dvh;
+  
+  /* 後備方案 */
+  min-height: 100vh;
+  
+  /* 確保內容不被系統UI遮擋 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ===== 性能優化類別 ===== */
+.gpu-accelerated {
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.will-change-transform {
+  will-change: var(--will-change-transform);
+}
+
+.will-change-opacity {
+  will-change: var(--will-change-opacity);
+}
+
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* ===== 懶載入優化 ===== */
+.lazy-load {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== 60fps 動畫優化 ===== */
+@keyframes smooth-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) var(--gpu-acceleration);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) var(--gpu-acceleration);
+  }
+}
+
+@keyframes smooth-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) var(--gpu-acceleration);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) var(--gpu-acceleration);
+  }
+}
+
+@keyframes smooth-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) var(--gpu-acceleration);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) var(--gpu-acceleration);
+  }
+}
+
+.animate-fade-in {
+  animation: smooth-fade-in 0.4s ease-out;
+}
+
+.animate-scale-in {
+  animation: smooth-scale-in 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: smooth-slide-in 0.5s ease-out;
+}
+
+/* ===== 觸控回饋優化 ===== */
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+}
+
+.touch-feedback:active::before {
+  width: 200px;
+  height: 200px;
+}
+
+/* ===== 響應式媒體查詢 ===== */
+
+/* 超小螢幕 (320px - 479px) */
+@media (max-width: 479px) {
+  .responsive-container {
+    padding: var(--fluid-spacing-sm);
+  }
+  
+  .fluid-card {
+    padding: var(--fluid-spacing-md);
+    margin-bottom: var(--fluid-spacing-sm);
+  }
+  
+  .responsive-button {
+    min-height: 48px;
+    font-size: 16px;
+  }
+  
+  .responsive-input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+}
+
+/* 小螢幕 (480px - 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .responsive-container {
+    padding: var(--fluid-spacing-md);
+  }
+  
+  .fluid-card {
+    padding: var(--fluid-spacing-lg);
+  }
+  
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* 中等螢幕 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-container {
+    padding: var(--fluid-spacing-lg);
+  }
+  
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+
+/* 大螢幕 (1024px+) */
+@media (min-width: 1024px) {
+  .responsive-container {
+    padding: var(--fluid-spacing-xl);
+  }
+  
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  }
+}
+
+/* ===== 橫屏優化 ===== */
+@media (orientation: landscape) and (max-height: 600px) {
+  .fluid-card {
+    max-height: calc(100vh - var(--fluid-spacing-md) * 2);
+    padding: var(--fluid-spacing-md);
+  }
+  
+  .responsive-button {
+    min-height: 40px;
+  }
+  
+  .responsive-input {
+    min-height: 40px;
+  }
+}
+
+/* ===== 高密度螢幕優化 ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .responsive-icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ===== 無障礙優化 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .lazy-load,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-in,
+  .touch-feedback::before {
+    animation: none;
+    transition: none;
+  }
+  
+  .responsive-button,
+  .fluid-card {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .fluid-card {
+    border: 2px solid currentColor;
+  }
+  
+  .responsive-button {
+    border: 2px solid currentColor;
+  }
+  
+  .responsive-input {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ===== 記憶體優化 ===== */
+.memory-optimized {
+  /* 限制重繪區域 */
+  contain: layout style paint;
+  
+  /* 優化合成層 */
+  transform: var(--gpu-acceleration);
+  
+  /* 限制子元素影響 */
+  isolation: isolate;
+}
+
+/* ===== 滾動優化 ===== */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ===== 載入狀態優化 ===== */
+.loading-skeleton {
+  background: linear-gradient(90deg, 
+    var(--surface-secondary) 25%, 
+    var(--surface-tertiary) 50%, 
+    var(--surface-secondary) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ===== 互動狀態優化 ===== */
+.interactive-element {
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* 性能優化 */
+  contain: layout style;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-transform);
+}
+
+.interactive-element:hover {
+  will-change: var(--will-change-transform);
+}
+
+.interactive-element:not(:hover) {
+  will-change: var(--will-change-auto);
+}
+
+/* ===== 文字渲染優化 ===== */
+.optimized-text {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+/* ===== 圖片響應式優化 ===== */
+.responsive-image {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: cover;
+  
+  /* 性能優化 */
+  contain: layout size;
+  transform: var(--gpu-acceleration);
+}
+
+/* ===== 表單響應式優化 ===== */
+.responsive-form {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  
+  /* 性能優化 */
+  contain: layout;
+}
+
+.responsive-form-group {
+  margin-bottom: var(--fluid-spacing-lg);
+  width: 100%;
+}
+
+.responsive-form-row {
+  display: flex;
+  gap: var(--fluid-spacing-md);
+  flex-wrap: wrap;
+}
+
+.responsive-form-col {
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 480px) {
+  .responsive-form-row {
+    flex-direction: column;
+  }
+  
+  .responsive-form-col {
+    min-width: 100%;
+  }
+}

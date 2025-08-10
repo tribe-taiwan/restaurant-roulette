@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桌面端布局測試</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/shared/responsive-performance.css">
+    <link rel="stylesheet" href="../components/shared/snap-scroll-layout.css">
+    <link rel="stylesheet" href="../components/shared/unified-layout.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            /* 確保桌面端可以正常滾動 */
+            overflow-y: auto !important;
+            height: auto !important;
+        }
+        
+        .test-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+        }
+        
+        .test-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin: 40px 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass {
+            background: #4caf50;
+        }
+        
+        .status-fail {
+            background: #f44336;
+        }
+        
+        .content-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .demo-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 測試信息顯示 -->
+    <div class="test-info" id="testInfo">
+        <h4>🖥️ 桌面端測試</h4>
+        <div>視窗寬度: <span id="windowWidth">--</span>px</div>
+        <div>設備類型: <span id="deviceType">--</span></div>
+        <div><span id="scrollStatus" class="status-indicator"></span>滾動功能</div>
+        <div><span id="snapStatus" class="status-indicator"></span>滑動對齊</div>
+        <div><span id="widthStatus" class="status-indicator"></span>統一寬度</div>
+        <div><span id="indicatorStatus" class="status-indicator"></span>指示器隱藏</div>
+    </div>
+
+    <div class="test-title">🖥️ 桌面端布局測試</div>
+
+    <!-- 第一個內容區塊 -->
+    <div class="content-section">
+        <div class="demo-content">
+            <h2>第一個區塊</h2>
+            <p>這是第一個內容區塊。在桌面端，你應該能夠使用滑鼠滾輪正常滾動到下一個區塊。</p>
+            <p>測試項目：</p>
+            <ul style="text-align: left;">
+                <li>滑鼠滾輪可以正常上下滾動</li>
+                <li>沒有強制的滑動對齊</li>
+                <li>沒有多餘的滾動條</li>
+                <li>內容寬度統一且置中</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 語言選擇器測試 -->
+    <div class="content-section">
+        <div class="language-selector-container unified-main-container">
+            <div class="demo-content">
+                <h2>語言選擇器測試</h2>
+                <p>這個區塊測試語言選擇器是否正確置中</p>
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                    <button style="background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 8px;">中文</button>
+                    <button style="background: #f7931e; color: white; border: none; padding: 10px 20px; border-radius: 8px;">English</button>
+                    <button style="background: #ffd23f; color: #1a1a2e; border: none; padding: 10px 20px; border-radius: 8px;">日本語</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LocationManager 測試 -->
+    <div class="content-section">
+        <div class="location-manager-mobile unified-main-container">
+            <div class="demo-content">
+                <h2>LocationManager 測試</h2>
+                <p>這個區塊測試LocationManager的寬度是否與其他區塊一致</p>
+                <div class="location-manager-container">
+                    <div class="location-manager-card">
+                        <div class="location-section">
+                            <div class="current-location-display">
+                                <div class="current-location-content">
+                                    <div class="current-location-icon">📍</div>
+                                    <div class="current-location-text">
+                                        <div class="current-location-label">當前位置</div>
+                                        <div class="current-location-address">台南市中西區中山路123號</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SearchSettings 測試 -->
+    <div class="content-section">
+        <div class="search-settings-container unified-main-container">
+            <div class="demo-content">
+                <h2>SearchSettings 測試</h2>
+                <p>這個區塊測試SearchSettings的寬度是否與其他區塊一致</p>
+                <div class="garmin-distance-control">
+                    <div class="distance-display">
+                        <span class="distance-value">1.5</span>
+                        <span class="distance-label">公里範圍</span>
+                    </div>
+                    <div class="unit-switcher">
+                        <button class="unit-button active">公里</button>
+                        <button class="unit-button">英里</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最後一個區塊 -->
+    <div class="content-section">
+        <div class="demo-content">
+            <h2>測試完成</h2>
+            <p>如果你能順利滾動到這裡，說明桌面端的滾動功能正常！</p>
+            <button onclick="runTests()" style="background: #4caf50; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;">運行自動測試</button>
+        </div>
+    </div>
+
+    <!-- 載入腳本 -->
+    <script src="../utils/performanceMonitor.js"></script>
+    <script src="../utils/responsiveLayoutManager.js"></script>
+    <script src="../utils/snapScrollManager.js"></script>
+    
+    <script>
+        // 更新測試信息
+        function updateTestInfo() {
+            const width = window.innerWidth;
+            const isDesktop = width >= 1024 && window.matchMedia('(hover: hover)').matches;
+            
+            document.getElementById('windowWidth').textContent = width;
+            document.getElementById('deviceType').textContent = isDesktop ? '桌面端' : '非桌面端';
+            
+            // 測試滾動功能
+            const canScroll = document.body.style.overflowY !== 'hidden' && 
+                             window.getComputedStyle(document.body).overflowY !== 'hidden';
+            document.getElementById('scrollStatus').className = 
+                `status-indicator ${canScroll ? 'status-pass' : 'status-fail'}`;
+            
+            // 測試滑動對齊
+            const hasSnapContainer = document.querySelector('.snap-scroll-container') !== null;
+            const snapDisabled = !hasSnapContainer || 
+                               window.getComputedStyle(document.body).scrollSnapType === 'none';
+            document.getElementById('snapStatus').className = 
+                `status-indicator ${snapDisabled ? 'status-pass' : 'status-fail'}`;
+            
+            // 測試統一寬度
+            const containers = document.querySelectorAll('.unified-main-container');
+            let widthConsistent = true;
+            if (containers.length > 1) {
+                const firstWidth = containers[0].getBoundingClientRect().width;
+                widthConsistent = Array.from(containers).every(container => 
+                    Math.abs(container.getBoundingClientRect().width - firstWidth) < 2
+                );
+            }
+            document.getElementById('widthStatus').className = 
+                `status-indicator ${widthConsistent ? 'status-pass' : 'status-fail'}`;
+            
+            // 測試指示器隱藏
+            const indicator = document.querySelector('.snap-scroll-indicator');
+            const indicatorHidden = !indicator || 
+                                  window.getComputedStyle(indicator).display === 'none';
+            document.getElementById('indicatorStatus').className = 
+                `status-indicator ${indicatorHidden ? 'status-pass' : 'status-fail'}`;
+        }
+        
+        // 運行自動測試
+        function runTests() {
+            console.log('🧪 開始桌面端自動測試');
+            
+            const tests = [
+                {
+                    name: '滾動功能測試',
+                    test: () => {
+                        const initialScrollTop = window.pageYOffset;
+                        window.scrollTo(0, 100);
+                        const canScroll = window.pageYOffset !== initialScrollTop;
+                        window.scrollTo(0, initialScrollTop);
+                        return canScroll;
+                    }
+                },
+                {
+                    name: '滑動對齊禁用測試',
+                    test: () => {
+                        const hasSnapContainer = document.querySelector('.snap-scroll-container');
+                        return !hasSnapContainer || 
+                               window.getComputedStyle(document.body).scrollSnapType === 'none';
+                    }
+                },
+                {
+                    name: '統一寬度測試',
+                    test: () => {
+                        const containers = document.querySelectorAll('.unified-main-container');
+                        if (containers.length < 2) return true;
+                        
+                        const firstWidth = containers[0].getBoundingClientRect().width;
+                        return Array.from(containers).every(container => 
+                            Math.abs(container.getBoundingClientRect().width - firstWidth) < 2
+                        );
+                    }
+                },
+                {
+                    name: '指示器隱藏測試',
+                    test: () => {
+                        const indicator = document.querySelector('.snap-scroll-indicator');
+                        return !indicator || window.getComputedStyle(indicator).display === 'none';
+                    }
+                },
+                {
+                    name: '設備檢測測試',
+                    test: () => {
+                        const width = window.innerWidth;
+                        const hasHover = window.matchMedia('(hover: hover)').matches;
+                        return width >= 1024 && hasHover;
+                    }
+                }
+            ];
+            
+            const results = tests.map(test => ({
+                name: test.name,
+                passed: test.test(),
+                result: test.test() ? '✅ 通過' : '❌ 失敗'
+            }));
+            
+            console.log('📋 測試結果:');
+            results.forEach(result => {
+                console.log(`  ${result.result} ${result.name}`);
+            });
+            
+            const passedCount = results.filter(r => r.passed).length;
+            const totalCount = results.length;
+            
+            console.log(`\n📊 總結: ${passedCount}/${totalCount} 測試通過`);
+            
+            if (passedCount === totalCount) {
+                console.log('🎉 所有測試通過！桌面端布局正常工作');
+            } else {
+                console.log('⚠️ 部分測試失敗，需要進一步檢查');
+            }
+            
+            alert(`測試完成！${passedCount}/${totalCount} 測試通過\n詳細結果請查看控制台`);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTestInfo();
+            
+            // 監聽視窗大小變化
+            window.addEventListener('resize', function() {
+                setTimeout(updateTestInfo, 100);
+            });
+            
+            // 監聽滾動事件
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    console.log('📜 滾動事件觸發，當前位置:', window.pageYOffset);
+                }, 100);
+            });
+            
+            // 3秒後自動運行測試
+            setTimeout(() => {
+                console.log('⏰ 自動運行桌面端測試');
+                runTests();
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

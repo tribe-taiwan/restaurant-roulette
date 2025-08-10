@@ -24,7 +24,7 @@ function LocationActions({
       if (manualLocationState === 'success') {
         return 'bg-[var(--success-color)] hover:bg-green-600';
       } else if (shouldShowActiveState) {
-        return 'bg-orange-500 hover:bg-orange-600';
+        return 'bg-blue-600 hover:bg-blue-700 text-white';
       } else {
         return 'bg-[var(--primary-color)] hover:bg-[var(--secondary-color)]';
       }

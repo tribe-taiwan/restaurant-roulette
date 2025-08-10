@@ -42,56 +42,52 @@ function LocationManager({
     const handleInputBlur = () => setIsInputFocused(false);
 
     return (
-      <div className="location-manager-mobile">
-        {/* 手機優先的位置管理區塊 */}
-        <div className="location-manager-container">
-          {/* 移動端卡片容器 */}
-          <div className="location-manager-card">
-            {/* 當前定位資訊子組件 */}
-            <div className="location-section">
-              <CurrentLocationDisplay 
-                locationStatus={locationStatus}
-                userAddress={userAddress}
-                translations={translations}
-              />
-            </div>
-            
-            {/* 住家公司快速按鈕子組件 */}
-            <div className="location-section">
-              <QuickLocationButtons 
-                savedLocations={savedLocations}
-                addressInput={addressInput}
-                isInputFocused={isInputFocused}
-                onLocationButton={onLocationButton}
-                translations={translations}
-              />
-            </div>
-            
-            {/* 地址輸入子組件 */}
-            <div className="location-section">
-              <AddressInput 
-                addressInput={addressInput}
-                setAddressInput={setAddressInput}
-                onAddressConfirm={onAddressConfirm}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                translations={translations}
-              />
-            </div>
-            
-            {/* 定位操作按鈕子組件 */}
-            <div className="location-section location-section-last">
-              <LocationActions 
-                locationStatus={locationStatus}
-                addressInput={addressInput}
-                isInputFocused={isInputFocused}
-                isRelocating={isRelocating}
-                isGeocodingAddress={isGeocodingAddress}
-                onRelocate={onRelocate}
-                onAddressConfirm={onAddressConfirm}
-                translations={translations}
-              />
-            </div>
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container">
+          {/* 當前定位資訊子組件 */}
+          <div className="location-section">
+            <CurrentLocationDisplay 
+              locationStatus={locationStatus}
+              userAddress={userAddress}
+              translations={translations}
+            />
+          </div>
+          
+          {/* 住家公司快速按鈕子組件 */}
+          <div className="location-section">
+            <QuickLocationButtons 
+              savedLocations={savedLocations}
+              addressInput={addressInput}
+              isInputFocused={isInputFocused}
+              onLocationButton={onLocationButton}
+              translations={translations}
+            />
+          </div>
+          
+          {/* 地址輸入子組件 */}
+          <div className="location-section">
+            <AddressInput 
+              addressInput={addressInput}
+              setAddressInput={setAddressInput}
+              onAddressConfirm={onAddressConfirm}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              translations={translations}
+            />
+          </div>
+          
+          {/* 定位操作按鈕子組件 */}
+          <div className="location-section location-section-last">
+            <LocationActions 
+              locationStatus={locationStatus}
+              addressInput={addressInput}
+              isInputFocused={isInputFocused}
+              isRelocating={isRelocating}
+              isGeocodingAddress={isGeocodingAddress}
+              onRelocate={onRelocate}
+              onAddressConfirm={onAddressConfirm}
+              translations={translations}
+            />
           </div>
         </div>
       </div>

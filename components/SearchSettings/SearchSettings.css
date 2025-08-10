@@ -4,11 +4,23 @@
 .garmin-distance-control {
   background: var(--surface-color);
   border-radius: var(--unified-border-radius);
-  padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
+  padding: var(--fluid-spacing-xl);
+  margin-bottom: 0; /* 移除底部間距，由統一系統控制 */
   box-shadow: var(--theme-shadow-md);
   border: 1px solid var(--border-color);
   transition: all var(--transition-normal);
+  
+  /* 使用統一寬度系統 */
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  
+  /* 響應式和性能優化 */
+  contain: layout style paint;
+  transform: var(--gpu-acceleration);
+  will-change: var(--will-change-auto);
 }
 
 .garmin-distance-control:hover {
@@ -19,13 +31,17 @@
 /* 大型距離顯示 - 支援品牌主題 */
 .distance-display {
   text-align: center;
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-lg);
+  margin-bottom: var(--fluid-spacing-xl);
+  padding: var(--fluid-spacing-lg);
   background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
   border-radius: var(--unified-border-radius);
   color: white;
   box-shadow: var(--theme-shadow-md);
   transition: all var(--transition-normal);
+  
+  /* 響應式和性能優化 */
+  contain: layout style;
+  transform: var(--gpu-acceleration);
 }
 
 .distance-display:hover {
@@ -54,13 +70,16 @@
 /* 大型單位切換器 - 統一設計 */
 .unit-switcher {
   display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--fluid-spacing-sm);
+  margin-bottom: var(--fluid-spacing-xl);
   background: var(--surface-secondary);
-  padding: var(--spacing-xs);
+  padding: var(--fluid-spacing-xs);
   border-radius: var(--unified-border-radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--theme-shadow-sm);
+  
+  /* 性能優化 */
+  contain: layout;
 }
 
 .unit-button {

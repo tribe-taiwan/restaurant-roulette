@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>響應式布局和性能優化測試</title>
+    
+    <!-- 載入樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/shared/shared-components.css">
+    <link rel="stylesheet" href="../components/shared/responsive-performance.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+    <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff6b35;
+        }
+        
+        .test-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .performance-stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .demo-card {
+            background: var(--surface-color);
+            border-radius: var(--unified-border-radius);
+            padding: var(--fluid-spacing-lg);
+            box-shadow: var(--theme-shadow-md);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-normal);
+        }
+        
+        .demo-card:hover {
+            transform: var(--hover-scale);
+            box-shadow: var(--theme-shadow-lg);
+        }
+        
+        .demo-button {
+            background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+            color: white;
+            border: none;
+            border-radius: var(--unified-border-radius);
+            padding: var(--fluid-spacing-md) var(--fluid-spacing-lg);
+            font-size: var(--fluid-text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            min-height: var(--touch-target-min);
+            margin: 5px;
+        }
+        
+        .demo-button:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--theme-shadow-lg);
+        }
+        
+        .demo-input {
+            width: 100%;
+            padding: var(--fluid-spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--unified-border-radius);
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+            font-size: clamp(16px, 3.5vw, 18px);
+            min-height: var(--touch-target-min);
+            box-sizing: border-box;
+        }
+        
+        .demo-input:focus {
+            border-color: var(--theme-primary);
+            box-shadow: var(--focus-shadow);
+            outline: none;
+        }
+        
+        .viewport-info {
+            background: rgba(255, 107, 53, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .breakpoint-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: var(--theme-accent);
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .lazy-load-demo {
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .lazy-load-demo.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .animation-demo {
+            width: 100px;
+            height: 100px;
+            background: var(--theme-primary);
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: demo-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes demo-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .memory-usage-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .memory-usage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+            transition: width 0.3s ease;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .animation-demo {
+                animation: none;
+            }
+            
+            .demo-card,
+            .demo-button {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 性能統計顯示 -->
+    <div class="performance-stats" id="performanceStats">
+        <div>FPS: <span id="fpsDisplay">--</span></div>
+        <div>記憶體: <span id="memoryDisplay">--</span></div>
+        <div>載入時間: <span id="loadTimeDisplay">--</span></div>
+    </div>
+
+    <div class="test-container">
+        <h1 style="text-align: center; color: #ff6b35; margin-bottom: 40px;">
+            響應式布局和性能優化測試
+        </h1>
+        
+        <!-- 視窗資訊 -->
+        <div class="viewport-info" id="viewportInfo">
+            <span class="breakpoint-indicator" id="breakpointIndicator">載入中...</span>
+            <span id="viewportDetails">載入中...</span>
+        </div>
+        
+        <!-- 響應式容器測試 -->
+        <div class="test-section">
+            <h2 class="test-title">1. 響應式容器測試</h2>
+            <div class="responsive-container">
+                <div class="responsive-grid">
+                    <div class="fluid-card">
+                        <h3>流體卡片 1</h3>
+                        <p>這個卡片會根據螢幕大小自動調整內邊距和字體大小。</p>
+                        <button class="responsive-button demo-button">響應式按鈕</button>
+                    </div>
+                    <div class="fluid-card">
+                        <h3>流體卡片 2</h3>
+                        <p>測試響應式網格布局，在不同螢幕尺寸下會自動調整列數。</p>
+                        <input type="text" class="responsive-input demo-input" placeholder="響應式輸入框">
+                    </div>
+                    <div class="fluid-card">
+                        <h3>流體卡片 3</h3>
+                        <p>包含動畫效果的卡片，測試性能優化。</p>
+                        <div class="animation-demo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LocationManager 響應式測試 -->
+        <div class="test-section">
+            <h2 class="test-title">2. LocationManager 響應式測試</h2>
+            <div class="location-manager-mobile">
+                <div class="location-manager-container">
+                    <div class="location-manager-card">
+                        <div class="location-section">
+                            <div class="current-location-display">
+                                <div class="current-location-content">
+                                    <div class="current-location-icon">📍</div>
+                                    <div class="current-location-text">
+                                        <div class="current-location-label">當前位置</div>
+                                        <div class="current-location-address">台南市中西區中山路123號</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="location-section">
+                            <div class="quick-location-buttons">
+                                <div class="quick-buttons-container">
+                                    <button class="quick-location-btn bg-gray-500">
+                                        <div class="quick-btn-icon">🏠</div>
+                                        <div class="quick-btn-text">住家</div>
+                                    </button>
+                                    <button class="quick-location-btn bg-orange-500">
+                                        <div class="quick-btn-icon">💼</div>
+                                        <div class="quick-btn-text">公司</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="location-section">
+                            <div class="address-input-container">
+                                <div class="address-input-wrapper">
+                                    <div class="address-input-icon">🔍</div>
+                                    <input type="text" class="address-input-field" placeholder="輸入地址或地標">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="location-section location-section-last">
+                            <div class="location-actions">
+                                <div class="location-actions-container">
+                                    <button class="location-action-btn btn-primary">
+                                        <div class="location-btn-content">
+                                            <div class="location-btn-icon">📍</div>
+                                            <div class="location-btn-text">自動定位</div>
+                                        </div>
+                                    </button>
+                                    <button class="location-action-btn btn-success">
+                                        <div class="location-btn-content">
+                                            <div class="location-btn-icon">⏰</div>
+                                            <div class="location-btn-text">手動定位</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SearchSettings 響應式測試 -->
+        <div class="test-section">
+            <h2 class="test-title">3. SearchSettings 響應式測試</h2>
+            <div class="garmin-distance-control">
+                <div class="distance-display">
+                    <span class="distance-value">1.5</span>
+                    <span class="distance-label">公里範圍</span>
+                </div>
+                
+                <div class="unit-switcher">
+                    <button class="unit-button active">公里</button>
+                    <button class="unit-button">英里</button>
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-track">
+                        <div class="slider-progress" style="--progress: 30%;"></div>
+                        <input type="range" class="garmin-slider" min="1" max="10" value="3">
+                    </div>
+                </div>
+                
+                <div class="meal-time-selector-grid">
+                    <div class="meal-time-row">
+                        <button class="meal-time-button">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">🌅</div>
+                                <div class="meal-time-label">早餐</div>
+                                <div class="meal-time-time">06:00-10:00</div>
+                            </div>
+                        </button>
+                        <button class="meal-time-button selected">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">☀️</div>
+                                <div class="meal-time-label">午餐</div>
+                                <div class="meal-time-time">11:00-14:00</div>
+                            </div>
+                        </button>
+                        <button class="meal-time-button">
+                            <div class="meal-time-button-content">
+                                <div class="meal-time-icon">🌙</div>
+                                <div class="meal-time-label">晚餐</div>
+                                <div class="meal-time-time">17:00-21:00</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 懶載入測試 -->
+        <div class="test-section">
+            <h2 class="test-title">4. 懶載入和性能測試</h2>
+            <div class="test-grid">
+                <div class="lazy-load-demo lazy-load" data-content="懶載入內容 1">載入中...</div>
+                <div class="lazy-load-demo lazy-load" data-content="懶載入內容 2">載入中...</div>
+                <div class="lazy-load-demo lazy-load" data-content="懶載入內容 3">載入中...</div>
+                <div class="lazy-load-demo lazy-load" data-content="懶載入內容 4">載入中...</div>
+            </div>
+        </div>
+        
+        <!-- 記憶體使用測試 -->
+        <div class="test-section">
+            <h2 class="test-title">5. 記憶體使用監控</h2>
+            <div>
+                <p>記憶體使用量:</p>
+                <div class="memory-usage-bar">
+                    <div class="memory-usage-fill" id="memoryUsageFill" style="width: 0%;"></div>
+                </div>
+                <p id="memoryDetails">載入中...</p>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="demo-button" onclick="createMemoryLoad()">創建記憶體負載</button>
+                <button class="demo-button" onclick="cleanupMemory()">清理記憶體</button>
+                <button class="demo-button" onclick="runPerformanceTest()">運行性能測試</button>
+                <button class="demo-button" onclick="runValidation()">運行完整驗證</button>
+            </div>
+        </div>
+        
+        <!-- 觸控回饋測試 -->
+        <div class="test-section">
+            <h2 class="test-title">6. 觸控回饋測試</h2>
+            <div class="test-grid">
+                <button class="demo-button touch-feedback">觸控回饋按鈕 1</button>
+                <button class="demo-button touch-feedback">觸控回饋按鈕 2</button>
+                <button class="demo-button touch-feedback">觸控回饋按鈕 3</button>
+                <button class="demo-button touch-feedback">觸控回饋按鈕 4</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入腳本 -->
+    <script src="../utils/performanceMonitor.js"></script>
+    <script src="../utils/responsiveLayoutManager.js"></script>
+    <script src="validate-responsive-performance-optimization.js"></script>
+    
+    <script>
+        // 測試變數
+        let memoryLoadArray = [];
+        let testStartTime = performance.now();
+        
+        // 初始化測試
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 開始響應式布局和性能優化測試');
+            
+            // 初始化響應式布局管理器
+            initializeResponsiveTest();
+            
+            // 初始化性能監控
+            initializePerformanceTest();
+            
+            // 初始化懶載入測試
+            initializeLazyLoadTest();
+            
+            // 開始定期更新統計
+            setInterval(updateStats, 1000);
+            
+            console.log('✅ 測試初始化完成');
+        });
+        
+        // 初始化響應式測試
+        function initializeResponsiveTest() {
+            // 監聽斷點變化
+            window.ResponsiveLayoutManager.onBreakpointChange((oldBp, newBp) => {
+                console.log(`📱 斷點變化: ${oldBp} → ${newBp}`);
+                updateViewportInfo();
+            });
+            
+            // 監聽方向變化
+            window.ResponsiveLayoutManager.onOrientationChange((orientation) => {
+                console.log(`🔄 方向變化: ${orientation}`);
+                updateViewportInfo();
+            });
+            
+            // 監聽尺寸變化
+            window.ResponsiveLayoutManager.onResize((state) => {
+                updateViewportInfo();
+            });
+            
+            // 初始更新
+            updateViewportInfo();
+        }
+        
+        // 初始化性能測試
+        function initializePerformanceTest() {
+            // 觀察所有懶載入元素
+            document.querySelectorAll('.lazy-load').forEach(element => {
+                window.PerformanceMonitor.observeElement(element);
+            });
+            
+            // 觀察所有響應式元素
+            document.querySelectorAll('.responsive-container, .fluid-card, .responsive-grid').forEach(element => {
+                window.PerformanceMonitor.observeElement(element);
+            });
+        }
+        
+        // 初始化懶載入測試
+        function initializeLazyLoadTest() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        setTimeout(() => {
+                            element.textContent = element.dataset.content;
+                            element.classList.add('loaded');
+                            observer.unobserve(element);
+                        }, 500);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.lazy-load').forEach(element => {
+                observer.observe(element);
+            });
+        }
+        
+        // 更新視窗資訊
+        function updateViewportInfo() {
+            const state = window.ResponsiveLayoutManager.getCurrentState();
+            const breakpointIndicator = document.getElementById('breakpointIndicator');
+            const viewportDetails = document.getElementById('viewportDetails');
+            
+            breakpointIndicator.textContent = state.breakpoint.toUpperCase();
+            viewportDetails.textContent = 
+                `${state.viewportWidth}×${state.viewportHeight} | ${state.orientation} | ` +
+                `${state.isTouchDevice ? '觸控' : '非觸控'}設備`;
+        }
+        
+        // 更新統計資訊
+        function updateStats() {
+            const report = window.PerformanceMonitor.getPerformanceReport();
+            
+            // 更新FPS
+            document.getElementById('fpsDisplay').textContent = 
+                report.frameRate.current || '--';
+            
+            // 更新記憶體
+            const memory = report.memory.current;
+            if (memory) {
+                document.getElementById('memoryDisplay').textContent = 
+                    `${memory.used}MB (${memory.percentage}%)`;
+                
+                document.getElementById('memoryDetails').textContent = 
+                    `已使用: ${memory.used}MB / 總計: ${memory.total}MB`;
+                
+                document.getElementById('memoryUsageFill').style.width = 
+                    `${memory.percentage}%`;
+            }
+            
+            // 更新載入時間
+            document.getElementById('loadTimeDisplay').textContent = 
+                `${report.loadTimes.average.toFixed(1)}ms`;
+        }
+        
+        // 創建記憶體負載
+        function createMemoryLoad() {
+            console.log('🔧 創建記憶體負載...');
+            
+            for (let i = 0; i < 1000; i++) {
+                memoryLoadArray.push(new Array(1000).fill(Math.random()));
+            }
+            
+            console.log(`📊 已創建 ${memoryLoadArray.length} 個記憶體物件`);
+        }
+        
+        // 清理記憶體
+        function cleanupMemory() {
+            console.log('🧹 清理記憶體...');
+            
+            memoryLoadArray = [];
+            
+            // 強制垃圾回收（如果可用）
+            if (window.gc) {
+                window.gc();
+            }
+            
+            console.log('✅ 記憶體清理完成');
+        }
+        
+        // 運行性能測試
+        function runPerformanceTest() {
+            console.log('🚀 開始性能測試...');
+            
+            const startTime = performance.now();
+            
+            // 創建大量DOM元素
+            const container = document.createElement('div');
+            for (let i = 0; i < 100; i++) {
+                const element = document.createElement('div');
+                element.className = 'demo-card';
+                element.textContent = `測試元素 ${i}`;
+                container.appendChild(element);
+            }
+            
+            // 測量DOM操作時間
+            const domTime = performance.now() - startTime;
+            
+            // 測量動畫性能
+            const animationStart = performance.now();
+            container.style.transform = 'translateX(100px)';
+            container.style.transition = 'transform 1s ease';
+            
+            setTimeout(() => {
+                const animationTime = performance.now() - animationStart;
+                
+                console.log(`📊 性能測試結果:`);
+                console.log(`  DOM操作時間: ${domTime.toFixed(2)}ms`);
+                console.log(`  動畫時間: ${animationTime.toFixed(2)}ms`);
+                
+                // 清理測試元素
+                container.remove();
+            }, 1000);
+        }
+        
+        // 測試觸控回饋
+        document.querySelectorAll('.touch-feedback').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                console.log('👆 觸控開始');
+            });
+            
+            button.addEventListener('touchend', function() {
+                console.log('👆 觸控結束');
+            });
+        });
+        
+        // 測試鍵盤導航
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                console.log('⌨️ Tab導航');
+            }
+        });
+        
+        // 測試滾動性能
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                console.log('📜 滾動結束');
+            }, 100);
+        });
+        
+        // 測試視窗聚焦/失焦
+        window.addEventListener('focus', function() {
+            console.log('👁️ 視窗聚焦');
+        });
+        
+        window.addEventListener('blur', function() {
+            console.log('👁️ 視窗失焦');
+        });
+        
+        // 輸出測試報告
+        function generateTestReport() {
+            const report = {
+                testDuration: performance.now() - testStartTime,
+                performanceReport: window.PerformanceMonitor.getPerformanceReport(),
+                responsiveState: window.ResponsiveLayoutManager.getCurrentState(),
+                memoryUsage: memoryLoadArray.length,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('📋 測試報告:', report);
+            return report;
+        }
+        
+        // 運行完整驗證
+        function runValidation() {
+            console.log('🧪 手動觸發完整驗證...');
+            const validator = new ResponsivePerformanceValidator();
+            validator.validate();
+        }
+        
+        // 5分鐘後自動生成報告
+        setTimeout(() => {
+            console.log('⏰ 自動生成測試報告');
+            generateTestReport();
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
