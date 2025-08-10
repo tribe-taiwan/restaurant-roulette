@@ -91,6 +91,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 預載入池管理
     const [preloadedImages, setPreloadedImages] = React.useState(new Map());
+    const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState(0);
     
     // 動畫配置狀態
     const [animationConfig, setAnimationConfig] = React.useState(null);
@@ -301,6 +302,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // 顯示動態預載入池狀態
           const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
           console.log(`🔄 預載入池: ${newPool.size}張圖片，範圍${maxRange}家(±${halfRange})，可用${availableFutureRestaurants}家 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
+
+          // 🎯 更新可用餐廳數量狀態
+          setAvailableRestaurantsCount(availableFutureRestaurants);
+
           return newPool;
         });
 
@@ -769,8 +774,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         } else if (animationPhase !== 'slot_apiWaiting') {
           // =====================================
-          // 情況：首次開始轉動 → 立即進入API等待模式
+          // 情況：檢查預載入池狀態，決定是否需要API等待模式
           // =====================================
+
+          // 🎯 關鍵修復：直接檢查預載入池的實際狀態
+          const hasAvailableRestaurants = Array.from(preloadedImages.values())
+            .some(item => item && item.isAvailable === true);
+
+          if (hasAvailableRestaurants) {
+            // 預載入池有可用餐廳，不需要觸發老虎機
+            const availableCount = Array.from(preloadedImages.values())
+              .filter(item => item && item.isAvailable === true).length;
+            console.log(`✅ 預載入池有${availableCount}家可用餐廳，跳過老虎機動畫`);
+            setAnimationPhase('idle');
+            return;
+          }
+
           console.log('⚡ 啟動slot_apiWaiting模式 - 等待API返回中...');
           
           requestAnimationFrame(() => {
@@ -1004,7 +1023,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 style={{
                   backgroundImage: (() => {
                     if (finalRestaurant && finalRestaurant.image) {
-                      console.log('🔧 [DEBUG] 使用餐廳圖片:', finalRestaurant.image);
+                      // console.log('🔧 [DEBUG] 使用餐廳圖片:', finalRestaurant.image);
                       // 添加 fallback 圖片以防載入失敗
                       const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
                       return `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image}), url(${fallbackUrl})`;
