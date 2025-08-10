@@ -147,76 +147,147 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     };
 
-    // 預載入池管理 - 套用測試版本成功經驗：維持5張圖片
-    const managePreloadPool = React.useCallback((currentRestaurant, restaurantHistory = []) => {
+    // 預載入池管理 - 保持原有邏輯，但讓圖片攜帶餐廳信息
+    const managePreloadPool = React.useCallback(async (currentRestaurant, restaurantHistory = []) => {
+      try {
+        // 獲取可用餐廳（異步）
+        const cachedRestaurants = window.getAvailableRestaurantsFromCache ?
+          await window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
 
-      setPreloadedImages(prevPool => {
-        const newPool = new Map();
-        
-        // 無限滑動：維持當前餐廳前後各10張，總共21張
-        const allRestaurants = [...restaurantHistory, currentRestaurant].filter(Boolean);
-        const currentIndex = allRestaurants.length - 1; // 當前餐廳在歷史的最後
-        
-        // 預載入範圍：前10家（歷史）+ 當前 + 後10家（候補）
-        let skippedNegativeCount = 0;
-        for (let offset = -10; offset <= 10; offset++) {
-          const index = currentIndex + offset;
-          
-          // 跳過負數索引（統計數量）
-          if (index < 0) {
-            skippedNegativeCount++;
-            continue;
-          }
-          
-          let restaurant = null;
-          if (index < allRestaurants.length) {
-            // 從歷史中獲取
-            restaurant = allRestaurants[index];
-          } else if (window.getAvailableRestaurantsFromCache && selectedMealTime) {
-            // 從快取中獲取候補餐廳
-            const cachedRestaurants = window.getAvailableRestaurantsFromCache(selectedMealTime);
-            const futureIndex = index - allRestaurants.length;
-            
-            // 過濾掉已顯示過的餐廳
-            const availableCandidates = cachedRestaurants.filter(cached => {
-              return !allRestaurants.some(existing => existing.id === cached.id);
-            });
-            
-            if (futureIndex < availableCandidates.length) {
-              restaurant = availableCandidates[futureIndex];
+        setPreloadedImages(prevPool => {
+          const newPool = new Map();
+
+          // 無限滑動：維持當前餐廳前後各10張，總共21張
+          const allRestaurants = [...restaurantHistory, currentRestaurant].filter(Boolean);
+          const currentIndex = allRestaurants.length - 1; // 當前餐廳在歷史的最後
+
+          // 🎯 關鍵：計算預載入池中實際可用的未來餐廳數量
+          let availableFutureRestaurants = 0;
+
+          // 預載入範圍：前10家（歷史）+ 當前 + 後10家（候補）
+          let skippedNegativeCount = 0;
+          for (let offset = -10; offset <= 10; offset++) {
+            const index = currentIndex + offset;
+
+            // 跳過負數索引（統計數量）
+            if (index < 0) {
+              skippedNegativeCount++;
+              continue;
             }
-          }
-          
-          if (restaurant?.image) {
-            const url = restaurant.image;
-            
-            // 保留已存在的圖片或預載入新圖片
-            if (prevPool.has(url)) {
-              newPool.set(url, prevPool.get(url));
+
+            let restaurant = null;
+            let isAvailable = false;
+
+            if (index < allRestaurants.length) {
+              // 從歷史中獲取
+              restaurant = allRestaurants[index];
+              isAvailable = false; // 歷史餐廳不算可用
             } else {
-              // 標記需要預載入，但不等待
-              preloadImage(url).then(img => {
-                setPreloadedImages(current => new Map(current).set(url, img));
-              }).catch(error => {
-                console.warn(`❌ 預載入失敗 (${restaurant.name}):`, error.message);
-                // 載入失敗時使用 fallback 圖片
-                const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
-                preloadImage(fallbackUrl).then(fallbackImg => {
-                  setPreloadedImages(current => new Map(current).set(url, fallbackImg));
-                }).catch(() => {
-                  console.warn(`❌ Fallback 圖片也載入失敗 (${restaurant.name})`);
-                });
+              // 從快取中獲取候補餐廳
+              const futureIndex = index - allRestaurants.length;
+
+              // 過濾掉已顯示過的餐廳
+              const availableCandidates = cachedRestaurants.filter(cached => {
+                return !allRestaurants.some(existing => existing.id === cached.id);
               });
+
+              if (futureIndex < availableCandidates.length) {
+                restaurant = availableCandidates[futureIndex];
+                isAvailable = true; // 未來餐廳算可用
+                availableFutureRestaurants++;
+              }
+            }
+
+            if (restaurant?.image) {
+              const url = restaurant.image;
+
+              // 保持原有的預載入池結構，但值包含餐廳信息
+              if (prevPool.has(url)) {
+                // 更新餐廳可用狀態
+                const existingItem = prevPool.get(url);
+                newPool.set(url, {
+                  ...existingItem,
+                  restaurant: restaurant,
+                  isAvailable: isAvailable
+                });
+              } else {
+                // 創建新的預載入項目
+                const poolItem = {
+                  imageObject: null, // 將異步載入
+                  restaurant: restaurant,
+                  isAvailable: isAvailable
+                };
+                newPool.set(url, poolItem);
+
+                // 異步預載入圖片，保持原有邏輯
+                preloadImage(url).then(img => {
+                  setPreloadedImages(current => {
+                    const updated = new Map(current);
+                    if (updated.has(url)) {
+                      updated.set(url, {
+                        ...updated.get(url),
+                        imageObject: img
+                      });
+                    }
+                    return updated;
+                  });
+                }).catch(error => {
+                  console.warn(`❌ 預載入失敗 (${restaurant.name}):`, error.message);
+                  // 載入失敗時使用 fallback 圖片
+                  const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+                  preloadImage(fallbackUrl).then(fallbackImg => {
+                    setPreloadedImages(current => {
+                      const updated = new Map(current);
+                      if (updated.has(url)) {
+                        updated.set(url, {
+                          ...updated.get(url),
+                          imageObject: fallbackImg
+                        });
+                      }
+                      return updated;
+                    });
+                  }).catch(() => {
+                    console.warn(`❌ Fallback 圖片也載入失敗 (${restaurant.name})`);
+                  });
+                });
+              }
             }
           }
-        }
-        
-        // 一行總結顯示預載入池狀態
-        const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
-        console.log(`🔄 預載入池: ${newPool.size}張 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
-        return newPool;
-      });
-    }, [selectedMealTime]);
+
+          // 🎯 關鍵修復：基於預載入池的實際可用餐廳數量觸發幕後補充
+          const BACKGROUND_REFILL_THRESHOLD = 10; // 預載入池剩餘10家時觸發幕後補充
+
+          if (availableFutureRestaurants <= BACKGROUND_REFILL_THRESHOLD && availableFutureRestaurants > 0 && userLocation) {
+            console.log(`🔔 預載入池不足警告: 剩餘${availableFutureRestaurants}家可用餐廳，觸發幕後補充`);
+
+            // 幕後觸發API搜索，不影響用戶體驗，不觸發老虎機
+            setTimeout(async () => {
+              try {
+                if (window.getRandomRestaurant) {
+                  console.log('🔄 開始幕後補充餐廳...');
+                  await window.getRandomRestaurant(userLocation, selectedMealTime, {
+                    baseUnit: 1000,
+                    unitMultiplier: 2,
+                    backgroundRefill: true // 標記為幕後補充，不觸發老虎機
+                  });
+                  console.log('✅ 幕後餐廳補充完成');
+                }
+              } catch (error) {
+                console.warn('⚠️ 幕後餐廳補充失敗:', error.message);
+              }
+            }, 200); // 延遲200ms執行，避免阻塞UI
+          }
+
+          // 保持原有的日誌格式，但添加可用餐廳數量
+          const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
+          console.log(`🔄 預載入池: ${newPool.size}張圖片，${availableFutureRestaurants}家可用餐廳 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
+          return newPool;
+        });
+
+      } catch (error) {
+        console.warn('❌ 預載入池管理失敗:', error.message);
+      }
+    }, [selectedMealTime, userLocation]);
 
     // 保存當前餐廳資料用於滑動轉場
     const [currentRestaurantData, setCurrentRestaurantData] = React.useState(null);
@@ -337,16 +408,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 監聽立即餐廳變更事件 - 套用測試檔成功邏輯
     React.useEffect(() => {
-      const handleRestaurantChanged = (event) => {
+      const handleRestaurantChanged = async (event) => {
         const { restaurant, history } = event.detail;
         console.log('🎯 [SlotMachine] 立即響應餐廳變更:', restaurant.name);
-        
-        // 立即管理預載入池 - 同步測試檔邏輯
-        managePreloadPool(restaurant, history);
+
+        // 立即管理預載入池 - 異步處理
+        await managePreloadPool(restaurant, history);
       };
 
       window.addEventListener('restaurantChanged', handleRestaurantChanged);
-      
+
       return () => {
         window.removeEventListener('restaurantChanged', handleRestaurantChanged);
       };
