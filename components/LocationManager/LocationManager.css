@@ -60,14 +60,15 @@
 /* 功能區塊分隔 */
 .location-section {
   padding: var(--fluid-spacing-xl);
-  border-bottom: 1px solid var(--border-color);
-  
+  /* 移除所有邊框 - 不要白線 */
+  border-bottom: none;
+
   /* 確保每個區塊都有足夠的觸控空間 */
   min-height: var(--touch-target-min);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  
+
   /* 性能優化 */
   contain: layout;
 }
@@ -158,9 +159,10 @@
   .location-manager-card {
     border: 2px solid var(--text-primary);
   }
-  
+
   .location-section {
-    border-bottom-width: 2px;
+    /* 移除邊框 - 不要白線 */
+    border-bottom: none;
   }
 }
 

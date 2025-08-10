@@ -102,7 +102,7 @@ function SearchSettings({
 
   return React.createElement('div', {
     ref: containerRef,
-    className: 'search-settings-container'
+    className: 'w-full max-w-2xl mx-auto glow-container rounded-lg'
   });
 }
 
