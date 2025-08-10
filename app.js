@@ -145,21 +145,6 @@ function App() {
       }
     }, [selectedLanguage]);
 
-    // 語言切換時重新計算餐廳營業狀態
-    React.useEffect(() => {
-      if (currentRestaurant && currentRestaurant.operatingStatus && window.getBusinessStatus) {
-        try {
-          // 重新計算營業狀態以支援多國語言
-          // 注意：這裡無法獲取到原始的 opening_hours 資料，所以只能更新訊息格式
-          console.log(`🌐 語言切換: ${selectedLanguage}`);
-          
-          // 暫時保留原始狀態，理想情況下需要重新調用 getBusinessStatus
-          // 但由於沒有 opening_hours 數據，先保持原狀
-        } catch (error) {
-          console.warn('⚠️ 重新計算營業狀態失敗:', error);
-        }
-      }
-    }, [selectedLanguage, currentRestaurant]);
 
 
 

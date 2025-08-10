@@ -821,7 +821,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         // =====================================
         // 情況：停止轉動 → 停止所有動畫
         // =====================================
-        console.log('🛑 停止動畫 - 回到靜止狀態');
+        // console.log('🛑 停止動畫 - 回到靜止狀態');
         setAnimationPhase('idle');
         setApiWaitingLevel(1);
         setScrollingNames([]);
