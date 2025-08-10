@@ -166,9 +166,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             return !allRestaurants.some(existing => existing.id === cached.id);
           }).length;
 
-          // 動態計算預載入範圍：最少21張，最多200張
+          // 動態計算預載入範圍：智能調整
           const minRange = 21;
-          const maxRange = Math.min(Math.max(totalAvailableCount + allRestaurants.length, minRange), 200);
+          const defaultRangeWhenEmpty = 50; // 當快取為空時使用較大的默認範圍
+
+          let maxRange;
+          if (totalAvailableCount === 0) {
+            // 快取為空時（如搜索條件變化），使用較大的默認範圍為新餐廳預留空間
+            maxRange = Math.min(defaultRangeWhenEmpty, 200);
+            console.log(`🔄 快取為空，使用默認預載入範圍: ${maxRange}家`);
+          } else {
+            // 有可用餐廳時，基於實際數量動態調整
+            maxRange = Math.min(Math.max(totalAvailableCount + allRestaurants.length, minRange), 200);
+          }
           const halfRange = Math.floor(maxRange / 2);
 
           // 🎯 關鍵：計算預載入池中實際可用的未來餐廳數量

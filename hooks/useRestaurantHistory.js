@@ -4,19 +4,58 @@
  */
 function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
   const [restaurantHistory, setRestaurantHistory] = React.useState([]);
-  
+  const [previousLocation, setPreviousLocation] = React.useState(null);
+
   const { selectedMealTime, baseUnit, unitMultiplier, userLocation } = searchParams;
 
-  // 搜索條件變化時清除餐廳歷史記錄
+  // 只有用餐時段變化時才清除餐廳歷史記錄（搜尋半徑變化不清除）
   React.useEffect(() => {
     if (window.clearRestaurantHistory && !isInitialLoad) {
-      const actualRadius = baseUnit * unitMultiplier;
-      console.log(`🔄 搜索條件變化，清除餐廳歷史記錄 (${selectedMealTime}, ${actualRadius}m)`);
+      console.log(`🔄 用餐時段變化，清除餐廳歷史記錄 (${selectedMealTime})`);
       window.clearRestaurantHistory();
       // 同時清除本地餐廳歷史記錄
       setRestaurantHistory([]);
     }
-  }, [selectedMealTime, baseUnit, unitMultiplier, userLocation, isInitialLoad]);
+  }, [selectedMealTime, isInitialLoad]); // 🎯 移除 baseUnit, unitMultiplier 依賴
+
+  // 位置變更時清除餐廳歷史記錄
+  React.useEffect(() => {
+    if (userLocation && !isInitialLoad) {
+      let shouldClear = false;
+      let reason = '';
+
+      if (!previousLocation) {
+        // 第一次GPS定位 = 用戶手動輸入位置 = 應該清除餐廳歷史
+        shouldClear = true;
+        reason = '首次定位完成';
+      } else {
+        // 計算兩個位置之間的距離
+        const distance = calculateDistance(
+          previousLocation.lat, previousLocation.lng,
+          userLocation.lat, userLocation.lng
+        );
+
+        // 如果距離超過5公里，認為是有意義的地點變更，清除餐廳歷史
+        if (distance > 5000) { // 5公里
+          shouldClear = true;
+          reason = `地點變更超過5km (${Math.round(distance/1000)}km)`;
+        }
+      }
+
+      if (shouldClear) {
+        console.log(`🔄 ${reason}，清除餐廳歷史記錄`);
+        if (window.clearRestaurantHistory) {
+          window.clearRestaurantHistory();
+          setRestaurantHistory([]);
+        }
+      }
+    }
+
+    // 更新前一個位置
+    if (userLocation) {
+      setPreviousLocation(userLocation);
+    }
+  }, [userLocation, isInitialLoad]);
 
   // 當前餐廳變化時添加到歷史記錄
   React.useEffect(() => {
