@@ -44,10 +44,10 @@
   transform: var(--hover-scale);
 }
 
-/* 大型距離顯示 - 支援品牌主題 */
+/* 大型距離顯示 - 支援品牌主題 remo */
 .distance-display {
   text-align: center;
-  margin-bottom: var(--fluid-spacing-xl);
+  margin-bottom: var(--fluid-spacing-lg);
   padding: var(--fluid-spacing-lg);
   background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
   border-radius: var(--unified-border-radius);
@@ -287,13 +287,13 @@
 .meal-time-selector-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md); /* remo 按鈕水平間距 */
   margin-bottom: var(--spacing-xl);
 }
 
 .meal-time-row {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md); /* remo 按鈕垂直間距 */
   justify-content: center;
 }
 

@@ -59,8 +59,8 @@
 
 /* 功能區塊分隔 */
 .location-section {
-  padding: var(--fluid-spacing-xl);
-  /* 移除所有邊框 - 不要白線 */
+  padding: var(--fluid-spacing-md);
+  /* 移除所有邊框 - 不要白線 remo */
   border-bottom: none;
 
   /* 確保每個區塊都有足夠的觸控空間 */
