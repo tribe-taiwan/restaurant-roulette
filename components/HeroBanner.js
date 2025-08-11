@@ -97,7 +97,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
         WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.12)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        margin: '20px',
+        margin: '0', // 移除margin，左右到底
         borderRadius: '0', // 直角設計
         transition: 'all 0.3s ease'
       }}

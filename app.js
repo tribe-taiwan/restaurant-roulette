@@ -584,19 +584,20 @@ function App() {
             />
           )}
 
-          {/* 主要內容區域 - 清晰功能設計 */}
+          {/* 主要內容區域 - 加深黑色半透明設計 */}
           <div
-            className="max-w-6xl mx-auto px-6 gpu-accelerated"
+            className="w-full gpu-accelerated"
             style={{
-              background: 'rgba(0, 0, 0, 0.25)',
-              margin: '40px 20px 20px 20px', // 與banner保持間隔
+              background: 'rgba(0, 0, 0, 0.6)', // 加深黑色半透明
+              marginTop: '40px', // 與banner保持間隔
               padding: '30px',
               borderRadius: '0', // 直角設計
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              border: 'none', // 移除邊框
               boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
               transition: 'all 0.3s ease'
             }}
           >
+            <div className="max-w-6xl mx-auto px-6">
 
             {/* Slot Machine */}
             <div className="flex justify-center mb-8">
@@ -667,15 +668,16 @@ function App() {
             unitMultiplier={unitMultiplier}
             setUnitMultiplier={setUnitMultiplier}
           />
+            </div>
           </div>
 
-          {/* Footer - 簡潔設計 */}
+          {/* Footer - 左右到底設計 */}
           <footer
             className="mt-16 py-8"
             style={{
-              background: 'rgba(0, 0, 0, 0.15)',
+              background: 'rgba(0, 0, 0, 0.4)', // 加深背景
               borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-              margin: '20px 20px 0 20px',
+              margin: '0', // 左右到底，不留間隔
               borderRadius: '0' // 直角設計
             }}
           >
