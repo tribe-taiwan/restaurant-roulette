@@ -17,7 +17,7 @@
   
   /* 使用統一設計系統 - 注意背景圖片不使用圓角 */
   border-radius: 0; /* 背景圖片容器不使用圓角 */
-  box-shadow: var(--theme-shadow-lg); /* 保持統一陰影 */
+  box-shadow: none; /* 移除陰影，避免產生邊框線 */
   overflow: hidden;
   
   /* 響應式高度 */
