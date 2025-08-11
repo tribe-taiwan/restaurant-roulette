@@ -676,7 +676,7 @@ async function getPlaceDetails(placeId, language = 'zh-TW') {
     
     const request = {
       placeId: placeId,
-      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url', 'utc_offset_minutes'],
+      fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'price_level', 'url', 'utc_offset_minutes', 'business_status'],
       language: language
     };
     
@@ -1057,7 +1057,7 @@ function updateRestaurantCache(restaurants) {
               periods: restaurant.detailsCache.opening_hours.periods,
               weekday_text: restaurant.detailsCache.opening_hours.weekday_text
               // 注意：不存儲 isOpen 函數，因為函數無法序列化到 localStorage
-              // 不包含已棄用的 open_now, utc_offset 等屬性
+              // 注意：不存儲 isOpen 函數，因為函數無法序列化到 localStorage
             } : null,
             utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes
           } : null

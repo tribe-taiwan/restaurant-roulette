@@ -360,16 +360,51 @@
     <script type="text/babel" src="components/Translations.js"></script>
     <script type="text/babel" src="components/HeroBanner.js"></script>
     <script type="text/babel" src="components/LocationService.js"></script>
-    <script type="text/babel" src="app.js"></script>
-
+    
+    <!-- 過時API檢查工具 -->
+    <script src="utils/deprecatedApiChecker.js"></script>
+    
     <script>
-      // 初始化主題系統
-      document.addEventListener('DOMContentLoaded', function() {
+      // 過時API檢查 - 在應用啟動前執行
+      document.addEventListener('DOMContentLoaded', async function() {
+        try {
+          // 檢查是否已經在當前會話中忽略警告
+          const isIgnoredInSession = sessionStorage.getItem('deprecated_api_warning_ignored_session');
+          if (isIgnoredInSession) {
+            console.log('⚠️ 過時API警告已在當前會話中被忽略，跳過檢查');
+          } else {
+            console.log('🔍 執行過時API檢查...');
+            
+            const checkResult = await window.DeprecatedApiChecker.performFullCheck();
+            
+            if (checkResult.hasIssues) {
+              // 發現問題，重定向到警告頁面
+              console.error('❌ 發現過時API語法，重定向到警告頁面');
+              console.error('問題摘要:', checkResult.summary);
+              
+              // 儲存檢查結果供警告頁面使用
+              sessionStorage.setItem('deprecated_api_check_result', JSON.stringify(checkResult));
+              
+              // 重定向到警告頁面
+              window.location.href = './deprecated-api-warning.html';
+              return; // 阻止應用繼續載入
+            } else {
+              console.log('✅ 過時API檢查通過，繼續啟動應用');
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ 過時API檢查失敗，繼續啟動應用:', error);
+        }
+        
+        // 初始化主題系統
         if (window.ThemeManager) {
           window.ThemeManager.init();
           console.log('🎨 主題系統已初始化');
         }
       });
     </script>
+    
+    <!-- 主應用程式 - 在檢查通過後才會執行 -->
+    <script type="text/babel" src="app.js"></script>
 </body>
 </html>

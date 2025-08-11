@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ 過時API警告 - 餐廳轉盤</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .warning-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            animation: shake 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0px) }
+            100% { transform: translateX(2px) }
+        }
+        
+        .warning-header {
+            background: #ff4757;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .warning-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.1) 10px,
+                rgba(255,255,255,0.1) 20px
+            );
+            animation: stripes 2s linear infinite;
+        }
+        
+        @keyframes stripes {
+            0% { transform: translateX(-20px) }
+            100% { transform: translateX(20px) }
+        }
+        
+        .warning-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .warning-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .warning-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .warning-content {
+            padding: 40px;
+        }
+        
+        .issue-summary {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .issue-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-bottom: 15px;
+        }
+        
+        .severity-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .severity-high {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .severity-medium {
+            background: #ffa502;
+            color: white;
+        }
+        
+        .severity-low {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .issues-detail {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .issue-item {
+            background: white;
+            border-left: 4px solid #e53e3e;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .issue-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .issue-description {
+            color: #4a5568;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .issue-location {
+            background: #edf2f7;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #ff3742;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffa502;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #ff9500;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #26d068;
+            transform: translateY(-2px);
+        }
+        
+        .developer-note {
+            background: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            font-style: italic;
+            color: #4a5568;
+        }
+        
+        .developer-note code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .disable-instructions {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-style: normal;
+        }
+        
+        .blinking {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="warning-container">
+        <div class="warning-header">
+            <div class="warning-icon">⚠️🚨</div>
+            <div class="warning-title blinking">過時API檢測警告</div>
+            <div class="warning-subtitle">發現AI生成的過時Google Places API語法</div>
+        </div>
+        
+        <div class="warning-content">
+            <div class="issue-summary">
+                <div class="issue-count" id="issue-count">正在掃描...</div>
+                <div id="severity-badges"></div>
+            </div>
+            
+            <div class="issues-detail" id="issues-detail">
+                <div style="text-align: center; color: #718096;">
+                    🔍 正在掃描代碼中的過時API語法...
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-danger" onclick="copyDetailedReport()">
+                    📋 複製詳細報告
+                </button>
+                <button class="btn btn-warning" onclick="forceIgnoreWarning()">
+                    ⚠️ 忽略警告 (不建議)
+                </button>
+                <button class="btn btn-success" onclick="recheckCode()">
+                    🔄 重新檢查
+                </button>
+            </div>
+            
+            <div class="developer-note">
+                <strong>給開發者的提醒：</strong><br>
+                這個警告是為了防止AI助手寫入Google Places API的過時語法。
+                建議立即修復這些問題，以確保應用程式的長期穩定性。
+                常見的過時語法包括：open_now、permanently_closed、utc_offset 等。
+                
+                <div class="disable-instructions">
+                    <strong>🛠️ 如何永久關閉此檢查：</strong><br>
+                    1. 編輯檔案：<code>utils/deprecatedApiChecker.js</code><br>  
+                    2. 修改第7行：<code>ENABLE_DEPRECATED_API_CHECK = true</code><br>
+                    3. 改為：<code>ENABLE_DEPRECATED_API_CHECK = false</code><br>
+                    4. 儲存檔案並重新整理頁面
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./utils/deprecatedApiChecker.js"></script>
+    <script>
+        let currentCheckResult = null;
+        
+        // 頁面載入時自動執行檢查
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 先嘗試從 sessionStorage 讀取檢查結果
+            const savedResult = sessionStorage.getItem('deprecated_api_check_result');
+            if (savedResult) {
+                try {
+                    currentCheckResult = JSON.parse(savedResult);
+                    updateDisplay(currentCheckResult);
+                    return;
+                } catch (error) {
+                    console.warn('無法解析儲存的檢查結果:', error);
+                }
+            }
+            
+            // 如果沒有儲存的結果，執行新的檢查
+            await performCheck();
+        });
+        
+        async function performCheck() {
+            try {
+                currentCheckResult = await window.DeprecatedApiChecker.performFullCheck();
+                updateDisplay(currentCheckResult);
+                
+                // 儲存檢查結果
+                sessionStorage.setItem('deprecated_api_check_result', JSON.stringify(currentCheckResult));
+            } catch (error) {
+                console.error('檢查失敗:', error);
+                document.getElementById('issues-detail').innerHTML = 
+                    '<div style="color: #e53e3e; text-align: center;">❌ 檢查過程發生錯誤，請手動檢查代碼</div>';
+            }
+        }
+        
+        function updateDisplay(checkResult) {
+            const issueCountEl = document.getElementById('issue-count');
+            const severityBadgesEl = document.getElementById('severity-badges');
+            const issuesDetailEl = document.getElementById('issues-detail');
+            
+            if (!checkResult.hasIssues) {
+                // 沒有問題，3秒後自動跳轉
+                issueCountEl.textContent = '✅ 未發現過時API語法';
+                issueCountEl.style.color = '#2ed573';
+                issuesDetailEl.innerHTML = 
+                    '<div style="color: #2ed573; text-align: center;">🎉 代碼檢查通過！3秒後自動跳轉到主頁面...</div>';
+                
+                setTimeout(() => {
+                    window.location.href = './index.html';
+                }, 3000);
+                return;
+            }
+            
+            // 有問題，顯示詳細資訊
+            issueCountEl.textContent = `發現 ${checkResult.summary.totalIssues} 個過時API問題`;
+            
+            // 顯示嚴重性標籤
+            let badgesHtml = '';
+            if (checkResult.summary.severityCount.high > 0) {
+                badgesHtml += `<span class="severity-badge severity-high">高危險 ${checkResult.summary.severityCount.high} 個</span>`;
+            }
+            if (checkResult.summary.severityCount.medium > 0) {
+                badgesHtml += `<span class="severity-badge severity-medium">中等 ${checkResult.summary.severityCount.medium} 個</span>`;
+            }
+            if (checkResult.summary.severityCount.low > 0) {
+                badgesHtml += `<span class="severity-badge severity-low">輕微 ${checkResult.summary.severityCount.low} 個</span>`;
+            }
+            severityBadgesEl.innerHTML = badgesHtml;
+            
+            // 顯示問題詳細資訊
+            let detailHtml = '';
+            checkResult.issues.forEach(issue => {
+                detailHtml += `
+                    <div class="issue-item">
+                        <div class="issue-title">🚨 ${issue.pattern} (${issue.file})</div>
+                        <div class="issue-description">${issue.description}</div>
+                `;
+                
+                issue.locations.forEach(loc => {
+                    detailHtml += `<div class="issue-location">第${loc.line}行: ${loc.content}</div>`;
+                });
+                
+                detailHtml += '</div>';
+            });
+            issuesDetailEl.innerHTML = detailHtml;
+        }
+        
+        async function copyDetailedReport() {
+            if (!currentCheckResult) {
+                alert('❌ 沒有檢查結果可複製');
+                return;
+            }
+            
+            try {
+                const report = window.DeprecatedApiChecker.formatReport(currentCheckResult);
+                
+                // 生成適合貼給AI的格式化報告
+                const aiReport = `
+🚨 過時API檢測報告 🚨
+
+檢測到 ${currentCheckResult.summary.totalIssues} 個過時Google Places API問題：
+
+${currentCheckResult.summary.severityCount.high > 0 ? `🔴 高危險性: ${currentCheckResult.summary.severityCount.high} 個` : ''}
+${currentCheckResult.summary.severityCount.medium > 0 ? `🟡 中等危險性: ${currentCheckResult.summary.severityCount.medium} 個` : ''}
+${currentCheckResult.summary.severityCount.low > 0 ? `🟢 低危險性: ${currentCheckResult.summary.severityCount.low} 個` : ''}
+
+詳細問題列表：
+${currentCheckResult.issues.map(issue => 
+`
+檔案: ${issue.file}
+問題: ${issue.pattern} (${issue.matches}處)
+說明: ${issue.description}
+位置: ${issue.locations.map(loc => `第${loc.line}行: ${loc.content}`).join(', ')}
+`).join('\n')}
+
+請修復這些過時的Google Places API語法，確保應用程式的長期穩定性。
+
+常見修復方案：
+- open_now → 使用 opening_hours.isOpen() 或 business_status
+- permanently_closed → 使用 business_status  
+- utc_offset → 使用 utc_offset_minutes
+`;
+
+                // 複製到剪貼簿
+                await navigator.clipboard.writeText(aiReport);
+                
+                // 更新按鈕文字提示成功
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ 已複製！';
+                button.style.background = '#2ed573';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '#ff4757';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('複製失敗:', error);
+                
+                // 備用方案：顯示在彈窗中讓用戶手動複製
+                const report = window.DeprecatedApiChecker.formatReport(currentCheckResult);
+                const textarea = document.createElement('textarea');
+                textarea.value = report;
+                textarea.style.position = 'fixed';
+                textarea.style.top = '0';
+                textarea.style.left = '0';
+                textarea.style.width = '1px';
+                textarea.style.height = '1px';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    alert('✅ 報告已複製到剪貼簿！');
+                } catch (fallbackError) {
+                    alert('❌ 無法自動複製，請手動複製以下內容：\n\n' + report);
+                }
+                
+                document.body.removeChild(textarea);
+            }
+        }
+        
+        function forceIgnoreWarning() {
+            // 設置會話級別的忽略標記（直到 Ctrl+Shift+R 重新整理）
+            sessionStorage.setItem('deprecated_api_warning_ignored_session', 'true');
+            window.location.href = './index.html';
+        }
+        
+        async function recheckCode() {
+            document.getElementById('issues-detail').innerHTML = 
+                '<div style="text-align: center; color: #718096;">🔍 正在重新掃描...</div>';
+            await performCheck();
+        }
+    </script>
+</body>
+</html>
