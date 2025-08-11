@@ -167,11 +167,13 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                   borderColor: '#e5e7eb'
                 }}
               >
-                <div className="text-lg font-semibold text-center leading-tight text-gray-800">
+                <div className={`text-lg font-semibold text-center leading-tight ${
+                  restaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-gray-800'
+                }`}>
                   {restaurant.operatingStatus?.status === 'open' 
                     ? getTranslation('openNow') || '營業中'
                     : restaurant.operatingStatus?.status === 'closed'
-                      ? getTranslation('closed') || '已休息'
+                      ? getTranslation('closed') || '已打烊'
                       : getTranslation('hoursUnknown') || '營業中'
                   }
                 </div>
