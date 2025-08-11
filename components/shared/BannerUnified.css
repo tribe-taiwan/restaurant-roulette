@@ -50,8 +50,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    rgba(0, 0, 0, 0.4),
-    rgba(0, 0, 0, 0.4)
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2)
   );
   z-index: 1;
 }
@@ -376,42 +376,41 @@
   padding: var(--spacing-2xl);
 }
 
-/* 文字容器樣式 - 固定主標題絕對位置 */
+/* 文字容器樣式 - 固定主標題位置的新方法 */
 .unified-banner-text-container {
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 }
 
-/* 主標題固定絕對位置 */
+/* 主標題固定位置 - 使用JavaScript控制 */
 .unified-banner-text-container .unified-banner-title {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  /* 固定主標題位置，不受其他元素影響 */
   margin: 0;
-  width: 100%;
 }
 
-/* 副標題位置 - 在主標題下方固定距離 */
+/* 當有副標題時，主標題向上偏移 */
+.unified-banner-text-container.has-subtitle .unified-banner-title {
+  margin-top: -1rem; /* 向上偏移1rem抵消副標題造成的居中偏移 */
+}
+
+/* 副標題樣式 */
 .unified-banner-text-container .unified-banner-subtitle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, calc(-50% + 4rem)); /* 主標題下方4rem */
-  margin: 0;
-  width: 100%;
+  margin: var(--spacing-sm) 0 0 0;
 }
 
-/* 回民宿家連結位置 - 在主標題下方更遠的固定距離 */
+/* 回民宿家連結樣式 */
 .unified-banner-text-container .unified-banner-home-link {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, calc(-50% + 8rem)); /* 主標題下方8rem */
-  margin: 0;
-  width: 100%;
+  margin: var(--spacing-md) 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
 }
 
 /* ===== BANNER文字排版統一樣式 ===== */

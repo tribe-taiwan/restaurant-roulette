@@ -102,7 +102,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               }}
             />
             <div className="unified-banner-content">
-              <div className="unified-banner-text-container">
+              <div className={`unified-banner-text-container ${selectedLanguage !== 'zh' && brandSubtitle ? 'has-subtitle' : ''}`}>
                 <h1
                   className="unified-banner-title"
                   onClick={() => {
