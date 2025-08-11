@@ -14,8 +14,8 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
-            background: var(--background-color);
-            color: var(--text-primary);
+            background: #FFFACD;
+            color: #000000;
             min-height: 100vh;
         }
         
@@ -28,16 +28,16 @@
         .test-section {
             margin-bottom: 30px;
             padding: 20px;
-            background: var(--surface-color);
-            border-radius: var(--border-radius-large);
-            box-shadow: var(--shadow-md);
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .test-title {
             font-size: 18px;
-            font-weight: var(--font-weight-semibold);
+            font-weight: 600;
             margin-bottom: 16px;
-            color: var(--primary-color);
+            color: #007ACC;
         }
         
         .status-indicator {
@@ -50,12 +50,12 @@
         }
         
         .status-healthy {
-            background: var(--success-color);
+            background: #00A86B;
             color: white;
         }
         
         .status-error {
-            background: var(--error-color);
+            background: #E53E3E;
             color: white;
         }
         
@@ -68,37 +68,38 @@
         
         .test-button {
             padding: 8px 16px;
-            background: var(--primary-color);
+            background: #007ACC;
             color: white;
             border: none;
-            border-radius: var(--border-radius-medium);
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
             min-height: 36px;
         }
         
         .test-button:hover {
-            background: var(--primary-color-hover);
+            background: #0066A3;
         }
         
         .test-button.secondary {
-            background: var(--secondary-color);
+            background: #4A5568;
         }
         
         .test-button.danger {
-            background: var(--error-color);
+            background: #E53E3E;
         }
         
         .test-output {
-            background: var(--background-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-medium);
+            background: #F0F0F0;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
             padding: 12px;
             margin: 12px 0;
             font-family: monospace;
             font-size: 12px;
             max-height: 200px;
             overflow-y: auto;
+            color: #000000;
         }
         
         .test-grid {
@@ -108,18 +109,19 @@
         }
         
         .hook-info {
-            background: var(--info-color-light);
-            border-left: 4px solid var(--info-color);
+            background: rgba(49, 130, 206, 0.1);
+            border-left: 4px solid #3182CE;
             padding: 12px;
             margin: 12px 0;
+            color: #000000;
         }
         
         .error-display {
-            background: var(--error-color-light);
-            border-left: 4px solid var(--error-color);
+            background: rgba(229, 62, 62, 0.1);
+            border-left: 4px solid #E53E3E;
             padding: 12px;
             margin: 12px 0;
-            color: var(--error-color-dark);
+            color: #C53030;
         }
     </style>
 </head>

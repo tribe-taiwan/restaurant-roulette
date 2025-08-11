@@ -1,0 +1,577 @@
+/**
+ * Banner Unified Styles - BANNER統一樣式文件
+ * 整合BANNER區塊到統一設計系統中，保持視覺一致性
+ * 基於現有的Garmin設計系統和統一組件樣式
+ */
+
+/* 導入統一設計系統變數 */
+@import url('./garmin-design-system.css');
+
+/* ===== BANNER容器樣式 ===== */
+.unified-banner-container {
+  /* 使用統一佈局系統 */
+  width: 100%;
+  max-width: 100%; /* BANNER通常需要全寬顯示 */
+  margin: 0 auto var(--spacing-2xl) auto;
+  padding: 0;
+  
+  /* 使用統一設計系統 - 注意背景圖片不使用圓角 */
+  border-radius: 0; /* 背景圖片容器不使用圓角 */
+  box-shadow: var(--theme-shadow-lg); /* 保持統一陰影 */
+  overflow: hidden;
+  
+  /* 響應式高度 */
+  min-height: 300px;
+  position: relative;
+  
+  /* 統一的過渡效果 */
+  transition: all var(--transition-normal);
+}
+
+/* BANNER背景圖片容器 */
+.unified-banner-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* 統一背景處理 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  /* 不使用圓角 - 符合設計要求 */
+  border-radius: 0;
+}
+
+/* 統一遮罩層 */
+.unified-banner-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.4),
+    rgba(0, 0, 0, 0.4)
+  );
+  z-index: 1;
+}
+
+/* ===== BANNER控制元素樣式 ===== */
+.unified-banner-control {
+  /* 繼承統一按鈕樣式 */
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  /* 觸控優化 */
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: var(--touch-padding);
+
+  /* 視覺層級 - 使用毛玻璃效果 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.unified-banner-control:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  filter: var(--hover-brightness);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.unified-banner-control:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.unified-banner-control:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+/* ===== 語言選擇器統一樣式 ===== */
+.unified-banner-language-selector {
+  /* 繼承基礎控制元素樣式 */
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  /* 語言選擇器特定樣式 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.2);
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: var(--touch-target-min);
+}
+
+.unified-banner-language-selector:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  filter: var(--hover-brightness);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.unified-banner-language-selector:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.unified-banner-language-selector:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+/* 語言選擇器按鈕樣式 */
+.unified-banner-language-button {
+  /* 繼承統一按鈕樣式 */
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+
+  /* 語言按鈕特定樣式 */
+  background: transparent;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.unified-banner-language-button:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.unified-banner-language-button:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+}
+
+.unified-banner-language-button--active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.unified-banner-control:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+/* 語言選擇器特定樣式 */
+.unified-banner-language-selector {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: 40;
+}
+
+/* ===== 滑動箭頭統一樣式 ===== */
+.unified-banner-arrow {
+  /* 繼承統一按鈕樣式 */
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* 箭頭特定樣式 */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 預設隱藏，懸停時顯示 */
+  opacity: 0;
+  transition: opacity var(--transition-slow), transform var(--transition-normal), box-shadow var(--transition-normal);
+
+  /* 使用統一控制元素樣式 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.unified-banner-arrow:hover {
+  transform: translateY(-50%) var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  filter: var(--hover-brightness);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.unified-banner-arrow:active {
+  transform: translateY(-50%) var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.unified-banner-arrow:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+.unified-banner-arrow--left {
+  left: var(--spacing-lg);
+}
+
+.unified-banner-arrow--right {
+  right: var(--spacing-lg);
+}
+
+/* 容器懸停時顯示箭頭 */
+.unified-banner-container:hover .unified-banner-arrow {
+  opacity: 1;
+}
+
+.unified-banner-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+}
+
+/* 社交媒體圖標容器 */
+.unified-banner-social {
+  position: absolute;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: 20;
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.unified-banner-social-icon {
+  /* 繼承統一按鈕樣式 */
+  border-radius: var(--unified-border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--theme-shadow-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* 社交媒體圖標特定樣式 */
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 使用統一控制元素樣式 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.unified-banner-social-icon:hover {
+  transform: var(--hover-transform);
+  box-shadow: var(--hover-shadow);
+  filter: var(--hover-brightness);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.unified-banner-social-icon:active {
+  transform: var(--active-transform);
+  box-shadow: var(--active-shadow);
+  filter: var(--active-brightness);
+}
+
+.unified-banner-social-icon:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+}
+
+/* 社交媒體圖標特定顏色變體 */
+.unified-banner-social-icon--facebook {
+  background: rgba(59, 89, 152, 0.8);
+  border-color: rgba(59, 89, 152, 0.6);
+}
+
+.unified-banner-social-icon--facebook:hover {
+  background: rgba(59, 89, 152, 0.9);
+  border-color: rgba(59, 89, 152, 0.8);
+}
+
+.unified-banner-social-icon--instagram {
+  background: linear-gradient(45deg, rgba(225, 48, 108, 0.8), rgba(255, 204, 0, 0.8));
+  border-color: rgba(225, 48, 108, 0.6);
+}
+
+.unified-banner-social-icon--instagram:hover {
+  background: linear-gradient(45deg, rgba(225, 48, 108, 0.9), rgba(255, 204, 0, 0.9));
+  border-color: rgba(225, 48, 108, 0.8);
+}
+
+/* ===== BANNER內容區域樣式 ===== */
+.unified-banner-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  
+  /* 使用統一文字系統 */
+  color: white; /* BANNER文字通常為白色以確保對比度 */
+  text-align: center;
+  
+  /* 統一間距 */
+  padding: var(--spacing-2xl);
+}
+
+/* 主標題樣式 */
+.unified-banner-title {
+  /* 響應式字體大小 */
+  font-size: clamp(var(--font-size-2xl), 4vw, 4rem);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  margin-bottom: var(--spacing-sm);
+  
+  /* 文字陰影增強可讀性 */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  
+  /* 統一的互動效果 */
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.unified-banner-title:hover {
+  transform: var(--hover-scale);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* 副標題樣式 */
+.unified-banner-subtitle {
+  font-size: clamp(var(--font-size-lg), 2vw, var(--font-size-xl));
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  margin-bottom: var(--spacing-md);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 回民宿家連結樣式 */
+.unified-banner-home-link {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  
+  /* 保持原有的脈動效果 */
+  animation: home-pulse 2s ease-in-out infinite;
+  animation-delay: var(--pulse-delay, 1s);
+}
+
+.unified-banner-home-link:hover {
+  opacity: 1;
+  transform: var(--hover-scale);
+}
+
+/* 脈動動畫 */
+@keyframes home-pulse {
+  0%, 100% { 
+    opacity: 0.8; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05); 
+  }
+}
+
+/* ===== 滑動動畫樣式 ===== */
+.unified-banner-slide-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* 滑動動畫關鍵幀 */
+@keyframes slideOutToLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes slideOutToRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* ===== 響應式設計 ===== */
+@media (max-width: 768px) {
+  .unified-banner-container {
+    min-height: 250px;
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .unified-banner-content {
+    padding: var(--spacing-lg);
+  }
+  
+  .unified-banner-title {
+    font-size: clamp(var(--font-size-xl), 6vw, 3rem);
+  }
+  
+  .unified-banner-subtitle {
+    font-size: clamp(var(--font-size-base), 3vw, var(--font-size-lg));
+  }
+  
+  .unified-banner-language-selector,
+  .unified-banner-social {
+    right: var(--spacing-md);
+  }
+  
+  .unified-banner-language-selector {
+    top: var(--spacing-md);
+  }
+  
+  .unified-banner-social {
+    bottom: var(--spacing-md);
+  }
+  
+  .unified-banner-arrow {
+    display: none; /* 手機端隱藏箭頭 */
+  }
+  
+  .unified-banner-social-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .unified-banner-container {
+    min-height: 200px;
+  }
+  
+  .unified-banner-content {
+    padding: var(--spacing-md);
+  }
+  
+  .unified-banner-social {
+    gap: var(--spacing-xs);
+  }
+  
+  .unified-banner-social-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ===== 無障礙和性能優化 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .unified-banner-container,
+  .unified-banner-control,
+  .unified-banner-title,
+  .unified-banner-home-link,
+  .unified-banner-social-icon {
+    transition: none;
+    animation: none;
+  }
+  
+  .unified-banner-container:hover .unified-banner-arrow,
+  .unified-banner-control:hover,
+  .unified-banner-title:hover,
+  .unified-banner-home-link:hover,
+  .unified-banner-social-icon:hover {
+    transform: none;
+  }
+}
+
+/* 高對比度模式增強 */
+@media (prefers-contrast: high) {
+  .unified-banner-control {
+    border: 2px solid white;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .unified-banner-arrow {
+    border: 2px solid white;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .unified-banner-social-icon {
+    border: 2px solid white;
+  }
+}
+
+/* 深色主題適配 */
+@media (prefers-color-scheme: dark) {
+  .unified-banner-background::before {
+    background: linear-gradient(
+      rgba(0, 0, 0, 0.6),
+      rgba(0, 0, 0, 0.6)
+    );
+  }
+}
+
+/* ===== 錯誤處理和後備樣式 ===== */
+.unified-banner-fallback {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+}
+
+.unified-banner-background[data-error="true"] {
+  background: var(--surface-color);
+  border: 2px dashed var(--border-color);
+}
+
+.unified-banner-background[data-error="true"]::before {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
+  opacity: 0.8;
+}

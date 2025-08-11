@@ -17,15 +17,15 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
     return (
       <div className="w-auto" data-name="language-selector" data-file="components/LanguageSelector.js">
         {/* 桌面版：正常顯示所有語言 */}
-        <div className="hidden md:flex gap-2 bg-[var(--surface-color)] rounded-lg p-2 justify-center">
+        <div className="unified-banner-language-selector hidden md:flex gap-2 justify-center">
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => onLanguageChange(lang.code)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
+              className={`unified-banner-language-button flex items-center gap-2 ${
                 selectedLanguage === lang.code
-                  ? 'bg-[var(--primary-color)] text-white'
-                  : 'text-[var(--text-secondary)]'
+                  ? 'unified-banner-language-button--active'
+                  : ''
               }`}
             >
               <span>{lang.name}</span>
@@ -38,7 +38,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
           <button
             ref={buttonRef}
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 bg-[var(--surface-color)] bg-opacity-65 rounded-lg px-4 py-2 text-[var(--text-secondary)] transition-all duration-200"
+            className="unified-banner-language-selector flex items-center gap-2"
           >
             <span className="text-lg">☰</span>
             <span className="text-sm font-medium">{currentLang?.name}</span>
@@ -61,10 +61,10 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
                     onLanguageChange(lang.code);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg whitespace-nowrap ${
+                  className={`unified-banner-language-button w-full flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
                     selectedLanguage === lang.code
-                      ? 'bg-[var(--primary-color)] text-white'
-                      : 'text-[var(--text-secondary)]'
+                      ? 'unified-banner-language-button--active'
+                      : ''
                   }`}
                 >
                   <span>{lang.name}</span>

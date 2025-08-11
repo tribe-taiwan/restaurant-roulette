@@ -10,13 +10,19 @@
   
   /* 主要色彩 - 由品牌主題動態設定 */
   --primary-color: var(--garmin-blue);
+  --primary-color-hover: #0066A3;
   --secondary-color: var(--garmin-gray);
   --accent-color: var(--garmin-orange);
   --success-color: var(--garmin-green);
   --warning-color: #F6AD55;
   --error-color: #E53E3E;
+  --info-color: #3182CE;
+  --info-color-light: rgba(49, 130, 206, 0.1);
+  --error-color-light: rgba(229, 62, 62, 0.1);
+  --error-color-dark: #C53030;
   
   /* 表面色彩 - 支援深色主題 */
+  --background-color: #F7FAFC;
   --surface-color: #FFFFFF;
   --surface-secondary: #F7FAFC;
   --surface-tertiary: #EDF2F7;
@@ -125,6 +131,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* 深色模式下的表面色彩會由品牌主題覆蓋 */
+    --background-color: var(--theme-background, #1a1a1a);
     --surface-color: var(--theme-background, var(--garmin-dark-gray));
     --surface-secondary: var(--theme-surface, #1A202C);
     --surface-tertiary: #2D3748;

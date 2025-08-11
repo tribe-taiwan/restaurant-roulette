@@ -257,38 +257,38 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
       {/* 滑動箭頭 */}
       {themes.length > 1 && (
         <>
-          <div 
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
+          <div
+            className="unified-banner-arrow unified-banner-arrow--left"
             onClick={slideToPrevious}
             title="上一個主題"
           >
-            <div className="icon-chevron-left text-white text-6xl drop-shadow-lg"></div>
+            <div className="icon-chevron-left text-white text-2xl"></div>
           </div>
-          
-          <div 
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
+
+          <div
+            className="unified-banner-arrow unified-banner-arrow--right"
             onClick={slideToNext}
             title="下一個主題"
           >
-            <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
+            <div className="icon-chevron-right text-white text-2xl"></div>
           </div>
         </>
       )}
 
       {/* 社交媒體圖標 - 右下角 */}
-      <div className="absolute bottom-4 right-4 z-20 flex gap-2">
+      <div className="unified-banner-social">
         {currentTheme?.images?.bnbLogo && (
           <a
             href={currentTheme?.homeBase?.officialWebsite || "https://journey.owlting.com/hotels/10534cf7-3614-4e34-8032-357ccf579751"}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+            className="unified-banner-social-icon"
             title={`${currentTheme?.brand?.subtitle || '民宿'} 官網`}
           >
             <img
               src={currentTheme.images.bnbLogo}
               alt={`${currentTheme?.brand?.subtitle || '民宿'} Logo`}
-              className="w-full h-full object-contain rounded-lg"
+              className="w-8 h-8 object-contain"
             />
           </a>
         )}
@@ -297,13 +297,13 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
           href={currentTheme?.socialMedia?.booking?.url || "https://www.booking.com/hotel/tw/tai-nan-wu-he-min-su.zh-tw.html"}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 shadow-lg hover:scale-110 transition-transform duration-200"
+          className="unified-banner-social-icon"
           title="線上訂房"
         >
           <img
             src="./assets/image/booking-logo.png"
             alt="線上訂房"
-            className="w-full h-full object-contain"
+            className="w-8 h-8 object-contain"
           />
         </a>
 
@@ -311,20 +311,20 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
           href={currentTheme?.socialMedia?.instagram?.url || "https://www.instagram.com/"}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
+          className="unified-banner-social-icon unified-banner-social-icon--instagram"
           title="關注 Instagram"
         >
-          <div className="icon-instagram text-white text-2xl"></div>
+          <div className="icon-instagram text-white text-xl"></div>
         </a>
 
         <a
           href={currentTheme?.socialMedia?.facebook?.url || "https://www.facebook.com/"}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-200"
+          className="unified-banner-social-icon unified-banner-social-icon--facebook"
           title="關注 Facebook"
         >
-          <div className="icon-facebook text-white text-2xl"></div>
+          <div className="icon-facebook text-white text-xl"></div>
         </a>
       </div>
     </div>
