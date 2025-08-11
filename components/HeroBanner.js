@@ -89,18 +89,12 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
   const nextThemeData = themes[nextIndex];
 
   return (
-    <div className="unified-banner-container group">
-      {/* 滑動容器 */}
+    <div className="unified-banner-container group" style={{ background: 'transparent', boxShadow: 'none' }}>
+      {/* 滑動容器 - 移除背景圖片，只保留內容 */}
       <div className="absolute inset-0 overflow-hidden">
         {!isSliding ? (
-          /* 靜態顯示當前主題 */
+          /* 靜態顯示當前主題 - 無背景 */
           <div className="absolute inset-0 w-full h-full">
-            <div
-              className="unified-banner-background"
-              style={{
-                backgroundImage: `url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
-              }}
-            />
             <div className="unified-banner-content">
               <div className={`unified-banner-text-container ${selectedLanguage !== 'zh' && brandSubtitle ? 'has-subtitle' : ''}`}>
                 <h1
@@ -111,11 +105,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     }
                   }}
                   title={t?.BackToHotel || '回民宿家'}
+                  style={{
+                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)' // 增強文字陰影
+                  }}
                 >
                   {t?.title || '甲崩喔'}
                 </h1>
                 {selectedLanguage !== 'zh' && brandSubtitle && (
-                  <h3 
+                  <h3
                     className="unified-banner-subtitle"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
@@ -123,7 +120,10 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{ cursor: 'pointer' }}
+                    style={{
+                      cursor: 'pointer',
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)' // 增強文字陰影
+                    }}
                   >
                     {brandSubtitle}
                   </h3>
@@ -136,7 +136,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     }
                   }}
                   title={t?.BackToHotel || '回民宿家'}
-                  style={{'--pulse-delay': '1s'}}
+                  style={{
+                    '--pulse-delay': '1s',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    padding: '8px 16px'
+                  }}
                 >
                   <div className="icon-home text-sm"></div>
                   <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
@@ -145,7 +152,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
             </div>
           </div>
         ) : (
-          /* 滑動動畫容器 */
+          /* 滑動動畫容器 - 移除背景圖片 */
           <div className="absolute inset-0">
             {/* 當前主題 - 滑出 */}
             <div
@@ -158,12 +165,6 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                 zIndex: 1
               }}
             >
-              <div
-                className="unified-banner-background"
-                style={{
-                  backgroundImage: `url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
-                }}
-              />
               <div className="unified-banner-content">
                 <div className="unified-banner-text-container">
                   <h1
@@ -174,11 +175,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
+                    style={{
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)'
+                    }}
                     >
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 
+                    <h3
                       className="unified-banner-subtitle"
                       onClick={() => {
                         if (window.navigateToHomeBase) {
@@ -186,7 +190,10 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                         }
                       }}
                       title={t?.BackToHotel || '回民宿家'}
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)'
+                      }}
                     >
                       {brandSubtitle}
                     </h3>
@@ -199,7 +206,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--pulse-delay': '1s'}}
+                    style={{
+                      '--pulse-delay': '1s',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      padding: '8px 16px'
+                    }}
                   >
                     <div className="icon-home text-sm"></div>
                     <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
@@ -219,12 +233,6 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                 zIndex: 2
               }}
             >
-              <div
-                className="unified-banner-background"
-                style={{
-                  backgroundImage: `url(${nextThemeData?.bannerImage || './assets/image/banner.jpg'})`
-                }}
-              />
               <div className="unified-banner-content">
                 <div className="unified-banner-text-container">
                   <h1
@@ -235,11 +243,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
+                    style={{
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)'
+                    }}
                     >
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 
+                    <h3
                       className="unified-banner-subtitle"
                       onClick={() => {
                         if (window.navigateToHomeBase) {
@@ -247,7 +258,10 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                         }
                       }}
                       title={t?.BackToHotel || '回民宿家'}
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5)'
+                      }}
                     >
                       {brandSubtitle}
                     </h3>
@@ -260,7 +274,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--pulse-delay': '1s'}}
+                    style={{
+                      '--pulse-delay': '1s',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      padding: '8px 16px'
+                    }}
                   >
                     <div className="icon-home text-sm"></div>
                     <span><span>{t?.BackToHotel || '回民宿家'}</span></span>

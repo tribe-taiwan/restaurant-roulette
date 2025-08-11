@@ -1,0 +1,248 @@
+/**
+ * 全頁面背景效果 - Full Page Background Effects
+ * 為整個應用程式提供統一的背景圖片和景深效果
+ * 支援多主題動態切換和響應式設計
+ */
+
+/* ===== 全頁面背景容器 ===== */
+.full-page-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  
+  /* 背景圖片設定 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  
+  /* 景深效果 */
+  filter: blur(1px) brightness(0.7);
+  
+  /* 輕微放大避免邊緣露白 */
+  transform: scale(1.05);
+  
+  /* 平滑過渡效果 */
+  transition: all 0.5s ease-in-out;
+  
+  /* 性能優化 */
+  will-change: filter, transform;
+  contain: layout style paint;
+}
+
+/* ===== 漸層遮罩層 ===== */
+.full-page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  
+  /* 漸層遮罩增強可讀性 */
+  background: linear-gradient(
+    180deg, 
+    rgba(0,0,0,0.3) 0%, 
+    rgba(0,0,0,0.1) 50%, 
+    rgba(0,0,0,0.4) 100%
+  );
+  
+  /* 性能優化 */
+  contain: layout style paint;
+}
+
+/* ===== 毛玻璃內容區域 ===== */
+.glassmorphism-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari 支援 */
+  
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  /* 平滑過渡 */
+  transition: all 0.3s ease;
+}
+
+.glassmorphism-container:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ===== Footer 毛玻璃效果 ===== */
+.glassmorphism-footer {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px 20px 0 0;
+  
+  box-shadow: 
+    0 -4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ===== 響應式設計 ===== */
+
+/* 手機端優化 */
+@media (max-width: 767px) {
+  .full-page-background {
+    /* 減少模糊效果以提升性能 */
+    filter: blur(0.5px) brightness(0.75);
+    background-attachment: scroll; /* 避免iOS滾動問題 */
+  }
+  
+  .glassmorphism-container {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    margin: 10px;
+    border-radius: 16px;
+  }
+  
+  .glassmorphism-footer {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    margin: 10px 10px 0 10px;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* 平板端 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .full-page-background {
+    filter: blur(1px) brightness(0.7);
+  }
+  
+  .glassmorphism-container {
+    margin: 15px;
+    border-radius: 18px;
+  }
+  
+  .glassmorphism-footer {
+    margin: 15px 15px 0 15px;
+    border-radius: 18px 18px 0 0;
+  }
+}
+
+/* 桌面端 */
+@media (min-width: 1024px) {
+  .full-page-background {
+    /* 完整景深效果 */
+    filter: blur(2px) brightness(0.65);
+  }
+  
+  .glassmorphism-container {
+    margin: 20px;
+    border-radius: 20px;
+  }
+  
+  .glassmorphism-footer {
+    margin: 20px 20px 0 20px;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+/* ===== 高性能設備優化 ===== */
+@media (min-resolution: 2dppx) {
+  .full-page-background {
+    /* 高解析度設備使用更強的效果 */
+    filter: blur(1.5px) brightness(0.68);
+  }
+}
+
+/* ===== 無障礙優化 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .full-page-background,
+  .glassmorphism-container,
+  .glassmorphism-footer {
+    transition: none;
+  }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+  .glassmorphism-container {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+  }
+  
+  .glassmorphism-footer {
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 2px solid rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* ===== 載入狀態 ===== */
+.full-page-background.loading {
+  filter: blur(3px) brightness(0.5);
+  opacity: 0.7;
+}
+
+.glassmorphism-container.loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ===== 主題切換動畫 ===== */
+.theme-transition {
+  transition: 
+    background-image 0.5s ease-in-out,
+    filter 0.3s ease-in-out,
+    transform 0.3s ease-in-out;
+}
+
+/* ===== 錯誤狀態 ===== */
+.full-page-background.error {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color, #ff6b35),
+    var(--secondary-color, #f7931e)
+  );
+  filter: blur(1px) brightness(0.6);
+}
+
+/* ===== 深色主題適配 ===== */
+@media (prefers-color-scheme: dark) {
+  .full-page-overlay {
+    background: linear-gradient(
+      180deg, 
+      rgba(0,0,0,0.4) 0%, 
+      rgba(0,0,0,0.2) 50%, 
+      rgba(0,0,0,0.5) 100%
+    );
+  }
+}
+
+/* ===== 觸控設備優化 ===== */
+@media (hover: none) and (pointer: coarse) {
+  .glassmorphism-container:hover {
+    /* 移除懸停效果 */
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ===== 性能優化 ===== */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, filter, opacity;
+}
+
+/* 減少重繪 */
+.contain-paint {
+  contain: layout style paint;
+}

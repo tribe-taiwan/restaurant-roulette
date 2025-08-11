@@ -45,21 +45,31 @@ function App() {
 
     // 主題狀態管理
     const [currentTheme, setCurrentTheme] = React.useState(null);
+    const [currentBannerImage, setCurrentBannerImage] = React.useState('./assets/image/banner.jpg');
     const brandSubtitle = currentTheme?.brand?.subtitle || "舞鶴台南民宿";
-    
+
     // 監聽主題變更事件
     React.useEffect(() => {
       const handleThemeChange = (event) => {
-        setCurrentTheme(event.detail.theme);
+        const newTheme = event.detail.theme;
+        setCurrentTheme(newTheme);
+        // 更新全頁面背景圖片
+        if (newTheme?.images?.banner) {
+          setCurrentBannerImage(newTheme.images.banner);
+        }
       };
-      
+
       window.addEventListener('themeChanged', handleThemeChange);
-      
+
       // 初始設定主題
       if (window.ThemeManager) {
-        setCurrentTheme(window.ThemeManager.getCurrentTheme());
+        const initialTheme = window.ThemeManager.getCurrentTheme();
+        setCurrentTheme(initialTheme);
+        if (initialTheme?.images?.banner) {
+          setCurrentBannerImage(initialTheme.images.banner);
+        }
       }
-      
+
       return () => {
         window.removeEventListener('themeChanged', handleThemeChange);
       };
@@ -547,42 +557,56 @@ function App() {
     }, [currentRestaurant]);
 
     return (
-      <div className="min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]" data-name="app" data-file="app.js">
-        
-        {/* Hero Banner - 整合滑動功能 */}
-        {window.HeroBannerWithSliding && (
-          <window.HeroBannerWithSliding 
-            selectedLanguage={selectedLanguage}
-            onLanguageChange={setSelectedLanguage}
-            userLocation={userLocation}
-            brandSubtitle={brandSubtitle}
-            t={t}
-            currentTheme={currentTheme}
-          />
-        )}
+      <div className="min-h-screen text-[var(--text-primary)] relative overflow-hidden" data-name="app" data-file="app.js">
 
-        <div className="max-w-6xl mx-auto px-4">
+        {/* 全頁面背景圖片 - 動態切換 */}
+        <div
+          className="full-page-background theme-transition gpu-accelerated"
+          style={{
+            backgroundImage: `url(${currentBannerImage})`
+          }}
+        />
 
-          {/* Slot Machine */}
-          <div className="flex justify-center mb-8">
-            <SlotMachine
-              isSpinning={isSpinning}
-              onSpin={handleUserSpin}
-              onAddCandidate={handleAddCandidate}
-              translations={t}
-              finalRestaurant={currentRestaurant}
-              candidateList={candidateList}
-              language={selectedLanguage}
-              onClearList={handleClearList}
-              onImageClick={handleImageClick}
+        {/* 全頁面漸層遮罩 - 增強內容可讀性 */}
+        <div className="full-page-overlay" />
+
+        {/* 主要內容區域 */}
+        <div className="relative z-10">
+          {/* Hero Banner - 整合滑動功能 */}
+          {window.HeroBannerWithSliding && (
+            <window.HeroBannerWithSliding
+              selectedLanguage={selectedLanguage}
+              onLanguageChange={setSelectedLanguage}
               userLocation={userLocation}
-              userAddress={userAddress}
-              onPreviousRestaurant={handlePreviousClick}
-              onTriggerSlideTransition={handleTriggerSlideTransition}
-              restaurantHistory={restaurantHistory}
-              selectedMealTime={selectedMealTime}
+              brandSubtitle={brandSubtitle}
+              t={t}
+              currentTheme={currentTheme}
             />
-          </div>
+          )}
+
+          {/* 主要內容區域 - 毛玻璃效果 */}
+          <div className="max-w-6xl mx-auto px-4 glassmorphism-container gpu-accelerated">
+
+            {/* Slot Machine */}
+            <div className="flex justify-center mb-8">
+              <SlotMachine
+                isSpinning={isSpinning}
+                onSpin={handleUserSpin}
+                onAddCandidate={handleAddCandidate}
+                translations={t}
+                finalRestaurant={currentRestaurant}
+                candidateList={candidateList}
+                language={selectedLanguage}
+                onClearList={handleClearList}
+                onImageClick={handleImageClick}
+                userLocation={userLocation}
+                userAddress={userAddress}
+                onPreviousRestaurant={handlePreviousClick}
+                onTriggerSlideTransition={handleTriggerSlideTransition}
+                restaurantHistory={restaurantHistory}
+                selectedMealTime={selectedMealTime}
+              />
+            </div>
 
           {/* Restaurant Result */}
           {currentRestaurant && !isSpinning && !spinError && (
@@ -632,28 +656,29 @@ function App() {
             unitMultiplier={unitMultiplier}
             setUnitMultiplier={setUnitMultiplier}
           />
-        </div>
-        
-        {/* Footer */}
-        <footer className="mt-16 py-8 border-t border-gray-700">
-          <div className="max-w-6xl mx-auto text-center">
-            <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
-              <span>© 2025</span>
-              <a 
-                href="https://tribe.org.tw" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[var(--primary-color)] hover:text-[var(--secondary-color)] transition-colors duration-200 font-medium"
-              >
-                tribe.org.tw
-              </a>
-              <span>All rights reserved.</span>
-            </div>
-            <div className="mt-2 text-sm text-gray-500">
-              Restaurant Roulette - Discover amazing food near you
-            </div>
           </div>
-        </footer>
+
+          {/* Footer - 毛玻璃效果 */}
+          <footer className="mt-16 py-8 glassmorphism-footer">
+            <div className="max-w-6xl mx-auto text-center">
+              <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+                <span>© 2025</span>
+                <a
+                  href="https://tribe.org.tw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--primary-color)] hover:text-[var(--secondary-color)] transition-colors duration-200 font-medium"
+                >
+                  tribe.org.tw
+                </a>
+                <span>All rights reserved.</span>
+              </div>
+              <div className="mt-2 text-sm text-gray-500">
+                Restaurant Roulette - Discover amazing food near you
+              </div>
+            </div>
+          </footer>
+        </div>
       </div>
     );
   } catch (error) {
