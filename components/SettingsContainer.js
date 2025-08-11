@@ -4,10 +4,8 @@
 function SettingsContainer({ children, className = "", withGlowContainer = true }) {
   if (withGlowContainer) {
     return (
-      <div className={`w-full max-w-2xl mx-auto ${className}`}>
-        <div className="bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container">
-          {children}
-        </div>
+      <div className={`w-full max-w-2xl mx-auto bg-[var(--surface-color)] rounded-lg p-4 mb-8 glow-container ${className}`}>
+        {children}
       </div>
     );
   }

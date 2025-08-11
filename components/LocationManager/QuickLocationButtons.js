@@ -63,38 +63,36 @@ function QuickLocationButtons({
     };
 
     return (
-      <div className="quick-location-buttons">
-        <div className="quick-buttons-container">
-          {/* 住家按鈕 */}
-          <button
-            onClick={() => onLocationButton('home')}
-            className={`quick-location-btn ${getLocationButtonStyle('home')}`}
-            title={getLocationButtonTip('home')}
-            data-touch-optimized="true"
-            data-important-action={shouldShowActiveState ? "true" : "false"}
-            aria-label={getLocationButtonTip('home')}
-          >
-            <div className="quick-btn-icon quick-btn-icon--home"></div>
-            <div className="quick-btn-text">
-              {getLocationButtonText('home')}
-            </div>
-          </button>
+      <div className="quick-buttons-container">
+        {/* 住家按鈕 */}
+        <button
+          onClick={() => onLocationButton('home')}
+          className={`quick-location-btn ${getLocationButtonStyle('home')}`}
+          title={getLocationButtonTip('home')}
+          data-touch-optimized="true"
+          data-important-action={shouldShowActiveState ? "true" : "false"}
+          aria-label={getLocationButtonTip('home')}
+        >
+          <div className="quick-btn-icon quick-btn-icon--home"></div>
+          <div className="quick-btn-text">
+            {getLocationButtonText('home')}
+          </div>
+        </button>
 
-          {/* 公司按鈕 */}
-          <button
-            onClick={() => onLocationButton('office')}
-            className={`quick-location-btn ${getLocationButtonStyle('office')}`}
-            title={getLocationButtonTip('office')}
-            data-touch-optimized="true"
-            data-important-action={shouldShowActiveState ? "true" : "false"}
-            aria-label={getLocationButtonTip('office')}
-          >
-            <div className="quick-btn-icon quick-btn-icon--briefcase"></div>
-            <div className="quick-btn-text">
-              {getLocationButtonText('office')}
-            </div>
-          </button>
-        </div>
+        {/* 公司按鈕 */}
+        <button
+          onClick={() => onLocationButton('office')}
+          className={`quick-location-btn ${getLocationButtonStyle('office')}`}
+          title={getLocationButtonTip('office')}
+          data-touch-optimized="true"
+          data-important-action={shouldShowActiveState ? "true" : "false"}
+          aria-label={getLocationButtonTip('office')}
+        >
+          <div className="quick-btn-icon quick-btn-icon--briefcase"></div>
+          <div className="quick-btn-text">
+            {getLocationButtonText('office')}
+          </div>
+        </button>
       </div>
     );
   } catch (error) {

@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SearchSettings 重構測試</title>
-    
+
     <!-- 樣式 -->
     <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
     <link rel="stylesheet" href="../components/SearchSettings/SearchSettings.css">
-    
+
     <!-- React -->
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <style>
         :root {
             --primary-color: #007ACC;
@@ -25,24 +26,25 @@
             --text-secondary: #9ca3af;
             --border-color: #374151;
         }
-        
+
         body {
             background: #111827;
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        
+
         .glow-container {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
+
 <body>
     <div class="container mx-auto p-4">
         <h1 class="text-2xl font-bold mb-6 text-center">SearchSettings 重構測試</h1>
-        
+
         <div id="test-container"></div>
-        
+
         <div class="mt-8 p-4 bg-gray-800 rounded-lg">
             <h2 class="text-lg font-semibold mb-2">測試說明</h2>
             <ul class="text-sm text-gray-300 space-y-1">
@@ -56,9 +58,9 @@
     </div>
 
     <!-- SearchSettings 子組件 -->
-    <script src="../components/SearchSettings/DistanceControl.js"></script>
-    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
-    <script src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/DistanceControl.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/SettingsDisplay.js"></script>
     <script type="text/babel" src="../components/SearchSettings/index.js"></script>
 
     <script type="text/babel">
@@ -107,7 +109,7 @@
                         unitMultiplier={unitMultiplier}
                         setUnitMultiplier={setUnitMultiplier}
                     />
-                    
+
                     {/* 狀態監控面板 */}
                     <div className="mt-4 p-4 bg-gray-900 rounded-lg">
                         <h3 className="text-lg font-semibold mb-2">當前狀態</h3>
@@ -127,7 +129,7 @@
                             <div className="md:col-span-3">
                                 <span className="text-gray-400">實際搜索距離:</span>
                                 <span className="ml-2 text-orange-400 font-bold">
-                                    {baseUnit * unitMultiplier >= 1000 
+                                    {baseUnit * unitMultiplier >= 1000
                                         ? `${(baseUnit * unitMultiplier) / 1000}km`
                                         : `${baseUnit * unitMultiplier}m`
                                     }
@@ -145,4 +147,5 @@
         }, 100);
     </script>
 </body>
+
 </html>

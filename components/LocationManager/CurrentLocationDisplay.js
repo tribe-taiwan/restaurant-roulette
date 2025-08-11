@@ -16,15 +16,13 @@ function CurrentLocationDisplay({
 
     return (
       <div className="current-location-display">
-        <div className="current-location-content">
-          <div className="current-location-icon icon-map-pin"></div>
-          <div className="current-location-text">
-            <div className="current-location-label">
-              {t.locationDetected}
-            </div>
-            <div className="current-location-address">
-              {userAddress}
-            </div>
+        <div className="current-location-icon icon-map-pin"></div>
+        <div className="current-location-text">
+          <div className="current-location-label">
+            {t.locationDetected}
+          </div>
+          <div className="current-location-address">
+            {userAddress}
           </div>
         </div>
       </div>

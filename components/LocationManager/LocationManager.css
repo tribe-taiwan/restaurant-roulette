@@ -40,7 +40,7 @@
   
   /* 確保在手機螢幕內完整顯示 */
   min-height: auto;
-  max-height: calc(100vh - var(--fluid-spacing-xl) * 2);
+  max-height: calc(100vh - var(--spacing-2xl) * 2);
   
   /* 垂直布局 */
   display: flex;
@@ -57,9 +57,17 @@
   transform: var(--hover-scale);
 }
 
+/* 區塊容器 */
+.location-manager-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 由子元素的padding控制間距 */
+  width: 100%;
+}
+
 /* 功能區塊分隔 */
 .location-section {
-  padding: var(--fluid-spacing-md);
+  padding: var(--spacing-lg);
   /* 移除所有邊框 - 不要白線 remo */
   border-bottom: none;
 

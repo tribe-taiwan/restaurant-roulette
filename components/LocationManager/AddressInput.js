@@ -29,21 +29,19 @@ function AddressInput({
     };
 
     return (
-      <div className="address-input-container">
-        <div className="address-input-wrapper">
-          <div className="address-input-icon">🔍</div>
-          <input
-            type="text"
-            value={addressInput}
-            onChange={handleInputChange}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            placeholder={t.enterAddress}
-            className="address-input-field"
-            onKeyPress={handleKeyPress}
-            maxLength="200"
-          />
-        </div>
+      <div className="address-input-wrapper">
+        <div className="address-input-icon">🔍</div>
+        <input
+          type="text"
+          value={addressInput}
+          onChange={handleInputChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholder={t.enterAddress}
+          className="address-input-field"
+          onKeyPress={handleKeyPress}
+          maxLength="200"
+        />
       </div>
     );
   } catch (error) {

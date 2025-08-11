@@ -44,50 +44,52 @@ function LocationManager({
   try {
     return (
       <SettingsContainer>
-        {/* 當前定位資訊子組件 */}
-        <div className="location-section">
-          <CurrentLocationDisplay
-            locationStatus={locationStatus}
-            userAddress={userAddress}
-            translations={translations}
-          />
-        </div>
+        <div className="location-manager-sections">
+          {/* 當前定位資訊子組件 */}
+          <div className="location-section">
+            <CurrentLocationDisplay
+              locationStatus={locationStatus}
+              userAddress={userAddress}
+              translations={translations}
+            />
+          </div>
 
-        {/* 快速位置按鈕子組件 */}
-        <div className="location-section">
-          <QuickLocationButtons
-            savedLocations={savedLocations}
-            addressInput={addressInput}
-            isInputFocused={isInputFocused}
-            onLocationButton={onLocationButton}
-            translations={translations}
-          />
-        </div>
+          {/* 快速位置按鈕子組件 */}
+          <div className="location-section">
+            <QuickLocationButtons
+              savedLocations={savedLocations}
+              addressInput={addressInput}
+              isInputFocused={isInputFocused}
+              onLocationButton={onLocationButton}
+              translations={translations}
+            />
+          </div>
 
-        {/* 地址輸入框子組件 */}
-        <div className="location-section">
-          <AddressInput
-            addressInput={addressInput}
-            setAddressInput={setAddressInput}
-            onAddressConfirm={onAddressConfirm}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            translations={translations}
-          />
-        </div>
+          {/* 地址輸入框子組件 */}
+          <div className="location-section">
+            <AddressInput
+              addressInput={addressInput}
+              setAddressInput={setAddressInput}
+              onAddressConfirm={onAddressConfirm}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              translations={translations}
+            />
+          </div>
 
-        {/* 定位操作按鈕子組件 */}
-        <div className="location-section location-section-last">
-          <LocationActions
-            locationStatus={locationStatus}
-            addressInput={addressInput}
-            isInputFocused={isInputFocused}
-            isRelocating={isRelocating}
-            isGeocodingAddress={isGeocodingAddress}
-            onRelocate={onRelocate}
-            onAddressConfirm={onAddressConfirm}
-            translations={translations}
-          />
+          {/* 定位操作按鈕子組件 */}
+          <div className="location-section location-section-last">
+            <LocationActions
+              locationStatus={locationStatus}
+              addressInput={addressInput}
+              isInputFocused={isInputFocused}
+              isRelocating={isRelocating}
+              isGeocodingAddress={isGeocodingAddress}
+              onRelocate={onRelocate}
+              onAddressConfirm={onAddressConfirm}
+              translations={translations}
+            />
+          </div>
         </div>
       </SettingsContainer>
     );

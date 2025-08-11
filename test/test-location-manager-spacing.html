@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocationManager 間距測試</title>
+
+    <!-- 樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+
+    <!-- React -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary-color: #007ACC;
+            --accent-color: #00A86B;
+            --surface-color: #1f2937;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --success-color: #10b981;
+        }
+
+        body {
+            background: #111827;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .glow-container {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-info {
+            background: #1f2937;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #374151;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mx-auto max-w-2xl">
+        <div class="test-info">
+            <h1 class="text-xl font-bold mb-2">LocationManager 間距測試</h1>
+            <p class="text-sm text-gray-300">測試修復後的LocationManager組件間距是否正常</p>
+        </div>
+
+        <div id="test-container"></div>
+    </div>
+
+    <!-- 共用組件 -->
+    <script type="text/babel" src="../components/SettingsContainer.js"></script>
+    
+    <!-- LocationManager 子組件 -->
+    <script type="text/babel" src="../components/LocationManager/CurrentLocationDisplay.js"></script>
+    <script type="text/babel" src="../components/LocationManager/QuickLocationButtons.js"></script>
+    <script type="text/babel" src="../components/LocationManager/AddressInput.js"></script>
+    <script type="text/babel" src="../components/LocationManager/LocationActions.js"></script>
+    <script type="text/babel" src="../components/LocationManager/index.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 模擬翻譯對象
+        const mockTranslations = {
+            locationDetected: '已偵測到位置',
+            home: '住家',
+            office: '公司',
+            homeNotSet: '設定住家',
+            officeNotSet: '設定公司',
+            saveHome: '儲存住家',
+            saveOffice: '儲存公司',
+            useHomeTip: '使用已儲存的住家位置',
+            useOfficeTip: '使用已儲存的公司位置',
+            saveHomeTip: '將當前地址儲存為住家',
+            saveOfficeTip: '將當前地址儲存為公司',
+            enterAddressTip: '請先輸入地址',
+            enterAddress: '輸入地址或地標名稱',
+            relocate: '重新定位',
+            confirmAddress: '確認地址'
+        };
+
+        function TestApp() {
+            const [addressInput, setAddressInput] = useState('');
+            const [savedLocations, setSavedLocations] = useState([
+                { type: 'home', address: '台南市中西區中正路1號', lat: 22.99, lng: 120.21 }
+            ]);
+            const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
+            const [isRelocating, setIsRelocating] = useState(false);
+
+            const handleLocationButton = (type) => {
+                console.log('Location button clicked:', type);
+            };
+
+            const handleAddressConfirm = () => {
+                console.log('Address confirmed:', addressInput);
+            };
+
+            const handleRelocate = () => {
+                console.log('Relocate clicked');
+            };
+
+            return (
+                <LocationManager
+                    locationStatus="success"
+                    userAddress="台南市中西區民族路二段76-10號"
+                    savedLocations={savedLocations}
+                    addressInput={addressInput}
+                    setAddressInput={setAddressInput}
+                    isGeocodingAddress={isGeocodingAddress}
+                    onRelocate={handleRelocate}
+                    onAddressConfirm={handleAddressConfirm}
+                    onLocationButton={handleLocationButton}
+                    translations={mockTranslations}
+                    isRelocating={isRelocating}
+                    selectedLanguage="zh-TW"
+                    userLocation={{ lat: 22.99, lng: 120.21 }}
+                />
+            );
+        }
+
+        // 等待組件載入完成後渲染
+        setTimeout(() => {
+            ReactDOM.render(<TestApp />, document.getElementById('test-container'));
+        }, 100);
+    </script>
+</body>
+
+</html>
+</content>
+</invoke>

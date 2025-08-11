@@ -95,8 +95,8 @@ settingsDisplayChecks.forEach(check => {
   }
 });
 
-// 檢查主 SearchSettings 組件的重構
-const searchSettingsContent = fs.readFileSync('components/SearchSettings.js', 'utf8');
+// 檢查主 SearchSettings 組件的重構 (已重構為 components/SearchSettings/index.js)
+const searchSettingsContent = fs.readFileSync('components/SearchSettings/index.js', 'utf8');
 const searchSettingsChecks = [
   { pattern: /window\.DistanceControl/, description: 'DistanceControl 子組件使用' },
   { pattern: /window\.MealTimeSelector/, description: 'MealTimeSelector 子組件使用' },
