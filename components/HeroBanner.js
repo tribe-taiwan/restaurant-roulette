@@ -89,8 +89,20 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
   const nextThemeData = themes[nextIndex];
 
   return (
-    <div className="unified-banner-container group" style={{ background: 'transparent', boxShadow: 'none' }}>
-      {/* 滑動容器 - 移除背景圖片，只保留內容 */}
+    <div
+      className="unified-banner-container group"
+      style={{
+        background: 'rgba(255, 255, 255, 0.08)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        margin: '20px',
+        borderRadius: '0', // 直角設計
+        transition: 'all 0.3s ease'
+      }}
+    >
+      {/* 滑動容器 - 毛玻璃Banner設計 */}
       <div className="absolute inset-0 overflow-hidden">
         {!isSliding ? (
           /* 靜態顯示當前主題 - 無背景 */

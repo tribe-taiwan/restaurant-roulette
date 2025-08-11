@@ -584,8 +584,19 @@ function App() {
             />
           )}
 
-          {/* 主要內容區域 - 毛玻璃效果 */}
-          <div className="max-w-6xl mx-auto px-4 glassmorphism-container gpu-accelerated">
+          {/* 主要內容區域 - 清晰功能設計 */}
+          <div
+            className="max-w-6xl mx-auto px-6 gpu-accelerated"
+            style={{
+              background: 'rgba(0, 0, 0, 0.25)',
+              margin: '40px 20px 20px 20px', // 與banner保持間隔
+              padding: '30px',
+              borderRadius: '0', // 直角設計
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.3s ease'
+            }}
+          >
 
             {/* Slot Machine */}
             <div className="flex justify-center mb-8">
@@ -658,8 +669,16 @@ function App() {
           />
           </div>
 
-          {/* Footer - 毛玻璃效果 */}
-          <footer className="mt-16 py-8 glassmorphism-footer">
+          {/* Footer - 簡潔設計 */}
+          <footer
+            className="mt-16 py-8"
+            style={{
+              background: 'rgba(0, 0, 0, 0.15)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              margin: '20px 20px 0 20px',
+              borderRadius: '0' // 直角設計
+            }}
+          >
             <div className="max-w-6xl mx-auto text-center">
               <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
                 <span>© 2025</span>

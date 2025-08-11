@@ -54,29 +54,45 @@
   contain: layout style paint;
 }
 
-/* ===== 毛玻璃內容區域 ===== */
-.glassmorphism-container {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); /* Safari 支援 */
-  
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  
-  box-shadow: 
+/* ===== Banner毛玻璃效果 ===== */
+.banner-glassmorphism {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Safari 支援 */
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  
+
   /* 平滑過渡 */
   transition: all 0.3s ease;
 }
 
-.glassmorphism-container:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 
+.banner-glassmorphism:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ===== 清晰內容區域 ===== */
+.clear-content-container {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* 平滑過渡 */
+  transition: all 0.3s ease;
+}
+
+.clear-content-container:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ===== Footer 毛玻璃效果 ===== */
