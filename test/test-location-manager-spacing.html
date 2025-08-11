@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
     <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    
     <!-- React -->
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
     <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
@@ -52,8 +55,8 @@
 <body>
     <div class="container mx-auto max-w-2xl">
         <div class="test-info">
-            <h1 class="text-xl font-bold mb-2">LocationManager 間距測試</h1>
-            <p class="text-sm text-gray-300">測試修復後的LocationManager組件間距是否正常</p>
+            <h1 class="text-xl font-bold mb-2">LocationManager 簡化輸入框測試</h1>
+            <p class="text-sm text-gray-300">測試簡化後的地址輸入框是否正常工作</p>
         </div>
 
         <div id="test-container"></div>
@@ -112,21 +115,31 @@
             };
 
             return (
-                <LocationManager
-                    locationStatus="success"
-                    userAddress="台南市中西區民族路二段76-10號"
-                    savedLocations={savedLocations}
-                    addressInput={addressInput}
-                    setAddressInput={setAddressInput}
-                    isGeocodingAddress={isGeocodingAddress}
-                    onRelocate={handleRelocate}
-                    onAddressConfirm={handleAddressConfirm}
-                    onLocationButton={handleLocationButton}
-                    translations={mockTranslations}
-                    isRelocating={isRelocating}
-                    selectedLanguage="zh-TW"
-                    userLocation={{ lat: 22.99, lng: 120.21 }}
-                />
+                <div>
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h3 className="font-semibold text-blue-800 mb-2">測試說明</h3>
+                        <p className="text-sm text-blue-700">
+                            這是使用 Tailwind CSS 重新設計的 AddressInput 組件測試。
+                            輸入框現在使用純 Tailwind 類別，沒有自定義 CSS 干擾。
+                        </p>
+                    </div>
+                    
+                    <LocationManager
+                        locationStatus="success"
+                        userAddress="台南市中西區民族路二段76-10號"
+                        savedLocations={savedLocations}
+                        addressInput={addressInput}
+                        setAddressInput={setAddressInput}
+                        isGeocodingAddress={isGeocodingAddress}
+                        onRelocate={handleRelocate}
+                        onAddressConfirm={handleAddressConfirm}
+                        onLocationButton={handleLocationButton}
+                        translations={mockTranslations}
+                        isRelocating={isRelocating}
+                        selectedLanguage="zh-TW"
+                        userLocation={{ lat: 22.99, lng: 120.21 }}
+                    />
+                </div>
             );
         }
 

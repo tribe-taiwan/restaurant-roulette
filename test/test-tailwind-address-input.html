@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind 地址輸入框測試</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    
+    <!-- React -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            background: #f9fafb;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="p-5">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h1 class="text-2xl font-bold text-center mb-8 text-gray-900">Tailwind 地址輸入框測試</h1>
+            
+            <!-- 基本測試 -->
+            <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800">1. 基本輸入框測試</h2>
+                <p class="text-sm text-gray-600 mb-4">使用 Tailwind CSS 類別的乾淨輸入框</p>
+                <div id="basic-test"></div>
+            </div>
+
+            <!-- 手機寬度測試 -->
+            <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800">2. 手機寬度測試 (320px)</h2>
+                <p class="text-sm text-gray-600 mb-4">測試在最小手機寬度下的顯示效果</p>
+                <div class="w-80 mx-auto border-2 border-red-400 p-3 rounded">
+                    <div class="text-red-500 text-xs mb-3 text-center">紅框 = 手機螢幕邊界 (320px)</div>
+                    <div id="mobile-test"></div>
+                </div>
+            </div>
+
+            <!-- 響應式測試 -->
+            <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800">3. 響應式測試</h2>
+                <p class="text-sm text-gray-600 mb-4">調整瀏覽器寬度測試響應式行為</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">桌面版</label>
+                        <div id="desktop-test"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">平板版</label>
+                        <div class="max-w-sm" id="tablet-test"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 深色模式測試 -->
+            <div class="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-900">
+                <h2 class="text-lg font-semibold mb-3 text-white">4. 深色模式測試</h2>
+                <p class="text-sm text-gray-300 mb-4">測試在深色背景下的顯示效果</p>
+                <div id="dark-test"></div>
+            </div>
+
+            <!-- 長文字測試 -->
+            <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800">5. 長文字測試</h2>
+                <p class="text-sm text-gray-600 mb-4">測試輸入長地址時的顯示效果</p>
+                <div id="long-text-test"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AddressInput 組件 -->
+    <script type="text/babel" src="../components/LocationManager/AddressInput.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function TestInput({ initialValue = '', darkMode = false }) {
+            const [value, setValue] = useState(initialValue);
+
+            const mockTranslations = {
+                enterAddress: '輸入地址或地標名稱'
+            };
+
+            return (
+                <div>
+                    <AddressInput
+                        addressInput={value}
+                        setAddressInput={setValue}
+                        onAddressConfirm={() => console.log('Address confirmed:', value)}
+                        onFocus={() => console.log('Input focused')}
+                        onBlur={() => console.log('Input blurred')}
+                        translations={mockTranslations}
+                    />
+                    <div className={`mt-3 text-sm px-3 py-2 rounded ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                        <strong>當前值:</strong> {value || '(空)'}
+                    </div>
+                </div>
+            );
+        }
+
+        // 等待組件載入完成後渲染
+        setTimeout(() => {
+            ReactDOM.render(<TestInput />, document.getElementById('basic-test'));
+            ReactDOM.render(<TestInput />, document.getElementById('mobile-test'));
+            ReactDOM.render(<TestInput />, document.getElementById('desktop-test'));
+            ReactDOM.render(<TestInput />, document.getElementById('tablet-test'));
+            ReactDOM.render(<TestInput darkMode={true} />, document.getElementById('dark-test'));
+            ReactDOM.render(
+                <TestInput initialValue="台南市中西區民族路二段76-10號 舞鶴台南民宿 附近的美食餐廳推薦" />, 
+                document.getElementById('long-text-test')
+            );
+        }, 100);
+    </script>
+</body>
+
+</html>
+</content>

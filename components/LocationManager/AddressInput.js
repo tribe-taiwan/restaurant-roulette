@@ -29,20 +29,28 @@ function AddressInput({
     };
 
     return (
-      <div className="address-input-wrapper">
-        <div className="address-input-icon">🔍</div>
-        <input
-          type="text"
-          value={addressInput}
-          onChange={handleInputChange}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          placeholder={t.enterAddress}
-          className="address-input-field"
-          onKeyPress={handleKeyPress}
-          maxLength="200"
-        />
-      </div>
+      <input
+        type="text"
+        value={addressInput}
+        onChange={handleInputChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        placeholder={t.enterAddress}
+        className="w-full px-4 py-3 text-base 
+                   bg-white dark:bg-gray-800 
+                   border-2 border-gray-300 dark:border-gray-600 
+                   rounded-lg 
+                   placeholder-gray-500 dark:placeholder-gray-400 
+                   text-gray-900 dark:text-white 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                   hover:border-gray-400 dark:hover:border-gray-500 
+                   transition-colors duration-200 
+                   min-h-[48px] box-border
+                   sm:px-3 sm:py-2 sm:min-h-[44px]"
+        onKeyPress={handleKeyPress}
+        maxLength="200"
+        style={{ fontSize: '16px' }} // 防止iOS縮放
+      />
     );
   } catch (error) {
     console.error('AddressInput component error:', error);

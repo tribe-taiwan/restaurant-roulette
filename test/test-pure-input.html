@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>純淨輸入框測試</title>
+
+    <style>
+        /* 完全重置所有樣式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #007ACC;
+            --surface-color: #ffffff;
+            --border-color: #d1d5db;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --unified-border-radius: 8px;
+            --spacing-lg: 16px;
+            --font-size-base: 16px;
+            --font-weight-normal: 400;
+            --transition-normal: 0.2s ease;
+            --button-height-medium: 48px;
+        }
+
+        body {
+            background: #f9fafb;
+            color: #1f2937;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        p {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        /* 純淨的輸入框樣式 */
+        .clean-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+            color: #1f2937;
+            transition: border-color 0.2s ease;
+            outline: none;
+        }
+
+        .clean-input:focus {
+            border-color: #007ACC;
+            box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.1);
+        }
+
+        .clean-input:hover {
+            border-color: #6b7280;
+        }
+
+        .clean-input::placeholder {
+            color: #6b7280;
+        }
+
+        .mobile-frame {
+            width: 320px;
+            border: 2px solid #ef4444;
+            padding: 10px;
+            margin: 0 auto;
+        }
+
+        .mobile-label {
+            color: #ef4444;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .value-display {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6b7280;
+            padding: 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>純淨輸入框測試</h1>
+
+        <div class="test-section">
+            <h2>1. 基本輸入框</h2>
+            <p>測試最基本的輸入框樣式，沒有任何框架干擾</p>
+            <input type="text" class="clean-input" placeholder="輸入地址或地標名稱" id="basic-input">
+            <div class="value-display" id="basic-value">當前值: (空)</div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. 手機寬度測試 (320px)</h2>
+            <p>測試在最小手機寬度下是否會突出螢幕邊界</p>
+            <div class="mobile-frame">
+                <div class="mobile-label">紅框 = 手機螢幕邊界 (320px)</div>
+                <input type="text" class="clean-input" placeholder="輸入地址或地標名稱" id="mobile-input">
+                <div class="value-display" id="mobile-value">當前值: (空)</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. 長文字測試</h2>
+            <p>測試輸入長地址時的顯示效果</p>
+            <input type="text" class="clean-input" placeholder="輸入地址或地標名稱" id="long-input" value="台南市中西區民族路二段76-10號 舞鶴台南民宿 附近的美食餐廳">
+            <div class="value-display" id="long-value">當前值: 台南市中西區民族路二段76-10號 舞鶴台南民宿 附近的美食餐廳</div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. 響應式測試</h2>
+            <p>調整瀏覽器寬度測試輸入框的響應式行為</p>
+            <input type="text" class="clean-input" placeholder="輸入地址或地標名稱" id="responsive-input">
+            <div class="value-display" id="responsive-value">當前值: (空)</div>
+        </div>
+    </div>
+
+    <script>
+        // 添加輸入監聽器
+        function setupInput(inputId, valueId) {
+            const input = document.getElementById(inputId);
+            const valueDisplay = document.getElementById(valueId);
+            
+            input.addEventListener('input', function() {
+                valueDisplay.textContent = '當前值: ' + (this.value || '(空)');
+            });
+            
+            input.addEventListener('focus', function() {
+                console.log(inputId + ' focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                console.log(inputId + ' blurred');
+            });
+        }
+
+        // 設定所有輸入框
+        setupInput('basic-input', 'basic-value');
+        setupInput('mobile-input', 'mobile-value');
+        setupInput('long-input', 'long-value');
+        setupInput('responsive-input', 'responsive-value');
+    </script>
+</body>
+
+</html>
+</content>

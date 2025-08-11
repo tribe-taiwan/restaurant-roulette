@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡化地址輸入框測試</title>
+
+    <!-- 樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+
+    <!-- React -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #007ACC;
+            --surface-color: #ffffff;
+            --border-color: #d1d5db;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --unified-border-radius: 8px;
+            --spacing-lg: 16px;
+            --font-size-base: 16px;
+            --font-weight-normal: 400;
+            --transition-normal: 0.2s ease;
+            --button-height-medium: 48px;
+        }
+
+        body {
+            background: #f9fafb;
+            color: #1f2937;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .test-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        /* 重置所有可能的干擾樣式 */
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; margin-bottom: 30px;">簡化地址輸入框測試</h1>
+
+        <div class="test-section">
+            <div class="test-title">1. 基本輸入框測試</div>
+            <div class="test-description">測試簡化後的地址輸入框是否正常顯示和工作</div>
+            <div id="basic-test"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. 手機寬度測試</div>
+            <div class="test-description">模擬手機寬度（320px）測試輸入框是否會突出螢幕</div>
+            <div style="width: 320px; border: 2px solid #ef4444; padding: 10px;">
+                <div style="color: #ef4444; font-size: 12px; margin-bottom: 10px;">紅框 = 手機螢幕邊界</div>
+                <div id="mobile-test"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. 桌面寬度測試</div>
+            <div class="test-description">測試在桌面環境下輸入框的顯示效果</div>
+            <div style="width: 100%; max-width: 500px;">
+                <div id="desktop-test"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AddressInput 組件 -->
+    <script type="text/babel" src="../components/LocationManager/AddressInput.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function TestInput({ testId }) {
+            const [value, setValue] = useState('');
+
+            const mockTranslations = {
+                enterAddress: '輸入地址或地標名稱'
+            };
+
+            return (
+                <div>
+                    <AddressInput
+                        addressInput={value}
+                        setAddressInput={setValue}
+                        onAddressConfirm={() => console.log('Address confirmed:', value)}
+                        onFocus={() => console.log('Input focused')}
+                        onBlur={() => console.log('Input blurred')}
+                        translations={mockTranslations}
+                    />
+                    <div style={{ marginTop: '10px', fontSize: '14px', color: '#6b7280' }}>
+                        當前值: {value || '(空)'}
+                    </div>
+                </div>
+            );
+        }
+
+        // 等待組件載入完成後渲染
+        setTimeout(() => {
+            ReactDOM.render(<TestInput testId="basic" />, document.getElementById('basic-test'));
+            ReactDOM.render(<TestInput testId="mobile" />, document.getElementById('mobile-test'));
+            ReactDOM.render(<TestInput testId="desktop" />, document.getElementById('desktop-test'));
+        }, 100);
+    </script>
+</body>
+
+</html>
+</content>
