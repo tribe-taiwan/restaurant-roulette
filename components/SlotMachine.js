@@ -1,5 +1,51 @@
 function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
   try {
+    // 追蹤按鈕點擊狀態
+    const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
+    
+    // 檢查當前餐廳是否已在候選清單中
+    const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate => 
+      (candidate.place_id && finalRestaurant.place_id && candidate.place_id === finalRestaurant.place_id) ||
+      (candidate.name && finalRestaurant.name && candidate.name === finalRestaurant.name)
+    );
+    
+    // 當候選清單被清空時重置按鈕狀態
+    React.useEffect(() => {
+      if (candidateList.length === 0) {
+        setButtonClickState('normal');
+      }
+    }, [candidateList.length]);
+    
+    // 處理輪盤按鈕點擊（重置加入按鈕狀態）
+    const handleSpinClick = () => {
+      setButtonClickState('normal');
+      onSpin(false);
+    };
+    
+    // 按鈕文字邏輯
+    const getAddCandidateButtonText = () => {
+      if (!finalRestaurant) return translations.addCandidate;
+      
+      
+      // 只有在點擊後才顯示狀態文字
+      if (buttonClickState === 'added') return translations.candidateAdded || '已加入';
+      if (buttonClickState === 'exists') return translations.candidateAlreadyExists || '加過了';
+      
+      // 默認狀態：顯示加入候選
+      return translations.addCandidate;
+    };
+    
+    // 處理加入候選按鈕點擊
+    const handleAddCandidateClick = () => {
+      if (!finalRestaurant || candidateList.length >= 9 || isSpinning) return;
+      
+      if (isRestaurantInCandidates) {
+        setButtonClickState('exists');
+      } else {
+        setButtonClickState('added');
+        onAddCandidate();
+      }
+    };
     // 🎬 滑動動畫配置中心 - 集中管理所有滑動動畫參數
     const getSlideAnimationConfig = React.useCallback(() => {
       // 動畫時間分配：前70%慢速移動10%距離，後30%加速完成90%距離
@@ -1212,7 +1258,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           <div className="grid grid-cols-[1fr_120px] gap-3 px-4">
             {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
             <button
-              onClick={() => onSpin(false)}
+              onClick={() => handleSpinClick()}
               className="min-h-[72px] p-3 rounded-lg border-2 
                          flex flex-col items-center justify-center text-white shadow-lg"
               style={{
@@ -1236,7 +1282,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
             {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
             <button
-              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning) ? null : onAddCandidate}
+              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning) ? null : handleAddCandidateClick}
               disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning}
               className="min-h-[72px] p-3 rounded-lg border-2 
                          flex flex-col items-center justify-center text-white shadow-lg"
@@ -1252,7 +1298,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               title={finalRestaurant && candidateList.length < 9 ? translations.addCandidate : ''}
             >
               <div className="text-xl font-bold text-center">
-                {translations.addCandidate}
+                {getAddCandidateButtonText()}
               </div>
             </button>
           </div>
