@@ -242,6 +242,7 @@
   justify-content: space-between;
   position: relative;
   height: 20px;
+  padding: 0 8px; /* 添加左右內距避免文字被裁切 */
 }
 
 .slider-mark {
@@ -251,6 +252,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* 修復第一個和最後一個標記的定位 */
+.slider-mark[style*="--position: 0%"] {
+  left: 8px !important; /* 第一個標記(1)固定在左邊界 */
+  transform: translateX(0);
+}
+
+.slider-mark[style*="--position: 100%"] {
+  left: auto !important;
+  right: 8px; /* 最後一個標記(10)固定在右邊界 */
+  transform: translateX(0);
 }
 
 .slider-mark::before {
