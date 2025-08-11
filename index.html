@@ -297,17 +297,66 @@
 
         .glow-container {
             box-shadow: none !important; /* 移除glow效果，實現與Banner無縫連接 */
-            margin-top: -24px !important; /* 強制向上移動覆蓋Banner底部間隙 */
+            /* 移除向上移動，改為讓Banner向下移動 */
         }
 
         /* 更具體的選擇器確保生效 */
         .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
             box-shadow: none !important; /* 移除glow效果，實現與Banner無縫連接 */
-            margin-top: -24px !important; /* 強制向上移動覆蓋Banner底部間隙 */
+            /* 移除向上移動，改為讓Banner向下移動 */
             z-index: 10 !important; /* 在Banner遮罩之上，但在Banner按鈕之下 */
             position: relative; /* 確保z-index生效 */
             border: 1px solid rgba(255, 255, 255, 0.2) !important; /* 細框線增加視覺分層 */
             backdrop-filter: blur(8px); /* 添加毛玻璃效果增加質感 */
+        }
+
+        /* 老虎機突出於Banner底部的視覺效果 */
+        .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
+            margin-top: -50px !important; /* 向上移動50px突出於Banner */
+            margin-left: 0px !important; /* 左右到底 */
+            margin-right: 0px !important; /* 左右到底 */
+            max-width: none !important; /* 移除最大寬度限制 */
+            width: 100% !important; /* 寬度100% */
+        }
+
+        /* 修復父容器padding，確保老虎機真正到底 */
+        .max-w-6xl.mx-auto.px-6 {
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+        }
+
+        .w-full.gpu-accelerated {
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+        }
+
+        /* 手機端響應式優化 */
+        @media (max-width: 768px) {
+            .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
+                margin-top: -30px !important; /* 手機端向上移動30px */
+                width: 100% !important;
+                margin-left: 0px !important;
+                margin-right: 0px !important;
+            }
+        }
+
+        /* Banner增加高度來露出更多圖片，讓老虎機重疊效果更明顯 */
+        .unified-banner-container {
+            min-height: 380px !important; /* 從330px增加到380px，多露出50px */
+            height: 380px !important; /* 固定高度讓老虎機重疊效果更明顯 */
+        }
+
+        /* Banner背景圖片保持覆蓋整個容器 */
+        .unified-banner-background {
+            height: 100% !important;
+        }
+
+        /* Banner右下角按鈕固定在原來的絕對位置，不跟著Banner下移 */
+        .unified-banner-social {
+            position: absolute !important; /* 使用absolute定位 */
+            top: 260px !important; /* 固定在原來Banner底部的位置（300px - 40px） */
+            right: 20px !important; /* 距離右邊20px */
+            z-index: 25 !important; /* 確保在所有內容之上 */
         }
         
         .slot-machine {
