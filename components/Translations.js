@@ -160,6 +160,7 @@ function createTranslations(brandSubtitle) {
     ja: {
       title: themeTranslations.ja,
       spinButton: "何を食べる？",
+      addCandidate: "候補に追加",
       spinning: "レストランを探しています...",
       locationError: "近くのレストランを見つけるために位置情報へのアクセスを許可してください。",
       locationLoading: "位置情報を取得しています...",
@@ -216,6 +217,7 @@ function createTranslations(brandSubtitle) {
     ko: {
       title: themeTranslations.ko,
       spinButton: "뭘 먹지?",
+      addCandidate: "후보 추가",
       spinning: "레스토랑을 찾고 있습니다...",
       locationError: "근처 레스토랑을 찾기 위해 위치 접근을 허용해주세요.",
       locationLoading: "위치를 가져오는 중...",
@@ -272,6 +274,7 @@ function createTranslations(brandSubtitle) {
     vi: {
       title: themeTranslations.vi,
       spinButton: "Ăn gì đây?",
+      addCandidate: "Thêm ứng viên",
       spinning: "Đang tìm nhà hàng...",
       locationError: "Vui lòng cho phép truy cập vị trí để tìm nhà hàng gần đây.",
       locationLoading: "Đang lấy vị trí của bạn...",
@@ -328,6 +331,7 @@ function createTranslations(brandSubtitle) {
     ms: {
       title: themeTranslations.ms,
       spinButton: "Makan apa?",
+      addCandidate: "Tambah calon",
       spinning: "Mencari restoran...",
       locationError: "Sila benarkan akses lokasi untuk mencari restoran berdekatan.",
       locationLoading: "Mendapatkan lokasi anda...",
