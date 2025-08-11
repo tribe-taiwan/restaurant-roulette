@@ -93,7 +93,26 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
     };
 
     return (
-      <div className="card w-full max-w-2xl mx-auto" data-name="restaurant-card" data-file="components/RestaurantCard.js">
+      <SettingsContainer>
+        <div data-name="restaurant-card" data-file="components/RestaurantCard.js">
+          {/* 地址顯示 - 與其他區塊統一風格 */}
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {restaurant.website && (
+                <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
+                  <div className="icon-globe text-xl text-gray-500 hover:text-blue-600 cursor-pointer"></div>
+                </a>
+              )}
+              <div className="text-2xl font-bold">
+                {restaurant.address}
+              </div>
+            </div>
+            {restaurant.phone && (
+              <div className="text-sm text-gray-600">
+                {restaurant.phone}
+              </div>
+            )}
+          </div>
         {/* Restaurant Header - 暫時註解掉 */}
         {/* 
         <div className="mb-6">
@@ -117,114 +136,75 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
         {/* Restaurant Info */}
         <div>
-            {/* 導航和網站圖示按鈕 */}
-            <div className="flex items-center gap-3 mb-6">
-              {/* 導航按鈕 */}
+            {/* 按鈕區塊 - 與其他區塊統一風格 */}
+            <div className="flex gap-3 mb-6">
+              {/* 導航按鈕 - 左邊 */}
               <a
                 href={getDirectionsUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                // --- 修改開始 ---
-                // 1. 新增 group 用於統一 hover 效果
-                // 2. 移除 w-12 h-12 justify-center
-                // 3. 新增 padding (px-4 py-3) 和 gap (gap-3)
-                className="group flex items-center gap-3 rounded-lg bg-[var(--surface-color)] px-4 py-3 text-[var(--text-primary)] transition-colors duration-200 border border-gray-600 hover:bg-[var(--primary-color)] hover:border-[var(--primary-color)] hover:text-white"
-                // --- 修改結束 ---
-                title={getTranslation('viewRoute')}
+                className="flex-1 min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                           flex flex-col items-center justify-center text-white shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                  borderColor: 'var(--theme-primary)'
+                }}
               >
-                {/* 4. 將 hover 效果改為 group-hover */}
-                <div className="icon-navigation text-[var(--primary-color)] text-xl"></div>
-                {/* 5. 將文字從 title 移到這裡，並套用樣式 */}
-                <span className="font-semibold">{getTranslation('viewRoute')}</span>
+                <div className="text-lg font-semibold text-center leading-tight">
+                  {getTranslation('viewRoute')}
+                </div>
+                <div className="text-lg mt-1 text-white opacity-90">
+                  <div className="icon-navigation"></div>
+                </div>
               </a>
 
-              {/* 網站按鈕 */}
-              {restaurant.website && (
-                <a
-                  href={restaurant.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  // --- 修改開始 ---
-                  className="group flex items-center gap-3 rounded-lg bg-[var(--surface-color)] px-4 py-3 text-[var(--text-primary)] transition-colors duration-200 border border-gray-600 hover:bg-[var(--primary-color)] hover:border-[var(--primary-color)] hover:text-white"
-                  // --- 修改結束 ---
-                  title={getTranslation('viewWebsite')}
-                >
-                  {/* 將 hover 效果改為 group-hover */}
-                  <div className="icon-globe text-xl"></div>
-                  {/* 移除文字，只保留圖示 */}
-                </a>
-              )}
+              {/* 營業狀態按鈕 - 右邊 */}
+              <div
+                className="flex-1 min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                           flex flex-col items-center justify-center shadow-lg"
+                style={{
+                  background: 'white',
+                  borderColor: '#e5e7eb'
+                }}
+              >
+                <div className="text-lg font-semibold text-center leading-tight text-gray-800">
+                  {restaurant.operatingStatus?.status === 'open' 
+                    ? getTranslation('openNow') || '營業中'
+                    : restaurant.operatingStatus?.status === 'closed'
+                      ? getTranslation('closed') || '已休息'
+                      : getTranslation('hoursUnknown') || '營業中'
+                  }
+                </div>
+                <div className="text-sm mt-1 flex items-center gap-1">
+                  {restaurant.phone && (
+                    <>
+                      <div className={`icon-phone w-4 h-4 ${
+                        restaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-red-600'
+                      }`}></div>
+                      <span className={`${
+                        restaurant.operatingStatus?.status === 'open' 
+                          ? 'text-green-600' 
+                          : 'text-red-600 line-through'
+                      }`}>
+                        {restaurant.phone}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4 mb-6">
-              <div className="flex items-start gap-3">
-                <div className="icon-map-pin text-lg mt-1"></div>
-                <div>
-                  <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('address')}
-                  </div>
-                  <span className="text-[var(--text-secondary)]">{restaurant.address}</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="icon-phone text-lg mt-1"></div>
-                <div>
-                  <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('phone')}
-                  </div>
-                  <a href={`tel:${restaurant.phone}`} className="hover:underline">
-                    {restaurant.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="icon-clock text-lg mt-1"></div>
-                <div>
-                  <div className="font-medium text-[var(--text-primary)] mb-1">
-                    {getTranslation('businessHours')}
-                  </div>
-                  <span className="text-[var(--text-secondary)]">{formatHours(restaurant.hours)}</span>
+            {/* 營業時間 - 單欄顯示 */}
+            <div className="space-y-3 mb-6">
+              <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                <div className="font-medium mb-2 text-black">{getTranslation('businessHours') || '營業時間'}</div>
+                <div className="space-y-1 text-gray-600">
+                  {formatHours(restaurant.hours)}
                 </div>
               </div>
             </div>
 
             {/* Cuisine Type 已移至星級評分右邊，此處移除 */}
-
-            {/* 營業狀態 - 改善排版 */}
-            {restaurant.operatingStatus && (
-              <div className={`rounded-lg p-4 mb-4 border-l-4 ${
-                restaurant.operatingStatus.status === 'open' 
-                  ? 'bg-green-50 border-green-500 dark:bg-green-900/20' 
-                  : restaurant.operatingStatus.status === 'closed' 
-                    ? 'bg-red-50 border-red-500 dark:bg-red-900/20' 
-                    : 'bg-yellow-50 border-yellow-500 dark:bg-yellow-900/20'
-              }`}>
-                <div className="flex items-start gap-3">
-                  <div className={`text-2xl ${
-                    restaurant.operatingStatus.status === 'open' ? 'text-green-600' : 
-                    restaurant.operatingStatus.status === 'closed' ? 'text-red-600' : 'text-yellow-600'
-                  }`}>
-                    {restaurant.operatingStatus.status === 'open' ? '✅' : 
-                     restaurant.operatingStatus.status === 'closed' ? '❌' : '🟡'}
-                  </div>
-                  <div>
-                    <div className={`font-semibold text-sm mb-1 ${
-                      restaurant.operatingStatus.status === 'open' ? 'text-green-800 dark:text-green-300' : 
-                      restaurant.operatingStatus.status === 'closed' ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'
-                    }`}>
-                      {restaurant.operatingStatus.status === 'open'
-                        ? getTranslation('openNow')
-                        : restaurant.operatingStatus.status === 'closed'
-                          ? getTranslation('closed')
-                          : getTranslation('hoursUnknown')
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
             
             {/* 非營業狀態警告 */}
             {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
@@ -306,7 +286,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </SettingsContainer>
     );
   } catch (error) {
     console.error('RestaurantCard component error:', error);
