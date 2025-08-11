@@ -730,3 +730,111 @@
   transform: scale(1.05);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
+/* 新的距離滑軌樣式 - 支援拖動 */
+.distance-slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  height: 44px; /* 觸控友好的高度 */
+  padding: 18px 0; /* 增加觸控區域 */
+}
+
+/* WebKit 滑軌軌道 */
+.distance-slider::-webkit-slider-track {
+  height: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* WebKit 滑軌拇指 */
+.distance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: var(--theme-shadow-md);
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.distance-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.distance-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+}
+
+/* Firefox 滑軌軌道 */
+.distance-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* Firefox 滑軌拇指 */
+.distance-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: var(--theme-shadow-md);
+  transition: all 0.2s ease;
+}
+
+.distance-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.distance-slider::-moz-range-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .distance-slider {
+    height: 48px; /* 手機上更大的觸控區域 */
+    padding: 20px 0;
+  }
+  
+  .distance-slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .distance-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* 焦點狀態 */
+.distance-slider:focus {
+  outline: none;
+}
+
+.distance-slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2), var(--theme-shadow-md);
+}
+
+.distance-slider:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2), var(--theme-shadow-md);
+}

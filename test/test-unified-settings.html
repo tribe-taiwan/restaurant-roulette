@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統一設定區塊測試</title>
+
+    <!-- 樣式 -->
+    <link rel="stylesheet" href="../components/shared/garmin-design-system.css">
+    <link rel="stylesheet" href="../components/LocationManager/LocationManager.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    
+    <!-- React -->
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #007ACC;
+            --surface-color: #ffffff;
+            --border-color: #d1d5db;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --unified-border-radius: 8px;
+            --spacing-lg: 16px;
+            --font-size-base: 16px;
+            --font-weight-normal: 400;
+            --transition-normal: 0.2s ease;
+            --button-height-medium: 48px;
+            --touch-target-min: 44px;
+        }
+
+        body {
+            background: #f9fafb;
+            color: #1f2937;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .glow-container {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-info {
+            background: #e0f2fe;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #0284c7;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+            text-align: center;
+            padding: 10px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mx-auto max-w-6xl">
+        <div class="test-info">
+            <h1 class="text-xl font-bold mb-2 text-blue-800">統一設定區塊樣式測試</h1>
+            <p class="text-sm text-blue-700">測試 LocationManager 和 SearchSettings 的統一樣式風格</p>
+        </div>
+
+        <div class="comparison-container">
+            <!-- LocationManager 區塊 -->
+            <div>
+                <div class="section-title">定位管理區塊</div>
+                <div id="location-manager-container"></div>
+            </div>
+
+            <!-- SearchSettings 區塊 -->
+            <div>
+                <div class="section-title">搜索設定區塊</div>
+                <div id="search-settings-container"></div>
+            </div>
+        </div>
+
+        <!-- 手機寬度測試 -->
+        <div class="test-info">
+            <h2 class="text-lg font-bold mb-2 text-blue-800">手機寬度測試</h2>
+            <p class="text-sm text-blue-700">在手機寬度下兩個區塊的顯示效果</p>
+        </div>
+
+        <div style="max-width: 400px; margin: 0 auto;">
+            <div class="mb-4">
+                <div class="section-title">定位管理 (手機版)</div>
+                <div id="mobile-location-container"></div>
+            </div>
+            
+            <div>
+                <div class="section-title">搜索設定 (手機版)</div>
+                <div id="mobile-search-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工具函數 -->
+    <script src="../utils/mealTimeConfig.js"></script>
+    
+    <!-- 共用組件 -->
+    <script type="text/babel" src="../components/SettingsContainer.js"></script>
+    
+    <!-- LocationManager 子組件 -->
+    <script type="text/babel" src="../components/LocationManager/CurrentLocationDisplay.js"></script>
+    <script type="text/babel" src="../components/LocationManager/QuickLocationButtons.js"></script>
+    <script type="text/babel" src="../components/LocationManager/AddressInput.js"></script>
+    <script type="text/babel" src="../components/LocationManager/LocationActions.js"></script>
+    <script type="text/babel" src="../components/LocationManager/index.js"></script>
+
+    <!-- SearchSettings 子組件 -->
+    <script type="text/babel" src="../components/SearchSettings/DistanceControl.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/MealTimeSelector.js"></script>
+    <script src="../components/SearchSettings/SettingsDisplay.js"></script>
+    <script type="text/babel" src="../components/SearchSettings/index.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 模擬翻譯對象
+        const mockTranslations = {
+            locationDetected: '已偵測到位置',
+            home: '住家',
+            office: '公司',
+            homeNotSet: '設定住家',
+            officeNotSet: '設定公司',
+            saveHome: '儲存住家',
+            saveOffice: '儲存公司',
+            useHomeTip: '使用已儲存的住家位置',
+            useOfficeTip: '使用已儲存的公司位置',
+            saveHomeTip: '將當前地址儲存為住家',
+            saveOfficeTip: '將當前地址儲存為公司',
+            enterAddressTip: '請先輸入地址',
+            enterAddress: '輸入地址或地標名稱',
+            relocate: '重新定位',
+            confirmAddress: '確認地址',
+            searchRadius: '搜索範圍',
+            mealTimeFilter: '用餐時段',
+            openNowFilter: '營業中',
+            anyTime: '任何時段',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐'
+        };
+
+        function TestLocationManager() {
+            const [addressInput, setAddressInput] = useState('');
+            const [savedLocations, setSavedLocations] = useState([
+                { type: 'home', address: '台南市中西區中正路1號', lat: 22.99, lng: 120.21 }
+            ]);
+
+            return (
+                <LocationManager
+                    locationStatus="success"
+                    userAddress="台南市中西區民族路二段76-10號"
+                    savedLocations={savedLocations}
+                    addressInput={addressInput}
+                    setAddressInput={setAddressInput}
+                    isGeocodingAddress={false}
+                    onRelocate={() => console.log('Relocate')}
+                    onAddressConfirm={() => console.log('Address confirmed')}
+                    onLocationButton={(type) => console.log('Location button:', type)}
+                    translations={mockTranslations}
+                    isRelocating={false}
+                    selectedLanguage="zh-TW"
+                    userLocation={{ lat: 22.99, lng: 120.21 }}
+                />
+            );
+        }
+
+        function TestSearchSettings() {
+            const [selectedMealTime, setSelectedMealTime] = useState('current');
+            const [baseUnit, setBaseUnit] = useState(200);
+            const [unitMultiplier, setUnitMultiplier] = useState(3);
+
+            return (
+                <SearchSettings
+                    selectedMealTime={selectedMealTime}
+                    setSelectedMealTime={setSelectedMealTime}
+                    translations={mockTranslations}
+                    selectedLanguage="zh-TW"
+                    baseUnit={baseUnit}
+                    setBaseUnit={setBaseUnit}
+                    unitMultiplier={unitMultiplier}
+                    setUnitMultiplier={setUnitMultiplier}
+                />
+            );
+        }
+
+        // 等待組件載入完成後渲染
+        setTimeout(() => {
+            ReactDOM.render(<TestLocationManager />, document.getElementById('location-manager-container'));
+            ReactDOM.render(<TestSearchSettings />, document.getElementById('search-settings-container'));
+            ReactDOM.render(<TestLocationManager />, document.getElementById('mobile-location-container'));
+            ReactDOM.render(<TestSearchSettings />, document.getElementById('mobile-search-container'));
+        }, 100);
+    </script>
+</body>
+
+</html>
+</content>

@@ -482,6 +482,34 @@ LocationButtons 組件樣式 */
 
 /* AddressInput 組件樣式已移至 Tailwind CSS 類別 */
 
+/* SearchSettings 統一樣式 - 與 LocationManager 保持一致 */
+.search-settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 由子元素的padding控制間距 */
+  width: 100%;
+}
+
+.search-section {
+  padding: var(--spacing-lg);
+  /* 移除所有邊框 - 保持一致 */
+  border-bottom: none;
+
+  /* 確保每個區塊都有足夠的觸控空間 */
+  min-height: var(--touch-target-min);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  /* 性能優化 */
+  contain: layout;
+}
+
+/* 最後一個區塊不需要底部邊框 */
+.search-section-last {
+  border-bottom: none;
+}
+
 /* Location
 Actions 組件樣式 */
 .location-actions {

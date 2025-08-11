@@ -1,5 +1,5 @@
-// DistanceControl.js - Garmin風格距離控制子組件
-// 包含大型單位切換器和視覺化距離滑軌
+// DistanceControl.js - 距離控制子組件
+// 統一使用 React 組件和 Tailwind CSS 樣式
 
 function DistanceControl({
   baseUnit,
@@ -39,108 +39,95 @@ function DistanceControl({
       setUnitMultiplier(adjustedMultiplier);
     };
 
-    // 創建主容器（移除背景框架樣式）
-    const container = document.createElement('div');
-    container.className = 'distance-control-content';
+    return (
+      <div className="space-y-4">
+        {/* 距離顯示 */}
+        <div className="text-center mb-4">
+          <div className="text-2xl font-bold mb-1">
+            {getDisplayText()}
+          </div>
+          <div className="text-sm text-gray-600">
+            {translations.searchRadius || '搜索範圍'}
+          </div>
+        </div>
 
-    // 大型距離顯示
-    const distanceDisplay = document.createElement('div');
-    distanceDisplay.className = 'distance-display';
-    
-    const distanceValue = document.createElement('span');
-    distanceValue.className = 'distance-value';
-    distanceValue.textContent = getDisplayText();
-    
-    const distanceLabel = document.createElement('span');
-    distanceLabel.className = 'distance-label';
-    distanceLabel.textContent = translations.searchRadius || '搜索範圍';
-    
-    distanceDisplay.appendChild(distanceValue);
-    distanceDisplay.appendChild(distanceLabel);
+        {/* 單位切換器 */}
+        <div className="flex gap-2">
+          {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config]) => (
+            <button
+              key={value}
+              onClick={() => handleUnitSwitch(Number(value))}
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 min-h-[48px] ${
+                baseUnit === Number(value)
+                  ? 'text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+              }`}
+              style={baseUnit === Number(value) ? {
+                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))'
+              } : {}}
+              aria-label={`切換到${config.fullLabel}`}
+              aria-pressed={baseUnit === Number(value)}
+            >
+              {config.label}
+            </button>
+          ))}
+        </div>
 
-    // 大型單位切換器
-    const unitSwitcher = document.createElement('div');
-    unitSwitcher.className = 'unit-switcher';
-    
-    Object.entries(DISTANCE_CONFIG.baseUnits).forEach(([value, config]) => {
-      const button = document.createElement('button');
-      button.className = `unit-button ${baseUnit === Number(value) ? 'active' : ''}`;
-      button.textContent = config.label;
-      button.setAttribute('aria-label', `切換到${config.fullLabel}`);
-      button.setAttribute('aria-pressed', baseUnit === Number(value));
-      button.setAttribute('data-touch-optimized', 'true');
-      button.setAttribute('data-important-action', baseUnit === Number(value) ? 'false' : 'true');
-      button.addEventListener('click', () => handleUnitSwitch(Number(value)));
-      unitSwitcher.appendChild(button);
-    });
-
-    // 大型視覺化滑軌容器
-    const sliderContainer = document.createElement('div');
-    sliderContainer.className = 'slider-container';
-    
-    // 滑軌軌道
-    const sliderTrack = document.createElement('div');
-    sliderTrack.className = 'slider-track';
-    
-    // 滑軌進度條
-    const sliderProgress = document.createElement('div');
-    sliderProgress.className = 'slider-progress';
-    sliderProgress.style.setProperty('--progress', `${((unitMultiplier - 1) / (10 - 1)) * 100}%`);
-    
-    // 滑軌輸入
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = '1';
-    slider.max = '10';
-    slider.value = unitMultiplier;
-    slider.className = 'garmin-slider';
-    slider.setAttribute('aria-label', `搜索距離倍數: ${unitMultiplier}`);
-    slider.setAttribute('data-touch-optimized', 'true');
-    slider.style.minHeight = '44px'; // 確保觸控標準
-    slider.addEventListener('input', (e) => {
-      setUnitMultiplier(Number(e.target.value));
-      // 觸覺回饋
-      if (navigator.vibrate) {
-        navigator.vibrate(5);
-      }
-    });
-    
-    sliderTrack.appendChild(sliderProgress);
-    sliderTrack.appendChild(slider);
-    
-    // 滑軌刻度標記
-    const sliderMarks = document.createElement('div');
-    sliderMarks.className = 'slider-marks';
-    
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(mark => {
-      const markDiv = document.createElement('div');
-      markDiv.className = `slider-mark ${unitMultiplier === mark ? 'active' : ''}`;
-      markDiv.style.setProperty('--position', `${((mark - 1) / (10 - 1)) * 100}%`);
-      
-      const markLabel = document.createElement('span');
-      markLabel.className = 'mark-label';
-      markLabel.textContent = mark;
-      
-      markDiv.appendChild(markLabel);
-      sliderMarks.appendChild(markDiv);
-    });
-    
-    sliderContainer.appendChild(sliderTrack);
-    sliderContainer.appendChild(sliderMarks);
-
-    // 組裝所有元素
-    container.appendChild(distanceDisplay);
-    container.appendChild(unitSwitcher);
-    container.appendChild(sliderContainer);
-
-    return container;
+        {/* 距離滑軌 */}
+        <div className="space-y-2">
+          {/* 滑軌容器 */}
+          <div className="relative">
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={unitMultiplier}
+              onChange={(e) => setUnitMultiplier(Number(e.target.value))}
+              onInput={(e) => setUnitMultiplier(Number(e.target.value))} // 支援即時更新
+              className="distance-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              aria-label={`搜索距離倍數: ${unitMultiplier}`}
+              style={{
+                background: `linear-gradient(to right, 
+                  var(--theme-primary) 0%, 
+                  var(--theme-primary) ${((unitMultiplier - 1) / 9) * 100}%, 
+                  #e5e7eb ${((unitMultiplier - 1) / 9) * 100}%, 
+                  #e5e7eb 100%)`,
+                borderRadius: '6px',
+                height: '8px',
+                minHeight: '44px', // 確保觸控友好的點擊區域
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
+              }}
+            />
+          </div>
+          
+          {/* 刻度標記 */}
+          <div className="flex justify-between text-xs text-gray-500 px-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(mark => (
+              <span
+                key={mark}
+                className={`transition-colors duration-200 ${
+                  unitMultiplier === mark ? 'font-semibold' : ''
+                }`}
+                style={unitMultiplier === mark ? {
+                  color: 'var(--theme-primary)'
+                } : {}}
+              >
+                {mark}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   } catch (error) {
     console.error('DistanceControl component error:', error);
     return null;
   }
 }
 
-// 導出組件
+// 安全的模組匯出
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = DistanceControl;
 } else if (typeof window !== 'undefined') {

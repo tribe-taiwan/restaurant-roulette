@@ -15,15 +15,12 @@ function CurrentLocationDisplay({
     }
 
     return (
-      <div className="current-location-display">
-        <div className="current-location-icon icon-map-pin"></div>
-        <div className="current-location-text">
-          <div className="current-location-label">
-            {t.locationDetected}
-          </div>
-          <div className="current-location-address">
-            {userAddress}
-          </div>
+      <div className="text-center mb-4">
+        <div className="text-2xl font-bold mb-1">
+          {userAddress}
+        </div>
+        <div className="text-sm text-gray-600">
+          {t.locationDetected}
         </div>
       </div>
     );
