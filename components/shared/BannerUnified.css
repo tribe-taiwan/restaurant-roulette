@@ -367,13 +367,47 @@
   align-items: center;
   justify-content: center;
   z-index: 20;
-  
+
   /* 使用統一文字系統 */
   color: white; /* BANNER文字通常為白色以確保對比度 */
   text-align: center;
-  
+
   /* 統一間距 */
   padding: var(--spacing-2xl);
+}
+
+/* 文字容器樣式 - 固定主標題位置 */
+.unified-banner-text-container {
+  position: relative;
+  /* 使用固定的佈局來確保主標題位置一致 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 200px; /* 給予足夠空間 */
+}
+
+/* 主標題固定位置 */
+.unified-banner-text-container .unified-banner-title {
+  /* 固定主標題在容器頂部的位置 */
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 副標題樣式調整 */
+.unified-banner-text-container .unified-banner-subtitle {
+  /* 副標題緊接在主標題下方，不影響主標題位置 */
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  /* 當副標題不存在時，不佔用空間 */
+  min-height: 0;
+}
+
+/* 回民宿家連結位置調整 */
+.unified-banner-text-container .unified-banner-home-link {
+  /* 固定在底部位置 */
+  margin-top: auto;
+  margin-bottom: 0;
 }
 
 /* ===== BANNER文字排版統一樣式 ===== */

@@ -102,7 +102,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               }}
             />
             <div className="unified-banner-content">
-              <div className="text-center">
+              <div className="unified-banner-text-container">
                 <h1
                   className="unified-banner-title"
                   onClick={() => {
@@ -156,7 +156,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                 }}
               />
               <div className="unified-banner-content">
-                <div className="text-center">
+                <div className="unified-banner-text-container">
                   <h1
                     className="unified-banner-title"
                     onClick={() => {
@@ -208,7 +208,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                 }}
               />
               <div className="unified-banner-content">
-                <div className="text-center">
+                <div className="unified-banner-text-container">
                   <h1
                     className="unified-banner-title"
                     onClick={() => {

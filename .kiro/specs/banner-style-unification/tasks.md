@@ -34,7 +34,7 @@
   - 更新所有控制元素和文字區域的CSS類別
   - _Requirements: 1.1, 1.2, 2.1, 3.1, 5.2_
 
-- [ ] 5. 在主HTML文件中引入統一樣式
+- [x] 5. 在主HTML文件中引入統一樣式
   - 在 `index.html` 中添加BannerUnified.css的引用
   - 確保樣式載入順序正確
   - _Requirements: 5.1_
