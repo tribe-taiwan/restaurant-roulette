@@ -89,22 +89,22 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
   const nextThemeData = themes[nextIndex];
 
   return (
-    <div className="relative w-full min-h-[300px] mb-8 rounded-lg overflow-hidden group">
+    <div className="unified-banner-container group">
       {/* 滑動容器 */}
       <div className="absolute inset-0 overflow-hidden">
         {!isSliding ? (
           /* 靜態顯示當前主題 */
           <div className="absolute inset-0 w-full h-full">
             <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              className="unified-banner-background"
               style={{
                 backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
               }}
             />
-            <div className="absolute inset-0 flex items-center justify-center z-20">
-              <div className="text-center text-white">
-                <h1 
-                  className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+            <div className="unified-banner-content">
+              <div className="text-center">
+                <h1
+                  className="unified-banner-title"
                   onClick={() => {
                     if (window.navigateToHomeBase) {
                       window.navigateToHomeBase();
@@ -115,12 +115,12 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   {t?.title || '甲崩喔'}
                 </h1>
                 {selectedLanguage !== 'zh' && brandSubtitle && (
-                  <h3 className="text-lg md:text-xl opacity-90 drop-shadow-md">
+                  <h3 className="unified-banner-subtitle">
                     {brandSubtitle}
                   </h3>
                 )}
-                <div 
-                  className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
+                <div
+                  className="unified-banner-home-link home-pulse"
                   onClick={() => {
                     if (window.navigateToHomeBase) {
                       window.navigateToHomeBase();
@@ -150,15 +150,15 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               }}
             >
               <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                className="unified-banner-background"
                 style={{
                   backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
-              <div className="absolute inset-0 flex items-center justify-center z-20">
-                <div className="text-center text-white">
-                  <h1 
-                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+              <div className="unified-banner-content">
+                <div className="text-center">
+                  <h1
+                    className="unified-banner-title"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
@@ -169,12 +169,12 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 className="text-lg md:text-xl opacity-90 drop-shadow-md">
+                    <h3 className="unified-banner-subtitle">
                       {brandSubtitle}
                     </h3>
                   )}
-                  <div 
-                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
+                  <div
+                    className="unified-banner-home-link home-pulse"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
@@ -202,15 +202,15 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               }}
             >
               <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                className="unified-banner-background"
                 style={{
                   backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${nextThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
-              <div className="absolute inset-0 flex items-center justify-center z-20">
-                <div className="text-center text-white">
-                  <h1 
-                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+              <div className="unified-banner-content">
+                <div className="text-center">
+                  <h1
+                    className="unified-banner-title"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
@@ -221,12 +221,12 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 className="text-lg md:text-xl opacity-90 drop-shadow-md">
+                    <h3 className="unified-banner-subtitle">
                       {brandSubtitle}
                     </h3>
                   )}
-                  <div 
-                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
+                  <div
+                    className="unified-banner-home-link home-pulse"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();

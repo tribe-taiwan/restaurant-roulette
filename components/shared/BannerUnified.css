@@ -376,20 +376,110 @@
   padding: var(--spacing-2xl);
 }
 
+/* ===== BANNER文字排版統一樣式 ===== */
+
 /* 主標題樣式 */
 .unified-banner-title {
-  /* 響應式字體大小 */
+  /* 響應式字體大小 - 使用統一設計系統變數 */
   font-size: clamp(var(--font-size-2xl), 4vw, 4rem);
   font-weight: var(--font-weight-bold);
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
   margin-bottom: var(--spacing-sm);
-  
+
   /* 文字陰影增強可讀性 */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  
+  color: white; /* BANNER文字通常為白色以確保對比度 */
+
   /* 統一的互動效果 */
   cursor: pointer;
   transition: all var(--transition-normal);
+}
+
+.unified-banner-title:hover {
+  transform: var(--hover-scale);
+  filter: var(--hover-brightness);
+}
+
+.unified-banner-title:active {
+  transform: var(--active-scale);
+}
+
+/* 副標題樣式 */
+.unified-banner-subtitle {
+  /* 響應式字體大小 */
+  font-size: clamp(var(--font-size-lg), 2vw, var(--font-size-xl));
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--spacing-md);
+
+  /* 文字陰影和透明度 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: white;
+  opacity: 0.9;
+
+  /* 統一過渡效果 */
+  transition: all var(--transition-normal);
+}
+
+/* 回民宿家連結樣式 */
+.unified-banner-home-link {
+  /* 字體樣式 */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+
+  /* 顏色和透明度 */
+  color: white;
+  opacity: 0.8;
+
+  /* 佈局 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+
+  /* 互動效果 */
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.unified-banner-home-link:hover {
+  opacity: 1;
+  transform: var(--hover-transform);
+}
+
+.unified-banner-home-link:active {
+  transform: var(--active-transform);
+}
+
+/* 響應式文字縮放 */
+@media (max-width: 768px) {
+  .unified-banner-title {
+    font-size: clamp(var(--font-size-xl), 6vw, var(--font-size-3xl));
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .unified-banner-subtitle {
+    font-size: clamp(var(--font-size-md), 3vw, var(--font-size-lg));
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .unified-banner-home-link {
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .unified-banner-title {
+    font-size: clamp(var(--font-size-lg), 8vw, var(--font-size-2xl));
+  }
+
+  .unified-banner-subtitle {
+    font-size: clamp(var(--font-size-sm), 4vw, var(--font-size-md));
+  }
 }
 
 .unified-banner-title:hover {
