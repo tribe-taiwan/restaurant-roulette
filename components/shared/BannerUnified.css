@@ -12,18 +12,20 @@
   /* 使用統一佈局系統 */
   width: 100%;
   max-width: 100%; /* BANNER通常需要全寬顯示 */
-  margin: 0 auto var(--spacing-2xl) auto;
+  margin: 0 auto 0 auto; /* 移除底部間距，實現與整合區塊無縫連接 */
   padding: 0;
-  
+
   /* 使用統一設計系統 - 注意背景圖片不使用圓角 */
   border-radius: 0; /* 背景圖片容器不使用圓角 */
+  border: none; /* 確保沒有任何邊框 */
   box-shadow: none; /* 移除陰影，避免產生邊框線 */
+  outline: none; /* 移除輪廓線 */
   overflow: hidden;
-  
+
   /* 響應式高度 */
   min-height: 300px;
   position: relative;
-  
+
   /* 統一的過渡效果 */
   transition: all var(--transition-normal);
 }

@@ -23,7 +23,7 @@
   padding: var(--fluid-spacing-xl);
   margin-bottom: 0; /* 移除底部間距，由統一系統控制 */
   box-shadow: var(--theme-shadow-md);
-  border: 1px solid var(--border-color);
+  border: none; /* 移除邊框，避免與Banner產生視覺分隔線 */
   transition: all var(--transition-normal);
   
   /* 使用統一寬度系統 */
