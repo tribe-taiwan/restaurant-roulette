@@ -245,8 +245,8 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
         )}
       </div>
 
-      {/* 語言選擇器 - 右上角 */}
-      <div className="absolute top-4 right-4 z-30">
+      {/* 語言選擇器 - 固定右上角 */}
+      <div className="absolute top-4 right-4 z-40">
         <LanguageSelector
           selectedLanguage={selectedLanguage}
           onLanguageChange={onLanguageChange}

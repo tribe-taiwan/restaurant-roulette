@@ -43,7 +43,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
           </button>
           
           {isOpen && (
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 z-30 min-w-[160px]">
+            <div className="absolute top-full right-0 mt-2 bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 z-30 min-w-[160px]">
               {languages.map((lang) => (
                 <button
                   key={lang.code}
