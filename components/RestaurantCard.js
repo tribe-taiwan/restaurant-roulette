@@ -95,6 +95,18 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
     return (
       <SettingsContainer>
         <div data-name="restaurant-card" data-file="components/RestaurantCard.js">
+          {/* 非營業狀態警告 - 移到最上面 */}
+          {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
+            <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="icon-alert-triangle text-red-600 text-lg"></div>
+                <span className="text-red-700 font-medium text-sm">
+                  {getTranslation('temporarilyClosed') || '暫停營業'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* 地址顯示 - 與其他區塊統一風格 */}
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -207,18 +219,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             </div>
 
             {/* Cuisine Type 已移至星級評分右邊，此處移除 */}
-            
-            {/* 非營業狀態警告 */}
-            {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
-              <div className="bg-[var(--warning-color)] bg-opacity-20 border border-[var(--warning-color)] rounded-lg p-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="icon-alert-triangle text-[var(--warning-color)] text-lg"></div>
-                  <span className="text-[var(--warning-color)] font-medium text-sm">
-                    {getTranslation('temporarilyClosed')}
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* 非營業狀態警告已移至頂部 */}
         </div>
 
         {/* TODO: Google菜單功能 - 需要額外的Places Details API呼叫 */}

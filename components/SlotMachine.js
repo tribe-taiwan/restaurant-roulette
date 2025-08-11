@@ -22,15 +22,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       onSpin(false);
     };
     
+    // 檢查餐廳是否可以加入候選（營業狀態檢查）
+    const isRestaurantOperational = (restaurant) => {
+      if (!restaurant) return false;
+      // 檢查營業狀態，只有OPERATIONAL的餐廳才能加入候選
+      return !restaurant.businessStatus || restaurant.businessStatus === 'OPERATIONAL';
+    };
+
     // 按鈕文字邏輯
     const getAddCandidateButtonText = () => {
       if (!finalRestaurant) return translations.addCandidate;
-      
-      
+
+      // 檢查營業狀態
+      if (!isRestaurantOperational(finalRestaurant)) return '暫停營業';
+
+      // 檢查候選列表是否已滿
+      if (candidateList.length >= 9) return translations.listFull || '名單已滿';
+
       // 只有在點擊後才顯示狀態文字
       if (buttonClickState === 'added') return translations.candidateAdded || '已加入';
       if (buttonClickState === 'exists') return translations.candidateAlreadyExists || '加過了';
-      
+
       // 默認狀態：顯示加入候選
       return translations.addCandidate;
     };
@@ -1395,20 +1407,23 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
             {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
             <button
-              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning) ? null : handleAddCandidateClick}
-              disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning}
-              className="min-h-[72px] p-3 rounded-lg border-2 
+              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? null : handleAddCandidateClick}
+              disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)}
+              className="min-h-[72px] p-3 rounded-lg border-2
                          flex flex-col items-center justify-center text-white shadow-lg"
               style={{
-                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                borderColor: 'var(--theme-primary)',
+                background: !isRestaurantOperational(finalRestaurant) ?
+                  'linear-gradient(135deg, #9CA3AF, #6B7280)' : // 灰色漸層表示暫停營業
+                  'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                borderColor: !isRestaurantOperational(finalRestaurant) ? '#6B7280' : 'var(--theme-primary)',
                 touchAction: 'manipulation',
                 transition: 'none',
                 margin: 0,
-                opacity: (!finalRestaurant || candidateList.length >= 9) ? 0.3 : (isSpinning ? 0.5 : 1),
-                cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning) ? 'not-allowed' : 'pointer'
+                opacity: (!finalRestaurant || candidateList.length >= 9 || !isRestaurantOperational(finalRestaurant)) ? 0.3 : (isSpinning ? 0.5 : 1),
+                cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? 'not-allowed' : 'pointer'
               }}
-              title={finalRestaurant && candidateList.length < 9 ? translations.addCandidate : ''}
+              title={finalRestaurant && candidateList.length < 9 && isRestaurantOperational(finalRestaurant) ? translations.addCandidate :
+                     !isRestaurantOperational(finalRestaurant) ? '餐廳暫停營業，無法加入候選' : ''}
             >
               <div className="text-xl font-bold text-center">
                 {getAddCandidateButtonText()}
