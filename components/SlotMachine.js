@@ -117,7 +117,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       style.textContent = config.keyframes;
       document.head.appendChild(style);
 
-      console.log(`🎬 滑動動畫配置已更新: 前${config.slowPhasePercent}%時間移動${config.slowMoveDistance}%距離`);
+      // RR_UI_081: 滑動動畫配置更新
+      window.RRLog?.debug('RR_UI_UPDATE', '滑動動畫配置已更新', {
+        slowPhasePercent: config.slowPhasePercent,
+        slowMoveDistance: config.slowMoveDistance
+      });
 
       return config;
     }, [getSlideAnimationConfig]);
@@ -221,7 +225,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           if (totalAvailableCount === 0) {
             // 快取為空時（如搜索條件變化），使用較大的默認範圍為新餐廳預留空間
             maxRange = Math.min(defaultRangeWhenEmpty, 200);
-            console.log(`🔄 快取為空，使用默認預載入範圍: ${maxRange}家`);
+            // RR_UI_082: 快取為空使用默認範圍
+            window.RRLog?.debug('RR_UI_UPDATE', '快取為空，使用默認預載入範圍', {
+              maxRange
+            });
           } else {
             // 有可用餐廳時，基於實際數量動態調整
             maxRange = Math.min(Math.max(totalAvailableCount + allRestaurants.length, minRange), 200);
@@ -299,7 +306,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     return updated;
                   });
                 }).catch(error => {
-                  console.warn(`❌ 預載入失敗 (${restaurant.name}):`, error.message);
+                  // RR_UI_063: 預載入失敗
+                  window.RRLog?.debug('RR_UI_ERROR', '預載入失敗', {
+                    restaurant: restaurant.name,
+                    error: error.message
+                  });
                   // 載入失敗時使用 fallback 圖片
                   const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
                   preloadImage(fallbackUrl).then(fallbackImg => {
@@ -314,7 +325,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       return updated;
                     });
                   }).catch(() => {
-                    console.warn(`❌ Fallback 圖片也載入失敗 (${restaurant.name})`);
+                    // RR_UI_064: Fallback圖片載入失敗
+                    window.RRLog?.warn('RR_UI_ERROR', 'Fallback圖片載入失敗', {
+                      restaurant: restaurant.name
+                    });
                   });
                 });
               }
@@ -325,29 +339,41 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const BACKGROUND_REFILL_THRESHOLD = 10; // 預載入池剩餘10家時觸發幕後補充
 
           if (availableFutureRestaurants <= BACKGROUND_REFILL_THRESHOLD && availableFutureRestaurants > 0 && userLocation) {
-            console.log(`🔔 預載入池不足警告: 剩餘${availableFutureRestaurants}家可用餐廳，觸發幕後補充`);
+            // RR_UI_083: 預載入池不足警告
+            window.RRLog?.info('RR_UI_UPDATE', '預載入池不足警告，觸發幕後補充', {
+              remainingRestaurants: availableFutureRestaurants
+            });
 
             // 幕後觸發API搜索，不影響用戶體驗，不觸發老虎機
             setTimeout(async () => {
               try {
                 if (window.getRandomRestaurant) {
-                  console.log('🔄 開始幕後補充餐廳...');
+                  // RR_UI_084: 開始幕後補充餐廳
+                  window.RRLog?.debug('RR_UI_UPDATE', '開始幕後補充餐廳');
                   await window.getRandomRestaurant(userLocation, selectedMealTime, {
                     baseUnit: 1000,
                     unitMultiplier: 2,
                     backgroundRefill: true // 標記為幕後補充，不觸發老虎機
                   });
-                  console.log('✅ 幕後餐廳補充完成');
+                  // RR_UI_085: 幕後餐廳補充完成
+                  window.RRLog?.debug('RR_UI_UPDATE', '幕後餐廳補充完成');
                 }
               } catch (error) {
-                console.warn('⚠️ 幕後餐廳補充失敗:', error.message);
+                // RR_UI_086: 幕後餐廳補充失敗
+                window.RRLog?.warn('RR_UI_ERROR', '幕後餐廳補充失敗', { error: error.message });
               }
             }, 200); // 延遲200ms執行，避免阻塞UI
           }
 
-          // 顯示動態預載入池狀態
-          const skipMsg = skippedNegativeCount > 0 ? `，跳過${skippedNegativeCount}個負數索引` : '';
-          console.log(`🔄 預載入池: ${newPool.size}張圖片，範圍${maxRange}家(±${halfRange})，可用${availableFutureRestaurants}家 (${currentRestaurant?.name || '無餐廳'})${skipMsg}`);
+          // RR_UI_072: 預載入池狀態更新
+          window.RRLog?.debug('RR_UI_UPDATE', '預載入池狀態更新', {
+            poolSize: newPool.size,
+            range: maxRange,
+            halfRange: halfRange,
+            availableRestaurants: availableFutureRestaurants,
+            currentRestaurant: currentRestaurant?.name || '無餐廳',
+            skippedNegative: skippedNegativeCount
+          });
 
           // 🎯 更新可用餐廳數量狀態
           setAvailableRestaurantsCount(availableFutureRestaurants);
@@ -356,7 +382,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         });
 
       } catch (error) {
-        console.warn('❌ 預載入池管理失敗:', error.message);
+        // RR_UI_065: 預載入池管理失敗
+        window.RRLog?.warn('RR_UI_ERROR', '預載入池管理失敗', { error: error.message });
       }
     }, [selectedMealTime, userLocation]);
 
@@ -366,17 +393,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 滑動轉場函數
     const triggerSlideTransition = React.useCallback((previousRestaurant, newRestaurant, direction = 'left', onComplete = null) => {
-      // 🔄 保留滑動轉場的關鍵LOG，因為這是我們最近在偵錯的功能
-      console.log('🔄 [SlotMachine] 滑動轉場觸發:', newRestaurant?.name);
+      // RR_UI_078: 滑動轉場觸發
+      window.RRLog?.debug('RR_UI_UPDATE', '滑動轉場觸發', {
+        restaurant: newRestaurant?.name,
+        direction
+      });
 
       // 🛡️ 協調機制：防止動畫衝突
       if (isSliding) {
-        console.log('❌ [SlotMachine] 滑動轉場被阻止: 已在滑動中');
+        // RR_UI_079: 滑動轉場被阻止-已在滑動中
+        window.RRLog?.debug('RR_UI_UPDATE', '滑動轉場被阻止: 已在滑動中');
         return;
       }
 
       if (isSpinning) {
-        console.log('❌ [SlotMachine] 滑動轉場被阻止: 輪盤動畫進行中');
+        // RR_UI_080: 滑動轉場被阻止-輪盤動畫中
+        window.RRLog?.debug('RR_UI_UPDATE', '滑動轉場被阻止: 輪盤動畫進行中');
         return;
       }
 
@@ -397,7 +429,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       if (newImg && !preloadedImages.has(newImg)) {
         // 緊急預載入，但不等待
         preloadImage(newImg).catch(error => {
-          console.warn('❌ 緊急預載入失敗:', error.message);
+          // RR_UI_066: 緊急預載入失敗
+          window.RRLog?.debug('RR_UI_ERROR', '緊急預載入失敗', { error: error.message });
         });
       }
 
@@ -434,7 +467,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 初始預載入：完全套用測試檔成功經驗 - 先載下一張，完成後載5張池
     React.useEffect(() => {
       const initializePreloading = async () => {
-        console.log('🚀 初始化預載入...');
+        // RR_UI_071: 初始化預載入
+        window.RRLog?.debug('RR_UI_UPDATE', '初始化預載入');
 
         // 1. 先預載下一張（還沒顯示的下一張餐廳）
         let nextRestaurant = null;
@@ -456,16 +490,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         if (nextRestaurant?.image) {
           try {
-            console.log(`⏳ [SlotMachine] 開始預載下一張: ${nextRestaurant.name}`);
+            // RR_UI_067: 開始預載下一張圖片
+            window.RRLog?.debug('RR_UI_UPDATE', '開始預載下一張圖片', {
+              restaurant: nextRestaurant.name
+            });
             await preloadImage(nextRestaurant.image);
-            console.log(`✅ [SlotMachine] 下一張圖片預載完成: ${nextRestaurant.name}`);
+            // RR_UI_068: 下一張圖片預載完成
+            window.RRLog?.debug('RR_UI_UPDATE', '下一張圖片預載完成', {
+              restaurant: nextRestaurant.name
+            });
           } catch (error) {
-            console.log(`❌ [SlotMachine] 下一張圖片預載失敗: ${nextRestaurant.name}`, error);
+            // RR_UI_069: 下一張圖片預載失敗
+            window.RRLog?.debug('RR_UI_ERROR', '下一張圖片預載失敗', {
+              restaurant: nextRestaurant.name,
+              error: error.message
+            });
           }
         }
 
         // 2. 下一張完成後，立刻預載5張池
-        console.log('🔄 [SlotMachine] 下一張完成，開始預載5張池...');
+        // RR_UI_070: 開始預載圖片池
+        window.RRLog?.debug('RR_UI_UPDATE', '下一張完成，開始預載圖片池');
         if (finalRestaurant) {
           managePreloadPool(finalRestaurant, restaurantHistory);
         } else if (nextRestaurant) {
@@ -481,7 +526,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     React.useEffect(() => {
       const handleRestaurantChanged = async (event) => {
         const { restaurant, history } = event.detail;
-        console.log('🎯 [SlotMachine] 立即響應餐廳變更:', restaurant.name);
+        // RR_UI_087: 立即響應餐廳變更
+        window.RRLog?.debug('RR_UI_UPDATE', '立即響應餐廳變更', { restaurant: restaurant.name });
 
         // 立即管理預載入池 - 異步處理
         await managePreloadPool(restaurant, history);
@@ -507,7 +553,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 預載入池變更時的簡化日誌
     React.useEffect(() => {
       if (preloadedImages.size > 0) {
-        console.log(`📊 預載入池: ${preloadedImages.size}張圖片已就緒`);
+        // RR_UI_073: 預載入池就緒
+        window.RRLog?.debug('RR_UI_UPDATE', '預載入池就緒', {
+          readyImages: preloadedImages.size
+        });
       }
     }, [preloadedImages.size]); // 只在大小變更時觸發
 
@@ -547,13 +596,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       "./assets/image/slot-machine/slot (22).jpg"
     ]);
 
-    // 自動偵測可用的slot圖片數量 - 支援多種格式且無數量限制
+    // 自動偵測可用的slot圖片數量 - 使用fetch避免404錯誤
     const autoDetectSlotImages = React.useCallback(async () => {
       const basePath = './assets/image/slot-machine';
       const detectedImages = [];
       const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
-      console.log('🔍 開始自動偵測slot圖片數量（支援多種格式）...');
+      // RR_UI_059: 開始自動偵測slot圖片
+      window.RRLog?.debug('RR_UI_UPDATE', '開始自動偵測slot圖片數量', {
+        supportedFormats: extensions
+      });
 
       let i = 1;
       while (true) {
@@ -564,24 +616,28 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const imagePath = `${basePath}/slot (${i})${ext}`;
 
           try {
-            // 使用 Image 物件靜默檢查圖片，完全不會在 console 顯示 404
-            await new Promise((resolve, reject) => {
-              const img = new Image();
-              img.onload = () => resolve();
-              img.onerror = () => reject();
-              img.src = imagePath;
+            // 使用fetch進行HEAD請求，避免下載圖片內容，減少404錯誤顯示
+            const response = await fetch(imagePath, {
+              method: 'HEAD',
+              cache: 'no-cache'
             });
 
-            detectedImages.push(imagePath);
-            imageFound = true;
-            break; // 找到就跳出副檔名迴圈
+            if (response.ok) {
+              detectedImages.push(imagePath);
+              imageFound = true;
+              break; // 找到就跳出副檔名迴圈
+            }
           } catch (error) {
-            // 繼續嘗試下一個副檔名
+            // 繼續嘗試下一個副檔名，不輸出錯誤
           }
         }
 
         if (!imageFound) {
-          console.log(`🏁 偵測完成，共找到 ${detectedImages.length} 張圖片 (slot (1) ~ slot (${detectedImages.length}))`);
+          // RR_UI_060: slot圖片偵測完成
+          window.RRLog?.info('RR_UI_UPDATE', 'slot圖片偵測完成', {
+            totalFound: detectedImages.length,
+            range: `slot (1) ~ slot (${detectedImages.length})`
+          });
           break; // 沒找到任何格式的圖片，停止搜尋
         }
 
@@ -589,12 +645,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         // 安全上限，避免無限迴圈
         if (i > 100) {
-          console.warn('⚠️ 達到圖片搜尋上限100張，停止搜尋');
+          // RR_UI_061: 達到圖片搜尋上限
+          window.RRLog?.warn('RR_UI_ERROR', '達到圖片搜尋上限100張，停止搜尋');
           break;
         }
       }
 
-      console.log(`✅ 成功載入 ${detectedImages.length} 張slot圖片，支援格式: ${extensions.join(', ')}`);
+      // RR_UI_062: slot圖片載入成功
+      window.RRLog?.info('RR_UI_UPDATE', 'slot圖片載入成功', {
+        count: detectedImages.length,
+        supportedFormats: extensions,
+        images: detectedImages.slice(0, 3).map(img => img.split('/').pop()) // 只顯示前3個檔名
+      });
+
       return detectedImages;
     }, []);
 
@@ -616,7 +679,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       // 🎯 API等待動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
       const apiWaitingScrollDistance = imageCount * itemWidth;
 
-      console.log(`🎯 動畫參數: ${imageCount}張圖，每張${timePerImage}s，apiWaiting總時間${apiWaitingTotalDuration}s，apiReceived總時間${apiReceivedTotalDuration}s`);
+      // RR_UI_088: 動畫參數計算
+      window.RRLog?.debug('RR_UI_UPDATE', '動畫參數計算', {
+        imageCount,
+        timePerImage,
+        apiWaitingTotalDuration,
+        apiReceivedTotalDuration
+      });
 
       // 動態創建CSS keyframes - 使用GPU加速的transform3d
       const keyframes = `
@@ -687,22 +756,36 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 組件初始化時自動偵測圖片
     React.useEffect(() => {
       autoDetectSlotImages().then(detectedImages => {
-        console.log('🔧 [DEBUG] 偵測到的圖片:', detectedImages);
+        // RR_UI_074: 偵測到的圖片
+        window.RRLog?.debug('RR_UI_UPDATE', '偵測到的圖片', {
+          images: detectedImages.slice(0, 5).map(img => img.split('/').pop()) // 只顯示前5個檔名
+        });
+
         if (detectedImages.length > 0) {
           // 🎲 一開始就亂數排序圖片順序，增加隨機性
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
-          console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
+
+          // RR_UI_075: 設定slot圖片
+          window.RRLog?.debug('RR_UI_UPDATE', '設定slot圖片', {
+            count: shuffledImages.length,
+            shuffled: true
+          });
 
           // 🎯 預先準備 API等待動畫序列，避免動畫開始時的計算延遲
           const preparedApiWaitingSequence = [...shuffledImages]; // 使用單組圖片，依賴CSS infinite循環
           setApiWaitingSequenceCache(preparedApiWaitingSequence);
-          console.log('🚀 [DEBUG] 預先準備 API等待序列:', preparedApiWaitingSequence.length, '張圖片');
+
+          // RR_UI_076: 預先準備API等待序列
+          window.RRLog?.debug('RR_UI_UPDATE', '預先準備API等待序列', {
+            sequenceLength: preparedApiWaitingSequence.length
+          });
 
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
           createDynamicAnimation(detectedImages.length, 0.5);
         } else {
-          console.warn('⚠️ [DEBUG] 沒有偵測到任何圖片，slotImages 將保持預設值');
+          // RR_UI_077: 沒有偵測到任何圖片
+          window.RRLog?.warn('RR_UI_ERROR', '沒有偵測到任何圖片，將保持預設值');
         }
       });
     }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
@@ -767,7 +850,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
      * 3. isSpinning=false → 停止動畫，顯示最終結果
      */
     React.useEffect(() => {
-      console.log('🎯 動畫狀態檢查:', {
+      // RR_UI_089: 動畫狀態檢查
+      window.RRLog?.debug('RR_UI_UPDATE', '動畫狀態檢查', {
         isSpinning,
         currentPhase: animationPhase,
         hasFinalRestaurant: !!finalRestaurant,
@@ -779,7 +863,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // =====================================
           // 情況：API等待模式中 + API已返回 → 立即切換到API接收模式
           // =====================================
-          console.log('🐌 slot_apiWaiting->slot_apiReceived 轉換觸發 - API已返回，開始最終過渡');
+          // RR_UI_090: API已返回開始最終過渡
+          window.RRLog?.debug('RR_UI_UPDATE', 'slot_apiWaiting->slot_apiReceived 轉換觸發，API已返回');
           setAnimationPhase('slot_apiReceived');
 
           // 🎲 每次轉動都亂數排序
@@ -791,10 +876,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // 使用與slot_apiWaiting模式相同的序列基礎
           if (apiWaitingSequenceCache.length > 0) {
             finalSequence.push(...apiWaitingSequenceCache);
-            console.log('🔗 使用slot_apiWaiting序列快取:', apiWaitingSequenceCache.length, '張');
+            // RR_UI_091: 使用slot_apiWaiting序列快取
+            window.RRLog?.debug('RR_UI_UPDATE', '使用slot_apiWaiting序列快取', {
+              cacheLength: apiWaitingSequenceCache.length
+            });
           } else {
             finalSequence.push(...shuffledSlots);
-            console.log('⚠️ Fallback: 使用shuffled slots');
+            // RR_UI_092: Fallback使用shuffled slots
+            window.RRLog?.debug('RR_UI_UPDATE', 'Fallback: 使用shuffled slots');
           }
 
           // 添加過渡圖片
@@ -803,7 +892,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           // 餐廳圖片作為最後一張
           finalSequence.push(finalRestaurant.image);
 
-          console.log('🔗 最終序列長度:', finalSequence.length, '張，餐廳圖片將緊接滑入');
+          // RR_UI_093: 最終序列長度
+          window.RRLog?.debug('RR_UI_UPDATE', '最終序列長度', {
+            sequenceLength: finalSequence.length,
+            note: '餐廳圖片將緊接滑入'
+          });
           setScrollingNames(finalSequence);
 
           // 動畫時間計算
@@ -811,7 +904,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const animationResult = createDynamicAnimation(actualSequenceLength, 0.5);
           const apiReceivedAnimationDuration = animationResult.apiReceivedDuration * 1000;
 
-          console.log('🎯 slot_apiReceived動畫: 序列長度', actualSequenceLength, '動畫時間', apiReceivedAnimationDuration / 1000, '秒');
+          // RR_UI_094: slot_apiReceived動畫參數
+          window.RRLog?.debug('RR_UI_UPDATE', 'slot_apiReceived動畫參數', {
+            sequenceLength: actualSequenceLength,
+            animationDuration: `${apiReceivedAnimationDuration / 1000}秒`
+          });
 
           setTimeout(() => {
             setAnimationPhase('idle');
@@ -831,12 +928,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             // 預載入池有可用餐廳，不需要觸發老虎機
             const availableCount = Array.from(preloadedImages.values())
               .filter(item => item && item.isAvailable === true).length;
-            console.log(`✅ 預載入池有${availableCount}家可用餐廳，跳過老虎機動畫`);
+            // RR_UI_095: 預載入池有可用餐廳跳過動畫
+            window.RRLog?.debug('RR_UI_UPDATE', '預載入池有可用餐廳，跳過老虎機動畫', {
+              availableCount
+            });
             setAnimationPhase('idle');
             return;
           }
 
-          console.log('⚡ 啟動slot_apiWaiting模式 - 等待API返回中...');
+          // RR_UI_096: 啟動slot_apiWaiting模式
+          window.RRLog?.debug('RR_UI_UPDATE', '啟動slot_apiWaiting模式 - 等待API返回中');
 
           requestAnimationFrame(() => {
             setAnimationPhase('slot_apiWaiting');
@@ -850,14 +951,22 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 waitingSequence.push(...apiWaitingSequenceCache);
               }
               setScrollingNames(waitingSequence);
-              console.log('⚡ slot_apiWaiting模式: 使用多組序列，總長度:', waitingSequence.length, '（', apiWaitingSequenceCache.length, 'x5）');
+              // RR_UI_097: slot_apiWaiting模式使用多組序列
+              window.RRLog?.debug('RR_UI_UPDATE', 'slot_apiWaiting模式: 使用多組序列', {
+                totalLength: waitingSequence.length,
+                cacheLength: apiWaitingSequenceCache.length,
+                multiplier: 5
+              });
             } else {
               // Fallback: 重複slotImages
               for (let i = 0; i < 5; i++) {
                 waitingSequence.push(...slotImages);
               }
               setScrollingNames(waitingSequence);
-              console.log('⚠️ slot_apiWaiting模式: Fallback多組slotImages，總長度:', waitingSequence.length);
+              // RR_UI_098: slot_apiWaiting模式Fallback
+              window.RRLog?.debug('RR_UI_UPDATE', 'slot_apiWaiting模式: Fallback多組slotImages', {
+                totalLength: waitingSequence.length
+              });
             }
           });
         }
@@ -1075,10 +1184,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       return `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${finalRestaurant.image}), url(${fallbackUrl})`;
                     } else if (slotImages.length > 0) {
                       const fallbackImage = slotImages[slotImages.length - 1];
-                      console.log('🔧 [DEBUG] 使用 slot fallback 圖片:', fallbackImage);
+                      // RR_UI_099: 使用slot fallback圖片
+                      window.RRLog?.debug('RR_UI_UPDATE', '使用 slot fallback 圖片', {
+                        fallbackImage: fallbackImage.split('/').pop()
+                      });
                       return `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${fallbackImage})`;
                     } else {
-                      console.log('🔧 [DEBUG] 使用預設漸層背景');
+                      // RR_UI_100: 使用預設漸層背景
+                      window.RRLog?.debug('RR_UI_UPDATE', '使用預設漸層背景');
                       return 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
                     }
                   })(),
@@ -1379,7 +1492,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       </div>
     );
   } catch (error) {
-    console.error('SlotMachine component error:', error);
+    // RR_UI_101: SlotMachine組件錯誤
+    window.RRLog?.error('RR_UI_ERROR', 'SlotMachine組件錯誤', { error: error.message });
     return null;
   }
 }

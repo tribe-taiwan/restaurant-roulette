@@ -165,7 +165,8 @@ function App() {
           setAddressInput
         });
       } catch (error) {
-        console.error('❌ 地址校正失敗:', error);
+        // RR_LOCATION_047: 地址校正失敗
+        window.RRLog?.error('RR_LOCATION_ERROR', '地址校正失敗', { error: error.message });
       } finally {
         setIsGeocodingAddress(false);
       }
@@ -240,17 +241,21 @@ function App() {
      * 停止正在進行的搜尋
      */
     const handleStopSearch = () => {
-      console.log('🛑 停止搜尋被觸發');
+      // RR_UI_048: 停止搜尋被觸發
+      window.RRLog?.info('RR_UI_CLICK', '停止搜尋被觸發');
       if (searchAbortController) {
-        console.log('🛑 中止控制器存在，正在中止...');
+        // RR_UI_049: 中止控制器存在
+        window.RRLog?.debug('RR_UI_UPDATE', '中止控制器存在，正在中止');
         searchAbortController.abort();
         setSearchAbortController(null);
       } else {
-        console.log('🛑 沒有中止控制器，直接停止動畫');
+        // RR_UI_050: 沒有中止控制器
+        window.RRLog?.debug('RR_UI_UPDATE', '沒有中止控制器，直接停止動畫');
       }
       setIsSpinning(false);
       setSpinError(null);
-      console.log('🛑 用戶停止搜尋完成');
+      // RR_UI_051: 用戶停止搜尋完成
+      window.RRLog?.info('RR_UI_UPDATE', '用戶停止搜尋完成');
     };
 
     /**
@@ -357,7 +362,8 @@ function App() {
           } catch (apiError) {
             // 檢查是否為用戶中止的請求
             if (apiError.name === 'AbortError') {
-              console.log('🛑 搜尋已被用戶中止');
+              // RR_UI_052: 搜尋已被用戶中止
+              window.RRLog?.debug('RR_UI_UPDATE', '搜尋已被用戶中止');
               return; // 用戶中止，不顯示錯誤
             }
             throw apiError; // 重新拋出其他錯誤
@@ -370,11 +376,13 @@ function App() {
       } catch (error) {
         // 檢查是否為用戶中止的請求
         if (error.name === 'AbortError') {
-          console.log('🛑 搜尋已被用戶中止');
+          // RR_UI_053: 搜尋已被用戶中止
+          window.RRLog?.debug('RR_UI_UPDATE', '搜尋已被用戶中止');
           return; // 用戶中止，不顯示錯誤也不設置錯誤狀態
         }
-        
-        console.error('❌ 餐廳搜索發生錯誤:', error);
+
+        // RR_SEARCH_054: 餐廳搜索發生錯誤
+        window.RRLog?.error('RR_SEARCH_ERROR', '餐廳搜索發生錯誤', { error: error.message });
         setSpinError(error.message);
         setIsSpinning(false);
         setSearchAbortController(null);
@@ -463,10 +471,13 @@ function App() {
 
     // 處理用戶主動搜尋餐廳（觸發滑動轉場）
     const handleUserSpin = async () => {
-      console.log('🎮 handleUserSpin 被觸發, isSpinning:', isSpinning);
+      // RR_UI_055: handleUserSpin被觸發
+      window.RRLog?.debug('RR_UI_CLICK', 'handleUserSpin被觸發', { isSpinning });
+      window.RRLog?.updateStats('ui', 'click');
       // 如果正在搜尋中，按按鈕停止搜尋
       if (isSpinning) {
-        console.log('🎮 偵測到正在搜尋中，呼叫停止搜尋');
+        // RR_UI_056: 偵測到正在搜尋中
+        window.RRLog?.debug('RR_UI_UPDATE', '偵測到正在搜尋中，呼叫停止搜尋');
         handleStopSearch();
         return;
       }
@@ -517,7 +528,8 @@ function App() {
           return null;
         }
       } catch (error) {
-        console.error('搜尋新餐廳失敗:', error);
+        // RR_SEARCH_057: 搜尋新餐廳失敗
+        window.RRLog?.error('RR_SEARCH_ERROR', '搜尋新餐廳失敗', { error: error.message });
         return null;
       }
     };
@@ -645,7 +657,8 @@ function App() {
       </div>
     );
   } catch (error) {
-    console.error('App component error:', error);
+    // RR_UI_058: App組件錯誤
+    window.RRLog?.error('RR_UI_ERROR', 'App組件錯誤', { error: error.message });
     return null;
   }
 }

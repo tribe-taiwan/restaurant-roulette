@@ -1,13 +1,7 @@
 // 移除import，使用全域函數
 
-// 簡單的日誌管理系統
-const logger = {
-  info: (message, ...args) => console.log('ℹ️', message, ...args),
-  success: (message, ...args) => console.log('✅', message, ...args),
-  warning: (message, ...args) => console.warn('⚠️', message, ...args),
-  error: (message, ...args) => console.error('❌', message, ...args),
-  debug: (message, ...args) => console.log('🔍', message, ...args)
-};
+// 統一LOG管理系統 - 使用全局logManager
+// RR_LOCATION_001: 位置工具初始化
 
 /**
  * 判斷是否為網路相關錯誤（需要重試）
@@ -35,10 +29,11 @@ async function retryApiCall(apiCall, options = {}) {
   try {
     return await apiCall();
   } catch (error) {
-    // 網路問題重試一次
-    console.log(`🔄 網路問題，${retryDelay/1000}秒後重試`);
+    // RR_API_002: API重試機制
+    window.RRLog?.info('RR_API_RETRY', `網路問題，${retryDelay/1000}秒後重試`);
+    window.RRLog?.updateStats('api', 'retry');
     await new Promise(resolve => setTimeout(resolve, retryDelay));
-    
+
     // 第二次嘗試
     return await apiCall();
   }
@@ -63,8 +58,9 @@ const GOOGLE_PLACES_CONFIG = window.GOOGLE_PLACES_CONFIG;
 
 // 全局函數用於更新搜索半徑
 window.updateSearchRadius = function(newRadius) {
+  // RR_SEARCH_003: 搜索半徑更新
   GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = newRadius;
-  logger.info('搜索半徑已更新為:', newRadius, '公尺');
+  window.RRLog?.debug('RR_SEARCH_RADIUS', '搜索半徑已更新', { radius: newRadius, unit: '公尺' });
 };
 
 // 全局函數用於將經緯度轉換為地址（支援語言切換）
@@ -126,24 +122,22 @@ window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
           // 直接使用 Google 提供的完整格式化地址
           const address = result.formatted_address;
           
-          logger.success('地址轉換成功:', { 
-            language,
-            admin_area_level_2, 
-            admin_area_level_3, 
-            route, 
-            district, 
-            final: address 
+          // RR_LOCATION_004: 地址轉換成功
+          window.RRLog?.debug('RR_LOCATION_GEOCODE', '地址轉換成功', {
+            language, address, admin_area_level_2, admin_area_level_3, route, district
           });
           resolve(address);
         } else {
-          logger.warning('地址轉換失敗:', status);
+          // RR_LOCATION_005: 地址轉換失敗
+          window.RRLog?.warn('RR_LOCATION_ERROR', '地址轉換失敗', { status });
           resolve(language === 'zh' ? '位置已確認' : 'Location confirmed');
         }
       });
     });
     
   } catch (error) {
-    logger.error('地址轉換出錯:', error);
+    // RR_LOCATION_006: 地址轉換錯誤
+    window.RRLog?.error('RR_LOCATION_ERROR', '地址轉換出錯', { error: error.message });
     return language === 'zh' ? '位置已確認' : 'Location confirmed';
   }
 };
@@ -159,8 +153,9 @@ function initializeGoogleMaps() {
   return new Promise((resolve, reject) => {
     // 檢查是否已載入
     if (window.google && window.google.maps) {
-      console.log('✅ Google Maps API 已載入');
-      
+      // RR_API_007: Google Maps API已載入
+      window.RRLog?.debug('RR_API_SUCCESS', 'Google Maps API 已載入');
+
       // 建立一個隱藏的地圖來使用 PlacesService
       const mapDiv = document.createElement('div');
       mapDiv.style.display = 'none';
@@ -179,8 +174,9 @@ function initializeGoogleMaps() {
     }
     
     // 動態載入 Google Maps JavaScript API
-    console.log('📡 載入 Google Maps JavaScript API...');
-    
+    // RR_API_008: 開始載入Google Maps API
+    window.RRLog?.info('RR_API_CALL', '載入 Google Maps JavaScript API');
+
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_CONFIG.API_KEY}&libraries=places&callback=onGoogleMapsLoaded`;
     script.async = true;
@@ -202,13 +198,15 @@ function initializeGoogleMaps() {
 
     // 腳本載入錯誤處理
     script.onerror = () => {
-      console.error('❌ Google Maps API 腳本載入失敗');
+      // RR_API_009: Google Maps API載入失敗
+      window.RRLog?.error('RR_API_ERROR', 'Google Maps API 腳本載入失敗');
       reject(new Error('Google Maps API 腳本載入失敗'));
     };
 
     // 設定超時處理
     const timeout = setTimeout(() => {
-      console.error('❌ Google Maps API 載入超時');
+      // RR_API_010: Google Maps API載入超時
+      window.RRLog?.error('RR_API_ERROR', 'Google Maps API 載入超時');
       reject(new Error('Google Maps API 載入超時'));
     }, 4000); // 4秒超時
 
@@ -220,7 +218,8 @@ function initializeGoogleMaps() {
     window.onGoogleMapsLoaded = () => {
       clearTimeout(timeout);
       try {
-        console.log('✅ Google Maps API 載入完成');
+        // RR_API_011: Google Maps API載入完成
+        window.RRLog?.info('RR_API_SUCCESS', 'Google Maps API 載入完成');
 
         // 檢查 Google Maps API 是否正確載入
         if (!window.google || !window.google.maps || !window.google.maps.places) {
@@ -245,10 +244,12 @@ function initializeGoogleMaps() {
           throw new Error('Google Maps 服務初始化失敗');
         }
 
-        console.log('✅ Google Maps 服務初始化成功');
+        // RR_API_012: Google Maps服務初始化成功
+        window.RRLog?.info('RR_API_SUCCESS', 'Google Maps 服務初始化成功');
         originalResolve();
       } catch (error) {
-        console.error('❌ Google Maps API 初始化失敗:', error);
+        // RR_API_013: Google Maps API初始化失敗
+        window.RRLog?.error('RR_API_ERROR', 'Google Maps API 初始化失敗', { error: error.message });
         originalReject(error);
       }
     };
@@ -317,7 +318,8 @@ function calculateMinutesUntilClose(openingHours) {
       }
     }
   } catch (error) {
-    console.warn('⚠️ calculateMinutesUntilClose 計算失敗:', error);
+    // RR_SEARCH_014: 營業時間計算失敗
+    window.RRLog?.warn('RR_SEARCH_ERROR', 'calculateMinutesUntilClose 計算失敗', { error: error.message });
   }
 
   return null;
@@ -345,20 +347,23 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
           if (isOpenNow) {
             const minutesUntilClose = calculateMinutesUntilClose(openingHours);
             if (minutesUntilClose !== null && minutesUntilClose <= 20) {
-              console.log(`⚠️ 餐廳將在${minutesUntilClose}分鐘後關門，排除此餐廳`);
+              // RR_SEARCH_015: 餐廳即將關門
+              window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳即將關門已排除', { minutesUntilClose });
               return false;
             }
           } else {
-            // 只在關店時顯示日誌
-            console.log('🕐 餐廳已關門，跳過');
+            // RR_SEARCH_016: 餐廳已關門
+            window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳已關門已跳過');
           }
 
           return isOpenNow;
         } else {
-          console.log('🔄 Google Places API isOpen() 返回 undefined，缺少必要的時區或營業時間數據');
+          // RR_SEARCH_017: isOpen()返回undefined
+          window.RRLog?.debug('RR_SEARCH_ERROR', 'Google Places API isOpen() 返回 undefined');
         }
       } catch (error) {
-        console.warn('⚠️ Google Places API isOpen() 調用失敗，回退到 periods 計算:', error);
+        // RR_SEARCH_018: isOpen()調用失敗
+        window.RRLog?.debug('RR_SEARCH_ERROR', 'Google Places API isOpen() 調用失敗，回退到 periods 計算', { error: error.message });
       }
     }
     // 注意：不輸出 "isOpen() 方法不可用" 的日誌，因為快取數據本來就沒有這個函數
@@ -410,7 +415,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     }
     
     // 如果沒有periods數據，但測試顯示100%餐廳都有營業時間，那就相信Google的isOpen方法
-    console.log(`⚠️ 沒有periods數據，預設為營業中`);
+    // RR_SEARCH_019: 沒有periods數據預設營業中
+    window.RRLog?.debug('RR_SEARCH_FILTER', '沒有periods數據，預設為營業中');
     return true; // 2025年優化：如果有營業時間數據但無法解析，預設為營業中
   }
   
@@ -470,7 +476,8 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     return true; // 無法確定時預設顯示
     
   } catch (error) {
-    logger.warning('解析營業時間時出錯:', error);
+    // RR_SEARCH_020: 解析營業時間錯誤
+    window.RRLog?.warn('RR_SEARCH_ERROR', '解析營業時間時出錯', { error: error.message });
     return true; // 出錯時預設顯示
   }
 }
@@ -539,10 +546,16 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     
     // 計算總搜索次數：區域數 × 餐廳類型數
     const totalSearchCalls = areasToSearch.length * searchTypes.length;
-    console.log(`🎯 搜索策略: ${areasToSearch.length}個區域 × ${searchTypes.length}種類型 = ${totalSearchCalls}次API調用`);
-    console.log(`📍 搜索區域: ${areasToSearch.map(area => area.name).join('、')}`);
-    console.log(`🍽️搜索類型: ${searchTypes.join('、')}`);
-    console.log(`📏 搜索半徑: ${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`);
+    // RR_SEARCH_021: 搜索策略統計
+    window.RRLog?.info('RR_SEARCH_START', '搜索策略', {
+      areas: areasToSearch.length,
+      types: searchTypes.length,
+      totalCalls: totalSearchCalls,
+      radius: `${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`,
+      areaNames: areasToSearch.map(area => area.name).join('、'),
+      searchTypes: searchTypes.join('、')
+    });
+    window.RRLog?.updateStats('search', 'attempt');
 
     for (const area of areasToSearch) {
       // 檢查是否已被中止
@@ -580,14 +593,16 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
                   reject(new Error(`Network error: ${status}`));
                 } else {
                   // API 問題（如配額用完），不重試
-                  console.warn(`⚠️ ${area.name} ${type} 搜索失敗:`, status);
+                  // RR_SEARCH_022: API搜索失敗
+                  window.RRLog?.warn('RR_API_ERROR', 'API搜索失敗', { area: area.name, type, status });
                   resolve({ type, results: [] });
                 }
               });
             });
           });
         } catch (error) {
-          console.warn(`⚠️ ${area.name} ${type} 搜索出錯:`, error);
+          // RR_SEARCH_023: 搜索出錯
+          window.RRLog?.warn('RR_SEARCH_ERROR', '搜索出錯', { area: area.name, type, error: error.message });
           return { type, results: [] };
         }
       });
@@ -629,8 +644,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
       };
       
       // 不再拋出錯誤，直接返回空陣列，讓上層處理擴大搜索
-      // 使用實際當前搜索半徑顯示
-      console.log(`📍 搜索範圍 ${currentRadius/1000}km 內未找到餐廳`);
+      // RR_SEARCH_024: 搜索範圍內無餐廳
+      window.RRLog?.info('RR_SEARCH_RESULT', '搜索範圍內未找到餐廳', { radius: `${currentRadius/1000}km` });
       return [];
     }
 
@@ -642,7 +657,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
           const details = await getPlaceDetails(restaurant.place_id);
           return { ...restaurant, detailsCache: details };
         } catch (error) {
-          console.warn('⚠️ 無法獲取餐廳詳細資訊:', restaurant.name, error);
+          // RR_SEARCH_025: 無法獲取餐廳詳細資訊
+          window.RRLog?.debug('RR_API_ERROR', '無法獲取餐廳詳細資訊', { restaurant: restaurant.name, error: error.message });
           return { ...restaurant, detailsCache: null };
         }
       })
@@ -657,7 +673,8 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     return formattedRestaurants;
 
   } catch (error) {
-    logger.error('搜索餐廳時發生錯誤:', error);
+    // RR_SEARCH_026: 搜索餐廳發生錯誤
+    window.RRLog?.error('RR_SEARCH_ERROR', '搜索餐廳時發生錯誤', { error: error.message });
     throw error;
   }
 }
@@ -690,7 +707,8 @@ async function getPlaceDetails(placeId, language = 'zh-TW') {
             reject(new Error(`Network error in getDetails: ${status}`));
           } else {
             // API 問題（如找不到地點），不重試
-            console.warn('⚠️ 無法獲取地點詳細資訊:', status);
+            // RR_API_027: 無法獲取地點詳細資訊
+            window.RRLog?.debug('RR_API_ERROR', '無法獲取地點詳細資訊', { status });
             resolve(null);
           }
         });
@@ -698,9 +716,35 @@ async function getPlaceDetails(placeId, language = 'zh-TW') {
     });
     
   } catch (error) {
-    console.error('❌ 獲取地點詳細資訊時出錯:', error);
+    // RR_API_028: 獲取地點詳細資訊出錯
+    window.RRLog?.error('RR_API_ERROR', '獲取地點詳細資訊時出錯', { error: error.message });
     return null;
   }
+}
+
+/**
+ * 清除Google Places API返回數據中的已棄用屬性
+ * @param {Object} data - 原始數據
+ * @returns {Object} 清理後的數據
+ */
+function cleanDeprecatedProperties(data) {
+  if (!data || typeof data !== 'object') return data;
+
+  // 創建數據副本以避免修改原始對象
+  const cleanData = { ...data };
+
+  // RR_API_103: 清除已棄用屬性
+  // 移除已棄用的屬性以避免警告
+  delete cleanData.permanently_closed;
+  delete cleanData.open_now;
+
+  // 如果有opening_hours，也清理其中的已棄用屬性
+  if (cleanData.opening_hours && typeof cleanData.opening_hours === 'object') {
+    cleanData.opening_hours = { ...cleanData.opening_hours };
+    delete cleanData.opening_hours.open_now;
+  }
+
+  return cleanData;
 }
 
 /**
@@ -712,22 +756,26 @@ async function formatRestaurantData(place) {
   try {
     // 移除格式化過程日誌
 
+    // RR_SEARCH_104: 清理原始數據中的已棄用屬性
+    const cleanPlace = cleanDeprecatedProperties(place);
+
     // 獲取中文和英文詳細資訊
-    const detailsZh = place.detailsCache || await getPlaceDetails(place.place_id, 'zh-TW');
-    const detailsEn = await getPlaceDetails(place.place_id, 'en');
+    const detailsZh = cleanPlace.detailsCache || await getPlaceDetails(cleanPlace.place_id, 'zh-TW');
+    const detailsEn = await getPlaceDetails(cleanPlace.place_id, 'en');
     
-    // 使用中文資訊作為主要資訊
-    const details = detailsZh;
-    
+    // 使用中文資訊作為主要資訊，並清理已棄用屬性
+    const details = cleanDeprecatedProperties(detailsZh);
+    const detailsEnClean = cleanDeprecatedProperties(detailsEn);
+
     // 處理照片 如果餐廳有Google Places API提供的照片，會使用真實照片；如果沒有，就使用這張Unsplash的預設餐廳圖片。
     // let imageUrl = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500';
     let imageUrl = './assets/image/banner.jpg';
-    if (place.photos && place.photos.length > 0) {
-      imageUrl = place.photos[0].getUrl({ maxWidth: 800 });
+    if (cleanPlace.photos && cleanPlace.photos.length > 0) {
+      imageUrl = cleanPlace.photos[0].getUrl({ maxWidth: 800 });
     }
 
     // 處理價格等級
-    const priceLevel = place.price_level || (details && details.price_level) || 2;
+    const priceLevel = cleanPlace.price_level || (details && details.price_level) || 2;
     
     // 處理營業時間 - 使用純文字格式，避免XSS風險
     // 注意：這裡暫時使用預設語言，實際語言會在組件層面處理
@@ -741,8 +789,8 @@ async function formatRestaurantData(place) {
     }
 
     // 處理餐廳類型
-    const cuisine = place.types ? 
-      place.types.filter(type => !['establishment', 'point_of_interest', 'food'].includes(type))
+    const cuisine = cleanPlace.types ?
+      cleanPlace.types.filter(type => !['establishment', 'point_of_interest', 'food'].includes(type))
         .map(type => {
           // 轉換英文類型為中文
           const typeMap = {
@@ -760,29 +808,41 @@ async function formatRestaurantData(place) {
 
     // 計算營業狀態 - 需要語言參數，但這裡沒有，所以使用預設中文
     const businessStatusInfo = getBusinessStatus(details?.opening_hours, 'zh');
-    
+
+    // 計算距離（如果有用戶位置）
+    let distance = null;
+    if (window.userLocation && cleanPlace.geometry && cleanPlace.geometry.location) {
+      distance = calculateDistance(
+        window.userLocation.lat,
+        window.userLocation.lng,
+        cleanPlace.geometry.location.lat(),
+        cleanPlace.geometry.location.lng()
+      );
+    }
+
     // 格式化資料
     const formattedData = {
-      id: place.place_id,
-      name: place.name,
+      id: cleanPlace.place_id,
+      name: cleanPlace.name,
       // 添加中文和英文名稱
-      name_zh: (detailsZh && detailsZh.name) || place.name,
-      name_en: (detailsEn && detailsEn.name) || place.name,
-      lat: place.geometry.location.lat(),
-      lng: place.geometry.location.lng(),
-      rating: Math.round((place.rating || 0) * 10) / 10, // 保留一位小數
-      reviewCount: place.user_ratings_total || 0,
+      name_zh: (details && details.name) || cleanPlace.name,
+      name_en: (detailsEnClean && detailsEnClean.name) || cleanPlace.name,
+      lat: cleanPlace.geometry.location.lat(),
+      lng: cleanPlace.geometry.location.lng(),
+      rating: Math.round((cleanPlace.rating || 0) * 10) / 10, // 保留一位小數
+      reviewCount: cleanPlace.user_ratings_total || 0,
       priceLevel: priceLevel,
       cuisine: cuisine,
-      address: place.formatted_address || place.vicinity,
+      address: cleanPlace.formatted_address || cleanPlace.vicinity,
       phone: (details && details.formatted_phone_number) || '電話請洽餐廳',
       hours: hours,
+      distance: distance,
       image: imageUrl,
       website: (details && details.website) || null,
-      googleMapsUrl: (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ', ' + (place.formatted_address || place.vicinity))}&query_place_id=${place.place_id}`,
-      businessStatus: place.business_status || 'OPERATIONAL',
+      googleMapsUrl: (details && details.url) || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanPlace.name + ', ' + (cleanPlace.formatted_address || cleanPlace.vicinity))}&query_place_id=${cleanPlace.place_id}`,
+      businessStatus: cleanPlace.business_status || 'OPERATIONAL',
       operatingStatus: businessStatusInfo,
-      // 保留營業時間數據供篩選使用
+      // 保留營業時間數據供篩選使用，但要清理已棄用屬性
       detailsCache: details
     };
 
@@ -790,18 +850,20 @@ async function formatRestaurantData(place) {
     return formattedData;
 
   } catch (error) {
+    // RR_SEARCH_105: 格式化餐廳資料失敗
     const errorDetails = {
       errorType: 'FormatError',
       errorMessage: error.message,
       timestamp: new Date().toISOString(),
       placeData: {
-        place_id: place.place_id,
-        name: place.name,
-        hasPhotos: !!(place.photos && place.photos.length > 0),
-        hasGeometry: !!place.geometry
+        place_id: place?.place_id || 'unknown',
+        name: place?.name || 'unknown',
+        hasPhotos: !!(place?.photos && place.photos.length > 0),
+        hasGeometry: !!place?.geometry
       }
     };
-    
+
+    window.RRLog?.error('RR_SEARCH_ERROR', '格式化餐廳資料失敗', { errorDetails });
     throw new Error(`格式化餐廳資料失敗。技術資訊: ${JSON.stringify(errorDetails)}`);
   }
 }
@@ -852,10 +914,12 @@ function getBusinessStatus(openingHours, language = 'zh') {
           message: isOpenNow ? (window.getTranslation ? window.getTranslation(language, 'openNow') : 'Open now') : (window.getTranslation ? window.getTranslation(language, 'closed') : 'Closed')
         };
       } else {
-        console.log('🔄 getBusinessStatus isOpen() 返回 undefined，缺少必要的時區或營業時間數據');
+        // RR_SEARCH_029: getBusinessStatus isOpen()返回undefined
+        window.RRLog?.debug('RR_SEARCH_ERROR', 'getBusinessStatus isOpen() 返回 undefined');
       }
     } catch (error) {
-      console.warn('⚠️ getBusinessStatus isOpen() 方法調用失敗:', error);
+      // RR_SEARCH_030: getBusinessStatus isOpen()調用失敗
+      window.RRLog?.debug('RR_SEARCH_ERROR', 'getBusinessStatus isOpen() 方法調用失敗', { error: error.message });
     }
   }
 
@@ -947,7 +1011,8 @@ function getBusinessStatus(openingHours, language = 'zh') {
     return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours unknown' };
 
   } catch (error) {
-    console.warn('⚠️ 解析營業狀態時出錯:', error);
+    // RR_SEARCH_031: 解析營業狀態錯誤
+    window.RRLog?.warn('RR_SEARCH_ERROR', '解析營業狀態時出錯', { error: error.message });
     return { status: 'unknown', message: window.getTranslation ? window.getTranslation(language, 'hoursUnknown') : 'Hours unknown' };
   }
 }
@@ -971,7 +1036,8 @@ window.getRestaurantHistory = function() {
 
     return data;
   } catch (error) {
-    console.warn('⚠️ 讀取餐廳歷史記錄失敗:', error);
+    // RR_CACHE_032: 讀取餐廳歷史記錄失敗
+    window.RRLog?.warn('RR_CACHE_ERROR', '讀取餐廳歷史記錄失敗', { error: error.message });
     localStorage.removeItem('restaurant_history');
     return null;
   }
@@ -999,9 +1065,10 @@ function updateRestaurantHistory(restaurantId, expandedRadius = 0) {
     history.expanded_radius = expandedRadius;
 
     localStorage.setItem('restaurant_history', JSON.stringify(history));
-    // 移除歷史記錄更新日誌
+    // RR_CACHE_033: 歷史記錄更新完成
   } catch (error) {
-    console.warn('⚠️ 更新餐廳歷史記錄失敗:', error);
+    // RR_CACHE_034: 更新餐廳歷史記錄失敗
+    window.RRLog?.warn('RR_CACHE_ERROR', '更新餐廳歷史記錄失敗', { error: error.message });
   }
 }
 
@@ -1052,24 +1119,30 @@ function updateRestaurantCache(restaurants) {
           businessStatus: restaurant.businessStatus,
           operatingStatus: restaurant.operatingStatus,
           // 保留營業時間資訊，但清理已棄用屬性
-          detailsCache: restaurant.detailsCache ? {
+          detailsCache: restaurant.detailsCache ? cleanDeprecatedProperties({
             opening_hours: restaurant.detailsCache.opening_hours ? {
               periods: restaurant.detailsCache.opening_hours.periods,
               weekday_text: restaurant.detailsCache.opening_hours.weekday_text
               // 注意：不存儲 isOpen 函數，因為函數無法序列化到 localStorage
-              // 注意：不存儲 isOpen 函數，因為函數無法序列化到 localStorage
             } : null,
-            utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes
-          } : null
+            utc_offset_minutes: restaurant.detailsCache.utc_offset_minutes,
+            name: restaurant.detailsCache.name,
+            formatted_address: restaurant.detailsCache.formatted_address,
+            formatted_phone_number: restaurant.detailsCache.formatted_phone_number,
+            website: restaurant.detailsCache.website,
+            url: restaurant.detailsCache.url,
+            business_status: restaurant.detailsCache.business_status
+          }) : null
         };
         history.cached_restaurants.push(cleanRestaurant);
       }
     });
 
     localStorage.setItem('restaurant_history', JSON.stringify(history));
-    // 移除快取更新日誌
+    // RR_CACHE_035: 快取更新完成
   } catch (error) {
-    console.warn('⚠️ 更新餐廳快取失敗:', error);
+    // RR_CACHE_036: 更新餐廳快取失敗
+    window.RRLog?.warn('RR_CACHE_ERROR', '更新餐廳快取失敗', { error: error.message });
   }
 }
 
@@ -1103,14 +1176,21 @@ function getAvailableRestaurantsFromCache(selectedMealTime) {
       return isOpen && notShown;
     });
 
-    // 統一顯示沒有營業時間數據的餐廳日誌
+    // RR_CACHE_037: 快取篩選統計
     if (noHoursRestaurants.length > 0) {
-      console.log(`⚠️ 幕後補充: ${noHoursRestaurants.length}家餐廳沒有營業時間數據已排除 (${noHoursRestaurants.slice(0, 3).join('、')}${noHoursRestaurants.length > 3 ? '等' : ''})`);
+      window.RRLog?.info('RR_CACHE_FILTER', '快取篩選統計', {
+        excludedCount: noHoursRestaurants.length,
+        availableCount: availableRestaurants.length,
+        totalCached: history.cached_restaurants.length,
+        examples: noHoursRestaurants.slice(0, 3).join('、') + (noHoursRestaurants.length > 3 ? '等' : '')
+      });
     }
+    window.RRLog?.updateStats('cache', availableRestaurants.length > 0 ? 'hit' : 'miss');
 
     return availableRestaurants;
   } catch (error) {
-    console.warn('⚠️ 從快取獲取餐廳失敗:', error);
+    // RR_CACHE_038: 從快取獲取餐廳失敗
+    window.RRLog?.warn('RR_CACHE_ERROR', '從快取獲取餐廳失敗', { error: error.message });
     return [];
   }
 }
@@ -1136,7 +1216,8 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
         const logKey = `no-hours-${restaurant.id || restaurant.name}`;
         if (!loggedRestaurants.has(logKey)) {
           loggedRestaurants.add(logKey);
-          console.log(`⚠️ 餐廳 ${restaurant.name} 沒有營業時間數據，為保護用戶時間必須排除`);
+          // RR_SEARCH_039: 餐廳沒有營業時間數據
+          window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳沒有營業時間數據已排除', { restaurant: restaurant.name });
         }
       }
       return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
@@ -1231,12 +1312,23 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
       // 🎯 修復：第一次Landing直接搜9個區域，獲得最大覆蓋範圍
       const expectedAreas = 9; // 直接使用9個區域，不再逐步增加
       const expectedCalls = expectedAreas * 2; // 2種餐廳類型
-      console.log(`🔍 第${attempt + 1}次嘗試: 多區域搜索 (${searchRadius/1000}km範圍，約${expectedAreas}區域)`);
+      // RR_SEARCH_040: 多區域搜索嘗試
+      window.RRLog?.info('RR_SEARCH_START', '多區域搜索嘗試', {
+        attempt: attempt + 1,
+        radius: `${searchRadius/1000}km`,
+        areas: expectedAreas
+      });
     } else {
       // 後續嘗試：使用baseUnit智能擴展範圍
       const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
       searchRadius = baseRadius + (baseUnit * expansionMultiplier);
-      console.log(`🔍 第${attempt + 1}次嘗試: 擴展範圍 ${searchRadius/1000}km (基礎${baseRadius/1000}km + 擴展${(baseUnit * expansionMultiplier)/1000}km)`);
+      // RR_SEARCH_041: 擴展範圍搜索嘗試
+      window.RRLog?.info('RR_SEARCH_START', '擴展範圍搜索嘗試', {
+        attempt: attempt + 1,
+        radius: `${searchRadius/1000}km`,
+        baseRadius: `${baseRadius/1000}km`,
+        expansion: `${(baseUnit * expansionMultiplier)/1000}km`
+      });
     }
 
     // 臨時更新搜索半徑
@@ -1267,11 +1359,17 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         return isOpen && notShown;
       });
 
-      // 添加調試信息，當篩選後沒有餐廳時
+      // RR_SEARCH_042: 搜索結果統計
       if (availableRestaurants.length === 0 && restaurants.length > 0) {
         const openCount = restaurants.filter(r => isRestaurantOpenInTimeSlot(r, selectedMealTime)).length;
         const notShownCount = restaurants.filter(r => !history.shown_restaurants.includes(r.id)).length;
-        console.log(`📊 搜索結果: 找到${restaurants.length}家餐廳，${openCount}家營業中，${notShownCount}家未顯示過，已顯示${history.shown_restaurants.length}家`);
+        window.RRLog?.info('RR_SEARCH_RESULT', '搜索結果統計', {
+          total: restaurants.length,
+          open: openCount,
+          notShown: notShownCount,
+          alreadyShown: history.shown_restaurants.length,
+          available: availableRestaurants.length
+        });
       }
 
       if (availableRestaurants.length > 0) {
@@ -1293,7 +1391,13 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         // 恢復原始搜索半徑
         GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
 
-        // 移除成功獲取餐廳日誌
+        // RR_SEARCH_043: 成功獲取餐廳
+        window.RRLog?.info('RR_SEARCH_RESULT', '成功獲取餐廳', {
+          restaurant: selectedRestaurant.name,
+          attempt: attempt + 1,
+          distance: selectedRestaurant.distance ? `${selectedRestaurant.distance.toFixed(1)}km` : 'unknown'
+        });
+        window.RRLog?.updateStats('search', 'success');
         return selectedRestaurant;
       }
 
@@ -1301,7 +1405,11 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
 
     } catch (error) {
       // 只有真正的 API/網路錯誤才會到這裡
-      console.error(`❌ 第${attempt + 1}次搜索發生錯誤:`, error);
+      // RR_SEARCH_044: 搜索發生錯誤
+      window.RRLog?.error('RR_SEARCH_ERROR', '搜索發生錯誤', {
+        attempt: attempt + 1,
+        error: error.message
+      });
 
       // 如果是最後一次嘗試，拋出錯誤
       if (attempt === maxAttempts - 1) {
@@ -1325,8 +1433,10 @@ window.isRestaurantOpenInTimeSlot = isRestaurantOpenInTimeSlot; // 用於測試
 window.clearRestaurantHistory = function() {
   try {
     localStorage.removeItem('restaurant_history');
-    // 歷史記錄已清除（靜默）
+    // RR_CACHE_045: 歷史記錄已清除
+    window.RRLog?.debug('RR_CACHE_CLEAR', '餐廳歷史記錄已清除');
   } catch (error) {
-    console.warn('⚠️ 清除餐廳歷史記錄失敗:', error);
+    // RR_CACHE_046: 清除餐廳歷史記錄失敗
+    window.RRLog?.warn('RR_CACHE_ERROR', '清除餐廳歷史記錄失敗', { error: error.message });
   }
 };
