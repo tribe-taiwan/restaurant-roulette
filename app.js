@@ -584,16 +584,18 @@ function App() {
             />
           )}
 
-          {/* 主要內容區域 - 加深黑色半透明設計 */}
+          {/* 主要內容區域 - 毛玻璃效果設計 */}
           <div
             className="w-full gpu-accelerated"
             style={{
-              background: 'rgba(0, 0, 0, 0.6)', // 加深黑色半透明
-              marginTop: '40px', // 與banner保持間隔
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              marginTop: '0', // 與banner無間隔
               padding: '30px',
               borderRadius: '0', // 直角設計
-              border: 'none', // 移除邊框
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
               transition: 'all 0.3s ease'
             }}
           >
