@@ -1209,39 +1209,51 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             
           </div>
 
-          {/* Button Container */}
-          <div className="flex items-center gap-3 px-4">
-            {/* Search Next Button */}
+          {/* Button Container - 固定兩欄布局 */}
+          <div className="grid grid-cols-[1fr_120px] gap-3 px-4">
+            {/* Search Next Button - 主按鈕佔剩餘空間 */}
             <button
               onClick={() => onSpin(false)}
-              className={`btn-primary flex-1 text-lg ${isSpinning ? 'hover:bg-red-600' : ''}`}
+              className="min-h-[72px] p-3 rounded-lg border-2 
+                         flex flex-col items-center justify-center text-white shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                borderColor: 'var(--theme-primary)',
+                touchAction: 'manipulation',
+                transition: 'none'
+              }}
             >
               {isSpinning ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-xl font-bold text-center">
                   點擊停止
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2">
-                  😋
+                <div className="text-xl font-bold text-center">
                   {translations.spinButton}
                 </div>
               )}
             </button>
 
-            {/* Add to Candidate Button - Outside of image area */}
-            {finalRestaurant && !isSpinning && candidateList.length < 9 && (
-              <button
-                onClick={onAddCandidate}
-                className="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 min-w-[3rem] rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 active:bg-blue-500 flex items-center justify-center flex-shrink-0"
-                style={{
-                  touchAction: 'manipulation'
-                }}
-                title={translations.addCandidate}
-              >
-                <div className="icon-plus text-xl"></div>
-              </button>
-            )}
+            {/* Add to Candidate Button - 固定 120px 寬度空間 */}
+            <button
+              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning) ? null : onAddCandidate}
+              disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning}
+              className="min-h-[72px] p-3 rounded-lg border-2 
+                         flex flex-col items-center justify-center text-white shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                borderColor: 'var(--theme-primary)',
+                touchAction: 'manipulation',
+                transition: 'none',
+                opacity: (!finalRestaurant || candidateList.length >= 9) ? 0.3 : (isSpinning ? 0.5 : 1),
+                cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning) ? 'not-allowed' : 'pointer'
+              }}
+              title={finalRestaurant && candidateList.length < 9 ? translations.addCandidate : ''}
+            >
+              <div className="text-lg font-semibold text-center leading-tight">
+                {translations.addCandidate}
+              </div>
+            </button>
           </div>
 
           {/* Restaurant List */}
