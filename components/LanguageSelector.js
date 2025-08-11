@@ -41,12 +41,12 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
             className="unified-banner-language-selector flex items-center gap-2"
           >
             <span className="text-lg">☰</span>
-            <span className="text-sm font-medium">{currentLang?.name}</span>
+            <span className="text-sm font-medium whitespace-nowrap">{currentLang?.name}</span>
           </button>
-          
+
           {isOpen && (
-            <div 
-              className="bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 min-w-[160px]" 
+            <div
+              className="unified-banner-language-dropdown"
               style={{
                 position: 'fixed',
                 top: buttonRef?.current ? buttonRef.current.getBoundingClientRect().bottom + 8 + 'px' : '60px',
@@ -61,7 +61,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
                     onLanguageChange(lang.code);
                     setIsOpen(false);
                   }}
-                  className={`unified-banner-language-button w-full flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
+                  className={`unified-banner-language-button w-full flex items-center gap-2 ${
                     selectedLanguage === lang.code
                       ? 'unified-banner-language-button--active'
                       : ''

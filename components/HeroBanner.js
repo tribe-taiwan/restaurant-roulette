@@ -258,19 +258,19 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
       {themes.length > 1 && (
         <>
           <div
-            className="unified-banner-arrow unified-banner-arrow--left"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-40"
             onClick={slideToPrevious}
             title="上一個主題"
           >
-            <div className="icon-chevron-left text-white text-2xl"></div>
+            <div className="icon-chevron-left text-white text-6xl drop-shadow-lg"></div>
           </div>
 
           <div
-            className="unified-banner-arrow unified-banner-arrow--right"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-40"
             onClick={slideToNext}
             title="下一個主題"
           >
-            <div className="icon-chevron-right text-white text-2xl"></div>
+            <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
           </div>
         </>
       )}
@@ -288,7 +288,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
             <img
               src={currentTheme.images.bnbLogo}
               alt={`${currentTheme?.brand?.subtitle || '民宿'} Logo`}
-              className="w-8 h-8 object-contain"
+              className="w-full h-full object-cover"
             />
           </a>
         )}
@@ -303,7 +303,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
           <img
             src="./assets/image/booking-logo.png"
             alt="線上訂房"
-            className="w-8 h-8 object-contain"
+            className="w-full h-full object-cover"
           />
         </a>
 

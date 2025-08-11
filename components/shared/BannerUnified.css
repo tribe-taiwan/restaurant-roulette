@@ -167,9 +167,37 @@
 }
 
 .unified-banner-language-button--active {
-  background: var(--primary-color);
-  color: white;
+  background: var(--primary-color) !important;
+  color: white !important;
   border-color: var(--primary-color);
+}
+
+/* 手機版語言選擇器特殊樣式 */
+.unified-banner-language-selector {
+  white-space: nowrap; /* 確保三條槓和語言文字不換行 */
+}
+
+/* 彈出選單樣式 */
+.unified-banner-language-dropdown {
+  /* 使用與電腦版一致的毛玻璃效果 */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--theme-shadow-lg);
+  min-width: 160px;
+  border-radius: 0; /* 方角，不使用圓角 */
+}
+
+.unified-banner-language-dropdown .unified-banner-language-button {
+  border-radius: 0; /* 彈出選單中的按鈕也使用方角 */
+}
+
+.unified-banner-language-dropdown .unified-banner-language-button:first-child {
+  border-radius: 0; /* 第一個按鈕方角 */
+}
+
+.unified-banner-language-dropdown .unified-banner-language-button:last-child {
+  border-radius: 0; /* 最後一個按鈕方角 */
 }
   background: rgba(255, 255, 255, 0.15);
 }
