@@ -1380,7 +1380,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           </div>
 
           {/* Button Container - 固定兩欄布局 */}
-          <div className="grid grid-cols-[1fr_120px] gap-3 px-4">
+          <div className="grid grid-cols-[1fr_120px] gap-3 px-4 slot-machine-buttons">
             {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
             <button
               onClick={() => handleSpinClick()}

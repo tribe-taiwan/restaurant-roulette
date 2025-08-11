@@ -300,23 +300,29 @@
             /* 移除向上移動，改為讓Banner向下移動 */
         }
 
-        /* 更具體的選擇器確保生效 */
-        .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
-            box-shadow: none !important; /* 移除glow效果，實現與Banner無縫連接 */
-            /* 移除向上移動，改為讓Banner向下移動 */
-            z-index: 10 !important; /* 在Banner遮罩之上，但在Banner按鈕之下 */
-            position: relative; /* 確保z-index生效 */
-            border: 1px solid rgba(255, 255, 255, 0.2) !important; /* 細框線增加視覺分層 */
-            backdrop-filter: blur(8px); /* 添加毛玻璃效果增加質感 */
+        /* 🎰 美食探索整合區塊 (Food Discovery Integrated Zone)
+           使用CSS創建視覺整合效果，代碼分開但排版整合 */
+
+        /* 創建整合區塊的視覺容器 - 簡潔版本，完全移除所有視覺效果 */
+        .max-w-6xl.mx-auto.px-6::before {
+            content: '';
+            position: absolute;
+            top: -50px; /* 向上移動50px與Banner重疊 */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent; /* 移除背景色 */
+            border: none; /* 完全移除邊框 */
+            border-radius: 0; /* 移除圓角 */
+            z-index: -1; /* 在內容後面 */
+            pointer-events: none; /* 不影響點擊 */
         }
 
-        /* 老虎機突出於Banner底部的視覺效果 */
-        .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
-            margin-top: -50px !important; /* 向上移動50px突出於Banner */
-            margin-left: 0px !important; /* 左右到底 */
-            margin-right: 0px !important; /* 左右到底 */
-            max-width: none !important; /* 移除最大寬度限制 */
-            width: 100% !important; /* 寬度100% */
+        /* 確保整合區塊容器有正確的定位 */
+        .max-w-6xl.mx-auto.px-6 {
+            position: relative;
+            z-index: 15;
+            padding-top: 74px !important; /* 增加頂部padding來適應重疊效果 */
         }
 
         /* 修復父容器padding，確保老虎機真正到底 */
@@ -330,13 +336,38 @@
             padding-right: 0px !important;
         }
 
-        /* 手機端響應式優化 */
+        /* 桌面版限制下方區塊寬度，避免與老虎機重疊太多 */
+        @media (min-width: 769px) {
+            /* 恢復下方區塊的正常寬度限制 */
+            main > div:not(.w-full.max-w-2xl.mx-auto.glow-container.rounded-lg) {
+                max-width: 1200px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                padding-left: 24px !important;
+                padding-right: 24px !important;
+            }
+        }
+
+        /* 美食探索整合區塊響應式設計 */
         @media (max-width: 768px) {
-            .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
-                margin-top: -30px !important; /* 手機端向上移動30px */
-                width: 100% !important;
-                margin-left: 0px !important;
-                margin-right: 0px !important;
+            .max-w-6xl.mx-auto.px-6::before {
+                top: -30px !important; /* 手機端向上移動30px */
+                border-radius: 12px !important; /* 手機端較小的圓角 */
+            }
+
+            .max-w-6xl.mx-auto.px-6 {
+                padding-top: 54px !important; /* 手機端減少頂部padding */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .max-w-6xl.mx-auto.px-6::before {
+                top: -20px !important; /* 小螢幕向上移動20px */
+                border-radius: 8px !important; /* 小螢幕更小的圓角 */
+            }
+
+            .max-w-6xl.mx-auto.px-6 {
+                padding-top: 44px !important; /* 小螢幕更少的頂部padding */
             }
         }
 
@@ -360,8 +391,20 @@
         }
         
         .slot-machine {
-            @apply bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-2xl p-8 border-4 border-yellow-300;
-            box-shadow: 0 20px 40px rgba(255, 210, 63, 0.4);
+            background: var(--surface-color) !important;
+            border-radius: var(--border-radius) !important;
+            padding: 2rem !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: var(--shadow-lg) !important;
+        }
+
+        .slot-machine-buttons {
+            background: var(--surface-color) !important;
+            border-radius: var(--border-radius) !important;
+            padding: 1.5rem !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: var(--shadow-lg) !important;
+            margin-top: 1rem !important;
         }
     }
 
