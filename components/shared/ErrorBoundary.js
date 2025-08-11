@@ -41,6 +41,14 @@ class ErrorBoundary extends React.Component {
     if (navigator.vibrate) {
       navigator.vibrate([200, 100, 200]);
     }
+
+    // 自動重試一次（如果還沒重試過）
+    if (this.state.retryCount === 0) {
+      console.log('🔄 自動重試一次...');
+      setTimeout(() => {
+        this.handleRetry();
+      }, 2000); // 2秒後自動重試
+    }
   }
 
   reportError = (error, errorInfo) => {
@@ -174,7 +182,39 @@ class ErrorBoundary extends React.Component {
             marginBottom: '24px',
             lineHeight: '1.5'
           }
-        }, '應用程序遇到了意外錯誤。請嘗試重新載入或聯繫技術支援。'),
+        }, [
+          this.state.retryCount === 0 
+            ? '應用程序遇到了意外錯誤，正在自動重試...' 
+            : '應用程序遇到了意外錯誤。請嘗試重新載入或聯繫技術支援。',
+          
+          // 自動重試時顯示載入指示器
+          this.state.retryCount === 0 && React.createElement('div', {
+            key: 'loading',
+            style: {
+              marginTop: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }
+          }, [
+            React.createElement('div', {
+              key: 'spinner',
+              style: {
+                width: '16px',
+                height: '16px',
+                border: '2px solid var(--primary-color)',
+                borderTopColor: 'transparent',
+                borderRadius: '50%',
+                animation: 'spinner-rotate 1s linear infinite'
+              }
+            }),
+            React.createElement('span', {
+              key: 'text',
+              style: { fontSize: '14px', color: 'var(--primary-color)' }
+            }, '重試中...')
+          ])
+        ]),
 
         // 操作按鈕
         React.createElement('div', {
