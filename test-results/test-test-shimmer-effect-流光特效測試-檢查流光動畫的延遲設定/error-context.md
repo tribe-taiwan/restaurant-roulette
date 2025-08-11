@@ -2,6 +2,7 @@
 
 ```yaml
 - heading "舞鶴台南民宿" [level=1]
+- text: 回民宿家
 - button "English"
 - button "中文"
 - button "日本語"
@@ -20,29 +21,26 @@
 - link "":
   - /url: https://www.facebook.com/p/%E5%8F%B0%E5%8D%97%E8%88%9E%E9%B6%B4%E6%B0%91%E5%AE%BF-61555629563065/?locale=zh_TW
 - text: 😴打烊了
-- button "😋甲崩喔"
+- button "甲崩喔"
+- button "加入候選" [disabled]
 - text:  請允許位置訪問以獲取附近餐廳。
 - button "📋 複製錯誤訊息"
 - group: 技術詳情 ▼
-- strong: 錯誤：
-- text: "定位失敗。技術資訊: {\"errorType\":\"LocationError\",\"errorMessage\":\"用戶位置不可用\",\"timestamp\":\"2025-08-10T04:52:05.368Z\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/139.0.7258.5 Safari/537.36\",\"geolocationSupported\":true}"
-- button "📋 複製錯誤訊息"
-- button "住家未設定"
-- button "公司未設定"
-- button "設為起點"
-- button " 🏠 回民宿"
+- button "請先輸入地址": 住家未設定
+- button "請先輸入地址": 公司未設定
 - textbox "輸入地點名稱或地址"
-- button " 自動定位"
-- button " 手動定位" [disabled]
-- button "200m"
-- button "1km"
-- slider: "1"
-- text: 200m
-- button " 現在營業中"
-- button " 不限時間"
-- button " 早餐"
-- button " 午餐"
-- button " 晚餐"
+- button "使用GPS自動定位": 自動定位
+- button "根據輸入地址進行定位" [disabled]: 手動定位
+- text: 200m 搜索範圍
+- button "切換到200公尺模式" [pressed]: 200m
+- button "切換到1公里模式": 1km
+- 'slider "搜索距離倍數: 1"': "1"
+- text: 1 2 3 4 5 6 7 8 9 10
+- button "選擇現在營業中 (now)" [pressed]: 現在營業中 now
+- button "選擇不限時間 (24/7)": 不限時間 24/7
+- button "選擇早餐 (5-10)": 早餐 5-10
+- button "選擇午餐 (10-16)": 午餐 10-16
+- button "選擇晚餐 (16-24)": 晚餐 16-24
 - contentinfo:
   - text: © 2025
   - link "tribe.org.tw":

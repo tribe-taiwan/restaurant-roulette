@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流光特效測試</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-3xl {
+            font-size: 1.875rem;
+        }
+
+        .text-6xl {
+            font-size: 3.75rem;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .drop-shadow-lg {
+            filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
+        }
+
+        /* 流光特效 */
+        .shimmer-text {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer-text::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 210, 63, 0.8), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+            animation-delay: var(--shimmer-delay, 0s);
+        }
+        
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                left: 100%;
+                opacity: 0;
+            }
+        }
+
+        .test-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 1rem;
+            text-align: center;
+        }
+
+        .delay-0 { --shimmer-delay: 0s; }
+        .delay-1 { --shimmer-delay: 1s; }
+        .delay-2 { --shimmer-delay: 2s; }
+
+        .bg-dark { background: rgba(0, 0, 0, 0.8); }
+        .bg-light { background: rgba(255, 255, 255, 0.8); color: black; }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>流光特效測試頁面</h1>
+        <p>如果流光效果正常，應該能看到金黃色光束定期從文字上滑過</p>
+    </div>
+
+    <div class="test-box bg-dark">
+        <h1 class="text-white text-6xl font-bold drop-shadow-lg shimmer-text delay-0">甲崩喔</h1>
+        <p class="text-white">深色背景 - 主標題 (延遲0秒)</p>
+    </div>
+
+    <div class="test-box bg-dark">
+        <div class="text-white shimmer-text delay-1">
+            <span>回民宿家</span>
+        </div>
+        <p class="text-white">深色背景 - 回民宿家 (延遲1秒)</p>
+    </div>
+
+    <div class="test-box bg-light">
+        <h1 class="text-6xl font-bold shimmer-text delay-0">甲崩喔</h1>
+        <p>淺色背景 - 主標題 (延遲0秒)</p>
+    </div>
+
+    <div class="test-box bg-light">
+        <div class="shimmer-text delay-1">
+            <span>回民宿家</span>
+        </div>
+        <p>淺色背景 - 回民宿家 (延遲1秒)</p>
+    </div>
+
+    <div class="test-box">
+        <h2 class="text-white">不同顏色流光測試</h2>
+        <div style="margin: 1rem 0;">
+            <div class="text-white shimmer-text delay-0" 
+                 style="--shimmer-color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem;">
+                <span>白色流光 (應該看不見)</span>
+            </div>
+        </div>
+        <div style="margin: 1rem 0;">
+            <div class="text-white shimmer-text delay-1" 
+                 style="--shimmer-color: rgba(255, 210, 63, 0.8); margin-bottom: 1rem;">
+                <span>金黃色流光 (應該可見)</span>
+            </div>
+        </div>
+        <div style="margin: 1rem 0;">
+            <div class="text-white shimmer-text delay-2" 
+                 style="--shimmer-color: rgba(255, 107, 53, 0.9); margin-bottom: 1rem;">
+                <span>橘紅色流光 (應該明顯)</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 動態顏色變化 */
+        [style*="--shimmer-color"] .shimmer-text::before {
+            background: linear-gradient(90deg, transparent, var(--shimmer-color, rgba(255, 210, 63, 0.8)), transparent);
+        }
+    </style>
+
+    <script>
+        // 在控制台顯示動畫狀態
+        console.log('流光特效測試頁面已載入');
+        console.log('請觀察各個文字區塊是否有流光效果');
+        
+        // 檢查動畫是否運行
+        setTimeout(() => {
+            const shimmerElements = document.querySelectorAll('.shimmer-text');
+            console.log(`找到 ${shimmerElements.length} 個流光元素`);
+            
+            shimmerElements.forEach((el, index) => {
+                const computedStyle = getComputedStyle(el);
+                const beforeStyle = getComputedStyle(el, '::before');
+                console.log(`元素 ${index + 1}:`, {
+                    position: computedStyle.position,
+                    overflow: computedStyle.overflow,
+                    delay: el.style.getPropertyValue('--shimmer-delay') || '0s'
+                });
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

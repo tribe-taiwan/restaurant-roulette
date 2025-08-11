@@ -254,6 +254,38 @@
         .btn-primary:hover::before {
             left: 100%;
         }
+
+        /* 流光特效 */
+        .shimmer-text {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer-text::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 210, 63, 0.8), transparent);
+            animation: shimmer 10s ease-in-out infinite;
+            animation-delay: var(--shimmer-delay, 0s);
+        }
+        
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                left: 100%;
+                opacity: 0;
+            }
+        }
         
         .card {
             @apply bg-[var(--surface-color)] rounded-[var(--border-radius)] p-6 border border-gray-700;
