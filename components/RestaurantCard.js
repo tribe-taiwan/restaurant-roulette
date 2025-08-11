@@ -93,8 +93,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
     };
 
     return (
-      <SettingsContainer>
-        <div data-name="restaurant-card" data-file="components/RestaurantCard.js">
+      <div className="w-full max-w-2xl mx-auto bg-[var(--surface-color)] rounded-b-lg p-4 glow-container" data-name="restaurant-card" data-file="components/RestaurantCard.js">
           {/* 非營業狀態警告 - 移到最上面 */}
           {restaurant.businessStatus && restaurant.businessStatus !== 'OPERATIONAL' && (
             <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-4">
@@ -289,8 +288,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             </div>
           </div>
         )}
-        </div>
-      </SettingsContainer>
+      </div>
     );
   } catch (error) {
     console.error('RestaurantCard component error:', error);

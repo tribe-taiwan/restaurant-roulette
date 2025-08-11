@@ -1013,12 +1013,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     };
 
     return (
-      <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
-        <div className="text-center mb-6">
+      <div className="w-full max-w-2xl mx-auto glow-container rounded-t-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
+        <div className="text-center">
 
           {/* Restaurant Image Display with Slide Transition */}
           <div
-            className="group rounded-t-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
+            className="group rounded-t-lg h-64 overflow-hidden relative cursor-pointer select-none"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}

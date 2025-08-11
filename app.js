@@ -602,7 +602,7 @@ function App() {
             <div className="max-w-6xl mx-auto px-6">
 
             {/* Slot Machine */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center">
               <SlotMachine
                 isSpinning={isSpinning}
                 onSpin={handleUserSpin}
@@ -622,9 +622,9 @@ function App() {
               />
             </div>
 
-          {/* Restaurant Result */}
+          {/* Restaurant Result - 緊貼老虎機底部 */}
           {currentRestaurant && !isSpinning && !spinError && (
-            <div className="mt-8">
+            <div>
               <RestaurantCard
                 restaurant={currentRestaurant}
                 language={selectedLanguage}
