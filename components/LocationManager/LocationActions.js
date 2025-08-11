@@ -50,7 +50,7 @@ function LocationActions({
     return (
       <div className="location-actions">
         <div className="location-actions-container">
-          {/* 自動定位按鈕 */}
+          {/* 自動定位按鈕 - 第一個按鈕，為了統一也加上 margin: 0 */}
           <button
             onClick={onRelocate}
             disabled={isRelocating}
@@ -68,6 +68,7 @@ function LocationActions({
             data-important-action="true"
             aria-label={isRelocating ? `${t.autoLocation} - ${t.loading}` : t.autoLocationTip}
             aria-busy={isRelocating}
+            style={{ margin: 0 }}
           >
             <div className="location-btn-content">
               {isRelocating ? (
@@ -88,7 +89,7 @@ function LocationActions({
             </div>
           </button>
           
-          {/* 手動定位按鈕 */}
+          {/* 手動定位按鈕 - 非第一個按鈕，需要 margin: 0 來避免上方多出間隔 */}
           <button
             onClick={handleManualLocation}
             disabled={!addressInput.trim() || isGeocodingAddress}
@@ -98,6 +99,7 @@ function LocationActions({
             data-important-action={shouldShowActiveState ? "true" : "false"}
             aria-label={isGeocodingAddress ? `${t.locateHere} - ${t.loading}` : t.manualLocationTip}
             aria-busy={isGeocodingAddress}
+            style={{ margin: 0 }}
           >
             <div className="location-btn-content">
               {isGeocodingAddress ? (

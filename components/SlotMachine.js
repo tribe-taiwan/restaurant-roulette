@@ -6,11 +6,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const slowPhasePercent = 60;     // 慢速階段佔總時間的百分比
       const slowMoveDistance = 5;     // 慢速階段移動的距離百分比
       const totalDuration = 700;       // 總動畫時間(ms)
-      
+
       // 計算關鍵幀參數
       const slowPhaseEnd = slowPhasePercent; // 70%時間點
       const slowDistanceEnd = slowMoveDistance; // 10%距離點
-      
+
       // 生成 CSS keyframes 字符串
       const generateKeyframes = (animationName, startPos, slowEndPos, finalPos) => `
         @keyframes ${animationName} {
@@ -19,13 +19,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           100% { transform: translateX(${finalPos}%); }
         }
       `;
-      
+
       // 動態生成所有動畫的 keyframes
       const keyframes = [
         generateKeyframes('slideOutToLeft', 0, -slowDistanceEnd, -100),
         generateKeyframes('slideOutToRight', 0, slowDistanceEnd, 100),
-        generateKeyframes('slideInFromRight', 100, 100-slowDistanceEnd, 0),
-        generateKeyframes('slideInFromLeft', -100, -100+slowDistanceEnd, 0),
+        generateKeyframes('slideInFromRight', 100, 100 - slowDistanceEnd, 0),
+        generateKeyframes('slideInFromLeft', -100, -100 + slowDistanceEnd, 0),
         // 🎯 添加元素淡出動畫 - 柔和漸隱
         `@keyframes fadeOutSlide {
           0% { 
@@ -42,10 +42,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           }
         }`
       ].join('\n');
-      
+
       // 自訂 cubic-bezier 曲線，實現前慢後快效果
       const timingFunction = 'cubic-bezier(0.05, 0, 0.2, 1)';
-      
+
       return {
         duration: totalDuration,
         timingFunction,
@@ -58,21 +58,21 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 應用動畫配置到 DOM
     const applySlideAnimationStyles = React.useCallback(() => {
       const config = getSlideAnimationConfig();
-      
+
       // 移除舊的動畫樣式
       const oldStyle = document.getElementById('custom-slide-animation');
       if (oldStyle) {
         oldStyle.remove();
       }
-      
+
       // 創建新的動畫樣式
       const style = document.createElement('style');
       style.id = 'custom-slide-animation';
       style.textContent = config.keyframes;
       document.head.appendChild(style);
-      
+
       console.log(`🎬 滑動動畫配置已更新: 前${config.slowPhasePercent}%時間移動${config.slowMoveDistance}%距離`);
-      
+
       return config;
     }, [getSlideAnimationConfig]);
     const [scrollingNames, setScrollingNames] = React.useState([]);
@@ -92,18 +92,18 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 預載入池管理
     const [preloadedImages, setPreloadedImages] = React.useState(new Map());
     const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState(0);
-    
+
     // 動畫配置狀態
     const [animationConfig, setAnimationConfig] = React.useState(null);
 
     // 使用共用的價位標籤
     const priceLabels = window.getPriceLabels();
-    
+
     // 使用共用的星級顯示邏輯
     const renderStars = (rating) => {
       const stars = window.renderStars(rating);
       if (!stars) return null;
-      
+
       return (
         <>
           {stars.map(star => (
@@ -394,7 +394,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         let nextRestaurant = null;
         if (window.getAvailableRestaurantsFromCache && selectedMealTime) {
           const cachedRestaurants = window.getAvailableRestaurantsFromCache(selectedMealTime);
-          
+
           // 找到第一個還沒顯示過的餐廳（排除當前餐廳）
           const availableNext = cachedRestaurants.filter(cached => {
             if (finalRestaurant) {
@@ -402,7 +402,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             }
             return true;
           });
-          
+
           if (availableNext.length > 0) {
             nextRestaurant = availableNext[0];
           }
@@ -452,7 +452,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     React.useEffect(() => {
       if (finalRestaurant) {
         // 餐廳變更備用處理（靜默）
-        
+
         // 備用預載入池管理
         managePreloadPool(finalRestaurant, restaurantHistory);
       }
@@ -506,13 +506,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const basePath = './assets/image/slot-machine';
       const detectedImages = [];
       const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-      
+
       console.log('🔍 開始自動偵測slot圖片數量（支援多種格式）...');
-      
+
       let i = 1;
       while (true) {
         let imageFound = false;
-        
+
         // 嘗試每種副檔名
         for (const ext of extensions) {
           const imagePath = `${basePath}/slot (${i})${ext}`;
@@ -533,21 +533,21 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             // 繼續嘗試下一個副檔名
           }
         }
-        
+
         if (!imageFound) {
           console.log(`🏁 偵測完成，共找到 ${detectedImages.length} 張圖片 (slot (1) ~ slot (${detectedImages.length}))`);
           break; // 沒找到任何格式的圖片，停止搜尋
         }
-        
+
         i++;
-        
+
         // 安全上限，避免無限迴圈
         if (i > 100) {
           console.warn('⚠️ 達到圖片搜尋上限100張，停止搜尋');
           break;
         }
       }
-      
+
       console.log(`✅ 成功載入 ${detectedImages.length} 張slot圖片，支援格式: ${extensions.join(', ')}`);
       return detectedImages;
     }, []);
@@ -566,7 +566,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       // 🎯 新的動畫時間計算：每張圖片固定顯示時間
       const apiWaitingTotalDuration = timePerImage * imageCount * 5; // slot_apiWaiting模式總時間（增加循環時間）
       const apiReceivedTotalDuration = timePerImage * totalImages; // slot_apiReceived模式總時間
-      
+
       // 🎯 API等待動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
       const apiWaitingScrollDistance = imageCount * itemWidth;
 
@@ -619,7 +619,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       style.id = 'dynamic-slot-animation';
       style.textContent = keyframes;
       document.head.appendChild(style);
-      
+
       // 返回時間參數供其他地方使用
       return {
         apiWaitingDuration: apiWaitingTotalDuration,
@@ -647,12 +647,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const shuffledImages = shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
           console.log('🔧 [DEBUG] 設定 slotImages:', shuffledImages);
-          
+
           // 🎯 預先準備 API等待動畫序列，避免動畫開始時的計算延遲
           const preparedApiWaitingSequence = [...shuffledImages]; // 使用單組圖片，依賴CSS infinite循環
           setApiWaitingSequenceCache(preparedApiWaitingSequence);
           console.log('🚀 [DEBUG] 預先準備 API等待序列:', preparedApiWaitingSequence.length, '張圖片');
-          
+
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
           createDynamicAnimation(detectedImages.length, 0.5);
         } else {
@@ -673,7 +673,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     const handleTouchEnd = () => {
       if (!touchStart || !touchEnd) return;
-      
+
       const distance = touchStart - touchEnd;
       const isLeftSwipe = distance > 50; // 左滑距離超過50px（搜尋下一家）
       const isRightSwipe = distance < -50; // 右滑距離超過50px（回到上一家）
@@ -721,13 +721,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
      * 3. isSpinning=false → 停止動畫，顯示最終結果
      */
     React.useEffect(() => {
-      console.log('🎯 動畫狀態檢查:', { 
-        isSpinning, 
+      console.log('🎯 動畫狀態檢查:', {
+        isSpinning,
         currentPhase: animationPhase,
-        hasFinalRestaurant: !!finalRestaurant, 
-        hasImage: !!(finalRestaurant?.image) 
+        hasFinalRestaurant: !!finalRestaurant,
+        hasImage: !!(finalRestaurant?.image)
       });
-      
+
       if (isSpinning) {
         if (animationPhase === 'slot_apiWaiting' && finalRestaurant && finalRestaurant.image) {
           // =====================================
@@ -741,7 +741,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 🔗 構建最終序列：基於fast序列確保視覺連續性
           const finalSequence = [];
-          
+
           // 使用與slot_apiWaiting模式相同的序列基礎
           if (apiWaitingSequenceCache.length > 0) {
             finalSequence.push(...apiWaitingSequenceCache);
@@ -753,7 +753,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 添加過渡圖片
           finalSequence.push(...finalSequence.slice(0, 2));
-          
+
           // 餐廳圖片作為最後一張
           finalSequence.push(finalRestaurant.image);
 
@@ -764,9 +764,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           const actualSequenceLength = finalSequence.length - 1;
           const animationResult = createDynamicAnimation(actualSequenceLength, 0.5);
           const apiReceivedAnimationDuration = animationResult.apiReceivedDuration * 1000;
-          
-          console.log('🎯 slot_apiReceived動畫: 序列長度', actualSequenceLength, '動畫時間', apiReceivedAnimationDuration/1000, '秒');
-          
+
+          console.log('🎯 slot_apiReceived動畫: 序列長度', actualSequenceLength, '動畫時間', apiReceivedAnimationDuration / 1000, '秒');
+
           setTimeout(() => {
             setAnimationPhase('idle');
             window.dispatchEvent(new CustomEvent('slotAnimationEnd'));
@@ -791,7 +791,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           }
 
           console.log('⚡ 啟動slot_apiWaiting模式 - 等待API返回中...');
-          
+
           requestAnimationFrame(() => {
             setAnimationPhase('slot_apiWaiting');
             setApiWaitingLevel(1);
@@ -816,7 +816,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           });
         }
         // 如果已經在slot_apiWaiting模式且API未返回，維持等待狀態
-        
+
       } else {
         // =====================================
         // 情況：停止轉動 → 停止所有動畫
@@ -848,7 +848,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center mb-6">
-          
+
           {/* Restaurant Image Display with Slide Transition */}
           <div
             className="group rounded-t-lg mb-6 h-64 overflow-hidden relative cursor-pointer select-none"
@@ -870,7 +870,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: 'translateX(0)',
-                      animation: slideDirection === 'left' 
+                      animation: slideDirection === 'left'
                         ? `slideOutToLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
                         : `slideOutToRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 1
@@ -898,7 +898,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                             )}
                           </div>
                         </div>
-                        
+
                         {/* 價位標籤 */}
                         {currentRestaurantData.priceLevel && (
                           <div className="absolute bottom-10 left-4 pointer-events-none">
@@ -947,7 +947,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
-                      animation: slideDirection === 'left' 
+                      animation: slideDirection === 'left'
                         ? `slideInFromRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
                         : `slideInFromLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
                       zIndex: 2
@@ -975,7 +975,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                             )}
                           </div>
                         </div>
-                        
+
                         {/* 價位標籤 */}
                         {nextRestaurantData.priceLevel && (
                           <div className="absolute bottom-10 left-4 pointer-events-none">
@@ -1043,10 +1043,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             )}
 
             {/* 內容覆蓋層 */}
-            <div 
-              className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${
-                isSpinning ? getAnimationClass() : ''
-              }`}
+            <div
+              className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${isSpinning ? getAnimationClass() : ''
+                }`}
               style={{
                 willChange: isSpinning ? 'transform' : 'auto'
               }}
@@ -1115,11 +1114,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     {slotImages.length > 0 ? (
                       <>
                         😴
-                        {language === 'zh' ? '打烊了' : 
-                         language === 'ja' ? '閉店' :
-                         language === 'ko' ? '영업종료' : 
-                         language === 'es' ? 'Cerrado' :
-                         language === 'fr' ? 'Fermé' : 'Closed'}
+                        {language === 'zh' ? '打烊了' :
+                          language === 'ja' ? '閉店' :
+                            language === 'ko' ? '영업종료' :
+                              language === 'es' ? 'Cerrado' :
+                                language === 'fr' ? 'Fermé' : 'Closed'}
                       </>
                     ) : (
                       <>
@@ -1138,7 +1137,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-            
+
             {/* Price Label - 完全獨立的絕對定位 */}
             {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
               <div className="absolute bottom-10 left-4 pointer-events-none">
@@ -1176,10 +1175,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 </div>
               </div>
             )}
-            
+
             {/* Hover Arrow - Left Side (Previous Restaurant) */}
             {finalRestaurant && !isSpinning && (
-              <div 
+              <div
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1195,7 +1194,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
             {/* Hover Arrow - Right Side (Next Restaurant) */}
             {finalRestaurant && !isSpinning && (
-              <div 
+              <div
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1206,12 +1205,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
               </div>
             )}
-            
+
           </div>
 
           {/* Button Container - 固定兩欄布局 */}
           <div className="grid grid-cols-[1fr_120px] gap-3 px-4">
-            {/* Search Next Button - 主按鈕佔剩餘空間 */}
+            {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
             <button
               onClick={() => onSpin(false)}
               className="min-h-[72px] p-3 rounded-lg border-2 
@@ -1220,7 +1219,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
                 borderColor: 'var(--theme-primary)',
                 touchAction: 'manipulation',
-                transition: 'none'
+                transition: 'none',
+                margin: 0
               }}
             >
               {isSpinning ? (
@@ -1234,7 +1234,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               )}
             </button>
 
-            {/* Add to Candidate Button - 固定 120px 寬度空間 */}
+            {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
             <button
               onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning) ? null : onAddCandidate}
               disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning}
@@ -1245,12 +1245,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 borderColor: 'var(--theme-primary)',
                 touchAction: 'manipulation',
                 transition: 'none',
+                margin: 0,
                 opacity: (!finalRestaurant || candidateList.length >= 9) ? 0.3 : (isSpinning ? 0.5 : 1),
                 cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning) ? 'not-allowed' : 'pointer'
               }}
               title={finalRestaurant && candidateList.length < 9 ? translations.addCandidate : ''}
             >
-              <div className="text-lg font-semibold text-center leading-tight">
+              <div className="text-xl font-bold text-center">
                 {translations.addCandidate}
               </div>
             </button>
@@ -1273,7 +1274,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               <div className="space-y-3 w-full">
                 {candidateList.map((restaurant, index) => {
                   const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
-                  
+
                   return (
                     <a
                       key={index}
@@ -1282,15 +1283,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       rel="noopener noreferrer"
                       className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
                       style={{
-                        backgroundImage: restaurant.image ? 
-                          `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${restaurant.image})` : 
+                        backgroundImage: restaurant.image ?
+                          `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${restaurant.image})` :
                           'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
                       }}
                     >
                       {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
-                      <div 
+                      <div
                         className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
                         style={{
                           width: '38.2%',
@@ -1317,7 +1318,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Price Label - Bottom Right */}
                       <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
                         {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}

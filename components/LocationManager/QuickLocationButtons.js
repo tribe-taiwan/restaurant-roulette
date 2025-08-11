@@ -64,7 +64,7 @@ function QuickLocationButtons({
 
     return (
       <div className="quick-buttons-container">
-        {/* 住家按鈕 */}
+        {/* 住家按鈕 - 第一個按鈕，為了統一也加上 margin: 0 */}
         <button
           onClick={() => onLocationButton('home')}
           className={`quick-location-btn ${getLocationButtonStyle('home')}`}
@@ -72,6 +72,7 @@ function QuickLocationButtons({
           data-touch-optimized="true"
           data-important-action={shouldShowActiveState ? "true" : "false"}
           aria-label={getLocationButtonTip('home')}
+          style={{ margin: 0 }}
         >
           <div className="quick-btn-icon quick-btn-icon--home"></div>
           <div className="quick-btn-text">
@@ -79,7 +80,7 @@ function QuickLocationButtons({
           </div>
         </button>
 
-        {/* 公司按鈕 */}
+        {/* 公司按鈕 - 非第一個按鈕，需要 margin: 0 來避免上方多出間隔 */}
         <button
           onClick={() => onLocationButton('office')}
           className={`quick-location-btn ${getLocationButtonStyle('office')}`}
@@ -87,6 +88,7 @@ function QuickLocationButtons({
           data-touch-optimized="true"
           data-important-action={shouldShowActiveState ? "true" : "false"}
           aria-label={getLocationButtonTip('office')}
+          style={{ margin: 0 }}
         >
           <div className="quick-btn-icon quick-btn-icon--briefcase"></div>
           <div className="quick-btn-text">

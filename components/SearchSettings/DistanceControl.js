@@ -53,7 +53,7 @@ function DistanceControl({
 
         {/* 單位切換器 */}
         <div className="flex gap-2">
-          {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config]) => (
+          {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config], index) => (
             <button
               key={value}
               onClick={() => handleUnitSwitch(Number(value))}
@@ -62,9 +62,13 @@ function DistanceControl({
                   ? 'text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
               }`}
-              style={baseUnit === Number(value) ? {
-                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))'
-              } : {}}
+              style={{
+                ...(baseUnit === Number(value) ? {
+                  background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))'
+                } : {}),
+                // 第一個按鈕為了統一也加上 margin: 0，非第一個按鈕需要 margin: 0 來避免上方多出間隔
+                margin: 0
+              }}
               aria-label={`切換到${config.fullLabel}`}
               aria-pressed={baseUnit === Number(value)}
             >

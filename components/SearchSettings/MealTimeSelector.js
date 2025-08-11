@@ -44,7 +44,7 @@ function MealTimeSelector({
       <div className="space-y-3">
         {mealTimeRows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex gap-3 justify-center">
-            {row.map(mealTime => (
+            {row.map((mealTime, index) => (
               <button
                 key={mealTime.id}
                 onClick={() => setSelectedMealTime(mealTime.id)}
@@ -54,11 +54,15 @@ function MealTimeSelector({
                     ? 'text-white shadow-lg'
                     : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-50 hover:shadow-md'
                 }`}
-                style={selectedMealTime === mealTime.id ? {
-                  background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                  borderColor: 'var(--theme-primary)'
-                } : {
-                  borderColor: 'var(--border-color)'
+                style={{
+                  ...(selectedMealTime === mealTime.id ? {
+                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                    borderColor: 'var(--theme-primary)'
+                  } : {
+                    borderColor: 'var(--border-color)'
+                  }),
+                  // 第一個按鈕為了統一也加上 margin: 0，非第一個按鈕需要 margin: 0 來避免上方多出間隔
+                  margin: 0
                 }}
                 aria-label={`選擇${mealTime.label}${mealTime.time ? ` (${mealTime.time})` : ''}`}
                 aria-pressed={selectedMealTime === mealTime.id}
