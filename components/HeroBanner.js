@@ -104,14 +104,13 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
             <div className="absolute inset-0 flex items-center justify-center z-20">
               <div className="text-center text-white">
                 <h1 
-                  className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 shimmer-text"
+                  className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
                   onClick={() => {
                     if (window.navigateToHomeBase) {
                       window.navigateToHomeBase();
                     }
                   }}
                   title={t?.BackToHotel || '回民宿家'}
-                  style={{'--shimmer-delay': '0s'}}
                 >
                   {t?.title || '甲崩喔'}
                 </h1>
@@ -121,17 +120,17 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   </h3>
                 )}
                 <div 
-                  className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 shimmer-text"
+                  className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
                   onClick={() => {
                     if (window.navigateToHomeBase) {
                       window.navigateToHomeBase();
                     }
                   }}
                   title={t?.BackToHotel || '回民宿家'}
-                  style={{'--shimmer-delay': '1s'}}
+                  style={{'--pulse-delay': '1s'}}
                 >
                   <div className="icon-home text-sm"></div>
-                  <span>{t?.BackToHotel || '回民宿家'}</span>
+                  <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                 </div>
               </div>
             </div>
@@ -159,15 +158,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               <div className="absolute inset-0 flex items-center justify-center z-20">
                 <div className="text-center text-white">
                   <h1 
-                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 shimmer-text"
+                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--shimmer-delay': '0s'}}
-                  >
+                    >
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
@@ -176,17 +174,17 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     </h3>
                   )}
                   <div 
-                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 shimmer-text"
+                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--shimmer-delay': '1s'}}
+                    style={{'--pulse-delay': '1s'}}
                   >
                     <div className="icon-home text-sm"></div>
-                    <span>{t?.BackToHotel || '回民宿家'}</span>
+                    <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                   </div>
                 </div>
               </div>
@@ -212,15 +210,14 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               <div className="absolute inset-0 flex items-center justify-center z-20">
                 <div className="text-center text-white">
                   <h1 
-                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 shimmer-text"
+                    className="text-3xl md:text-6xl font-bold mb-2 drop-shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--shimmer-delay': '0s'}}
-                  >
+                    >
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
@@ -229,17 +226,17 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     </h3>
                   )}
                   <div 
-                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 shimmer-text"
+                    className="text-sm mt-2 opacity-80 cursor-pointer hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1 home-pulse"
                     onClick={() => {
                       if (window.navigateToHomeBase) {
                         window.navigateToHomeBase();
                       }
                     }}
                     title={t?.BackToHotel || '回民宿家'}
-                    style={{'--shimmer-delay': '1s'}}
+                    style={{'--pulse-delay': '1s'}}
                   >
                     <div className="icon-home text-sm"></div>
-                    <span>{t?.BackToHotel || '回民宿家'}</span>
+                    <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                   </div>
                 </div>
               </div>
