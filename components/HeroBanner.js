@@ -98,7 +98,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
             <div
               className="unified-banner-background"
               style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
+                backgroundImage: `url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
               }}
             />
             <div className="unified-banner-content">
@@ -115,7 +115,16 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   {t?.title || '甲崩喔'}
                 </h1>
                 {selectedLanguage !== 'zh' && brandSubtitle && (
-                  <h3 className="unified-banner-subtitle">
+                  <h3 
+                    className="unified-banner-subtitle"
+                    onClick={() => {
+                      if (window.navigateToHomeBase) {
+                        window.navigateToHomeBase();
+                      }
+                    }}
+                    title={t?.BackToHotel || '回民宿家'}
+                    style={{ cursor: 'pointer' }}
+                  >
                     {brandSubtitle}
                   </h3>
                 )}
@@ -152,7 +161,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               <div
                 className="unified-banner-background"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
+                  backgroundImage: `url(${currentThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
               <div className="unified-banner-content">
@@ -169,7 +178,16 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 className="unified-banner-subtitle">
+                    <h3 
+                      className="unified-banner-subtitle"
+                      onClick={() => {
+                        if (window.navigateToHomeBase) {
+                          window.navigateToHomeBase();
+                        }
+                      }}
+                      title={t?.BackToHotel || '回民宿家'}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {brandSubtitle}
                     </h3>
                   )}
@@ -204,7 +222,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
               <div
                 className="unified-banner-background"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${nextThemeData?.bannerImage || './assets/image/banner.jpg'})`
+                  backgroundImage: `url(${nextThemeData?.bannerImage || './assets/image/banner.jpg'})`
                 }}
               />
               <div className="unified-banner-content">
@@ -221,7 +239,16 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     {t?.title || '甲崩喔'}
                   </h1>
                   {selectedLanguage !== 'zh' && brandSubtitle && (
-                    <h3 className="unified-banner-subtitle">
+                    <h3 
+                      className="unified-banner-subtitle"
+                      onClick={() => {
+                        if (window.navigateToHomeBase) {
+                          window.navigateToHomeBase();
+                        }
+                      }}
+                      title={t?.BackToHotel || '回民宿家'}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {brandSubtitle}
                     </h3>
                   )}

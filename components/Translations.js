@@ -90,7 +90,9 @@ function createTranslations(brandSubtitle) {
       clearList: "Clear List",
       // 搜尋設定相關
       openNowFilter: "Open Now",
-      anyTime: "Any Time"
+      anyTime: "Any Time",
+      // 距離控制相關
+      searchRadius: "Search Radius"
     },
     zh: {
       title: themeTranslations.zh,
@@ -155,7 +157,9 @@ function createTranslations(brandSubtitle) {
       clearList: "清除列表",
       // 搜尋設定相關
       openNowFilter: "現在營業中",
-      anyTime: "不限時間"
+      anyTime: "不限時間",
+      // 距離控制相關
+      searchRadius: "搜索範圍"
     },
     ja: {
       title: themeTranslations.ja,
@@ -212,7 +216,9 @@ function createTranslations(brandSubtitle) {
       BackToHotel: "宿へ",
       // 搜尋設定相關
       openNowFilter: "現在営業中",
-      anyTime: "いつでも"
+      anyTime: "いつでも",
+      // 距離控制相關
+      searchRadius: "検索範囲"
     },
     ko: {
       title: themeTranslations.ko,
@@ -269,7 +275,9 @@ function createTranslations(brandSubtitle) {
       clearList: "목록 지우기",
       // 搜尋設定相關
       openNowFilter: "지금 영업 중",
-      anyTime: "언제든"
+      anyTime: "언제든",
+      // 距離控制相關
+      searchRadius: "검색 범위"
     },
     vi: {
       title: themeTranslations.vi,
@@ -326,7 +334,9 @@ function createTranslations(brandSubtitle) {
       clearList: "Xóa danh sách",
       // 搜尋設定相關
       openNowFilter: "Hiện đang mở cửa",
-      anyTime: "Bất kì lúc nào"
+      anyTime: "Bất kì lúc nào",
+      // 距離控制相關
+      searchRadius: "Bán kính tìm kiếm"
     },
     ms: {
       title: themeTranslations.ms,
@@ -383,7 +393,9 @@ function createTranslations(brandSubtitle) {
       clearList: "Kosongkan Senarai",
       // 搜尋設定相關
       openNowFilter: "Sedang Buka Sekarang",
-      anyTime: "Bila-bila Masa"
+      anyTime: "Bila-bila Masa",
+      // 距離控制相關
+      searchRadius: "Radius Carian"
     }
   };
 }

@@ -50,8 +50,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    rgba(0, 0, 0, 0.2),
-    rgba(0, 0, 0, 0.2)
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0)
   );
   z-index: 1;
 }
@@ -396,7 +396,7 @@
 
 /* 當有副標題時，主標題向上偏移 */
 .unified-banner-text-container.has-subtitle .unified-banner-title {
-  margin-top: -1rem; /* 向上偏移1rem抵消副標題造成的居中偏移 */
+  margin-top: 1.5rem; /* 向下偏移1.5rem抵消副標題造成的居中偏移 */
 }
 
 /* 副標題樣式 */
@@ -697,8 +697,8 @@
 @media (prefers-color-scheme: dark) {
   .unified-banner-background::before {
     background: linear-gradient(
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.6)
+      rgba(0, 0, 0, 0.4),
+      rgba(0, 0, 0, 0.4)
     );
   }
 }

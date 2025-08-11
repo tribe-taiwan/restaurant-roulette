@@ -866,7 +866,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   <div
                     className="absolute inset-0 w-full h-full"
                     style={{
-                      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentImage})`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${currentImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: 'translateX(0)',
@@ -943,7 +943,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   <div
                     className="absolute inset-0 w-full h-full"
                     style={{
-                      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${nextImage})`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${nextImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       transform: slideDirection === 'left' ? 'translateX(100%)' : 'translateX(-100%)',
@@ -1026,11 +1026,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       // console.log('🔧 [DEBUG] 使用餐廳圖片:', finalRestaurant.image);
                       // 添加 fallback 圖片以防載入失敗
                       const fallbackUrl = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
-                      return `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${finalRestaurant.image}), url(${fallbackUrl})`;
+                      return `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${finalRestaurant.image}), url(${fallbackUrl})`;
                     } else if (slotImages.length > 0) {
                       const fallbackImage = slotImages[slotImages.length - 1];
                       console.log('🔧 [DEBUG] 使用 slot fallback 圖片:', fallbackImage);
-                      return `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${fallbackImage})`;
+                      return `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${fallbackImage})`;
                     } else {
                       console.log('🔧 [DEBUG] 使用預設漸層背景');
                       return 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
@@ -1061,12 +1061,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         alt={isRestaurantImage ? `restaurant-${finalRestaurant.name}` : `slot-${index}`}
                         className="w-full h-full object-cover"
                         style={{
-                          filter: isRestaurantImage ? 'brightness(1) contrast(1)' : 'brightness(0.8) contrast(1.1)'
+                          filter: 'brightness(1) contrast(1)'
                         }}
                       />
                       {/* 如果是餐廳圖片，添加資訊覆蓋層 */}
                       {isRestaurantImage && (
-                        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ backgroundColor: `rgba(0,0,0,var(--image-overlay-opacity))` }}>
                           <div className="text-2xl font-bold text-white drop-shadow-lg mb-1">
                             {finalRestaurant.name_zh || finalRestaurant.name}
                           </div>
@@ -1133,7 +1133,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
             {/* 簡單轉圈Loading覆蓋層 - 只在轉盤時顯示 */}
             {isSpinning && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+              <div className="absolute inset-0 flex items-center justify-center z-50">
                 <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
@@ -1284,7 +1284,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
                       style={{
                         backgroundImage: restaurant.image ?
-                          `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${restaurant.image})` :
+                          `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${restaurant.image})` :
                           'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
