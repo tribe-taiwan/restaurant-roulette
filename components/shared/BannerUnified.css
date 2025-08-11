@@ -12,7 +12,7 @@
   /* 使用統一佈局系統 */
   width: 100%;
   max-width: 100%; /* BANNER通常需要全寬顯示 */
-  margin: 0 auto 0 auto; /* 移除底部間距，實現與整合區塊無縫連接 */
+  margin: 0 auto 0 auto !important; /* 強制移除底部間距，實現與整合區塊無縫連接 */
   padding: 0;
 
   /* 使用統一設計系統 - 注意背景圖片不使用圓角 */
@@ -601,7 +601,7 @@
 @media (max-width: 768px) {
   .unified-banner-container {
     min-height: 250px;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: 0 !important; /* 強制移除響應式設計中的底部間距 */
   }
   
   .unified-banner-content {

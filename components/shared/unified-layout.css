@@ -99,7 +99,7 @@
 .hero-banner-container {
   width: 100%;
   max-width: var(--unified-max-width);
-  margin: 0 auto;
+  margin: 0 auto 0 auto !important; /* 強制移除底部間距，實現與整合區塊無縫連接 */
   padding: 0 var(--unified-content-padding);
   box-sizing: border-box;
   text-align: center;
@@ -134,10 +134,14 @@
   .content-section,
   .location-manager-mobile,
   .search-settings-container,
-  .hero-banner-container,
   .language-selector-container,
   .slot-machine-container {
     margin-bottom: 3rem; /* 統一的區塊間距 */
+  }
+
+  /* Banner容器特殊處理 - 移除底部間距實現無縫連接 */
+  .hero-banner-container {
+    margin-bottom: 0 !important; /* 強制移除Banner底部間距，實現與整合區塊無縫連接 */
   }
   
   /* 桌面端統一內邊距和寬度 */

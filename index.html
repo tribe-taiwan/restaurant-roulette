@@ -296,7 +296,18 @@
         }
 
         .glow-container {
-            box-shadow: var(--shadow-lg);
+            box-shadow: none !important; /* 移除glow效果，實現與Banner無縫連接 */
+            margin-top: -24px !important; /* 強制向上移動覆蓋Banner底部間隙 */
+        }
+
+        /* 更具體的選擇器確保生效 */
+        .w-full.max-w-2xl.mx-auto.glow-container.rounded-lg {
+            box-shadow: none !important; /* 移除glow效果，實現與Banner無縫連接 */
+            margin-top: -24px !important; /* 強制向上移動覆蓋Banner底部間隙 */
+            z-index: 10 !important; /* 在Banner遮罩之上，但在Banner按鈕之下 */
+            position: relative; /* 確保z-index生效 */
+            border: 1px solid rgba(255, 255, 255, 0.2) !important; /* 細框線增加視覺分層 */
+            backdrop-filter: blur(8px); /* 添加毛玻璃效果增加質感 */
         }
         
         .slot-machine {

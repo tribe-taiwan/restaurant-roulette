@@ -594,7 +594,7 @@ function App() {
               border: '1px solid rgba(255, 255, 255, 0.12)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               marginTop: '0', // 與banner無間隔
-              padding: '30px',
+              padding: '0 30px 30px 30px', // 移除頂部padding，實現與Banner無縫連接
               borderRadius: '0', // 直角設計
               transition: 'all 0.3s ease'
             }}
