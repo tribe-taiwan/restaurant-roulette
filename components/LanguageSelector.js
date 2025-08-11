@@ -1,5 +1,6 @@
 function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const buttonRef = React.useRef(null);
   
   try {
     const languages = [
@@ -35,6 +36,7 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
         {/* 手機版：漢堡選單 */}
         <div className="md:hidden relative">
           <button
+            ref={buttonRef}
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center gap-2 bg-[var(--surface-color)] bg-opacity-65 rounded-lg px-4 py-2 text-[var(--text-secondary)] transition-all duration-200"
           >
@@ -43,7 +45,15 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
           </button>
           
           {isOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 z-30 min-w-[160px]">
+            <div 
+              className="bg-[var(--surface-color)] rounded-lg shadow-lg border border-gray-600 min-w-[160px]" 
+              style={{
+                position: 'fixed',
+                top: buttonRef?.current ? buttonRef.current.getBoundingClientRect().bottom + 8 + 'px' : '60px',
+                right: buttonRef?.current ? (window.innerWidth - buttonRef.current.getBoundingClientRect().right) + 'px' : '16px',
+                zIndex: 9999
+              }}
+            >
               {languages.map((lang) => (
                 <button
                   key={lang.code}
@@ -66,7 +76,8 @@ function LanguageSelector({ selectedLanguage, onLanguageChange, userLocation }) 
           {/* 點擊外部關閉選單 */}
           {isOpen && (
             <div 
-              className="fixed inset-0 z-10" 
+              className="fixed inset-0" 
+              style={{ zIndex: 9998 }}
               onClick={() => setIsOpen(false)}
             ></div>
           )}
