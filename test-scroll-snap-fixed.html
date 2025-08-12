@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修復的滾動吸附測試</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .section-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .slot-machine {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 5px solid white;
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        .section-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            z-index: 1000;
+            font-family: monospace;
+            max-width: 350px;
+            line-height: 1.4;
+        }
+        
+        .copy-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1001;
+        }
+        
+        .copy-btn:hover {
+            background: #45a049;
+        }
+        
+        .copy-btn:active {
+            background: #3d8b40;
+        }
+    </style>
+</head>
+<body>
+    <button class="copy-btn" onclick="copyTechInfo()">📋 複製技術資訊</button>
+    
+    <div class="debug-info" id="debug">
+        <div><strong>🔧 修復的滾動吸附測試</strong></div>
+        <div>狀態: <span id="status">等待滑動...</span></div>
+        <div>位置: <span id="position">-</span></div>
+        <div>最後事件: <span id="last-event">無</span></div>
+        <div>觸發次數: <span id="trigger-count">0</span></div>
+        <div>平均精度: <span id="avg-accuracy">-</span></div>
+        <div>最後精度: <span id="last-accuracy">-</span></div>
+    </div>
+    
+    <div class="section section-1">
+        <div>
+            上方區域<br>
+            快速向下滑動測試<br>
+            <small>✅ 應該吸附到老虎機</small>
+        </div>
+    </div>
+    
+    <div class="section slot-machine" data-name="slot-machine">
+        <div>
+            🎰 老虎機區塊<br>
+            目標定位點<br>
+            <small style="color: #ffeb3b;">❌ 在此區域內滑動不應該觸發吸附</small>
+        </div>
+    </div>
+    
+    <div class="section section-3">
+        <div>
+            下方區域<br>
+            快速向上滑動測試<br>
+            <small>✅ 應該吸附到老虎機</small><br>
+            <small style="color: #ff6b6b;">❌ 向下滑動不應該觸發</small>
+        </div>
+    </div>
+
+    <script>
+        // 修復版本 - 基於有效的最小版本，添加正確的觸發邏輯
+        class FixedScrollSnap {
+            constructor() {
+                this.startY = null;
+                this.startTime = null;
+                this.isTracking = false;
+                this.VELOCITY_THRESHOLD = 0.8;
+                this.MIN_DISTANCE = 50;
+                this.triggerCount = 0;
+                this.accuracyHistory = [];
+                this.techInfo = [];
+                
+                this.bindEvents();
+                this.log('修復版本初始化完成');
+                this.updatePosition();
+            }
+            
+            bindEvents() {
+                // 觸控事件
+                document.addEventListener('touchstart', (e) => this.onStart(e.touches[0].clientY), { passive: false });
+                document.addEventListener('touchend', (e) => this.onEnd(e.changedTouches[0].clientY, e), { passive: false });
+                
+                // 滑鼠事件 (用於測試)
+                document.addEventListener('mousedown', (e) => this.onStart(e.clientY), { passive: false });
+                document.addEventListener('mouseup', (e) => this.onEnd(e.clientY, e), { passive: false });
+            }
+            
+            onStart(y) {
+                this.startY = y;
+                this.startTime = Date.now();
+                this.isTracking = true;
+                
+                // 記錄開始時的位置，避免滾動過程中位置改變
+                this.startPosition = this.getRelativePosition();
+                this.log(`開始: Y=${Math.round(this.startY)}, 位置=${this.startPosition}`);
+                this.updatePosition();
+            }
+            
+            onEnd(y, event) {
+                if (!this.isTracking) return;
+                
+                const endY = y;
+                const endTime = Date.now();
+                
+                const distance = Math.abs(endY - this.startY);
+                const duration = endTime - this.startTime;
+                const velocity = distance / duration;
+                
+                // 修正方向檢測邏輯：
+                // 手指向上滑動 (endY < startY) = 頁面向下滾動 = down
+                // 手指向下滑動 (endY > startY) = 頁面向上滾動 = up  
+                const direction = endY < this.startY ? 'down' : 'up';
+                
+                // 使用開始時的位置，避免滾動過程中位置改變影響判斷
+                const position = this.startPosition || this.getRelativePosition();
+                
+                // 詳細的方向分析
+                const fingerDirection = endY < this.startY ? '向上' : '向下';
+                const pageDirection = endY < this.startY ? '向下' : '向上';
+                
+                this.log(`滑動: 距離=${distance}px, 速度=${velocity.toFixed(3)}px/ms`);
+                this.log(`手指${fingerDirection}滑動 → 頁面${pageDirection}滾動 (${direction}), 開始位置=${position}`);
+                
+                // 檢查基本條件
+                const isFastEnough = velocity > this.VELOCITY_THRESHOLD;
+                const isLongEnough = distance > this.MIN_DISTANCE;
+                
+                // 檢查正確的觸發條件 (根據需求)
+                const shouldTriggerSnap = this.shouldTriggerSnap(direction, position);
+                const shouldTrigger = isFastEnough && isLongEnough && shouldTriggerSnap;
+                
+                // 立即阻止原生滾動（如果需要觸發吸附）
+                if (shouldTrigger) {
+                    this.log(`🚫 立即阻止原生滾動`);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                if (shouldTrigger) {
+                    this.triggerCount++;
+                    this.log(`✅ 觸發吸附 (#${this.triggerCount})`);
+                    
+                    // 立即執行吸附，不延遲
+                    this.snapToTarget();
+                } else {
+                    const reasons = [];
+                    if (!isFastEnough) reasons.push(`速度不足(${velocity.toFixed(3)})`);
+                    if (!isLongEnough) reasons.push(`距離不足(${distance}px)`);
+                    if (!shouldTriggerSnap) reasons.push(`方向錯誤(${direction}在${position})`);
+                    
+                    this.log(`🔄 保持原生滾動: ${reasons.join(', ')}`);
+                }
+                
+                this.isTracking = false;
+                document.getElementById('trigger-count').textContent = this.triggerCount;
+            }
+            
+            // 根據需求文件的正確觸發邏輯
+            shouldTriggerSnap(direction, position) {
+                // 需求 1: 在老虎機上方快速向下滾動時吸附
+                // 手指向上滑動 → 頁面向下滾動 → direction = 'down'
+                if (position === 'above' && direction === 'down') {
+                    console.log('✅ 符合需求1: 上方區域，頁面向下滾動');
+                    return true;
+                }
+                
+                // 需求 2: 在老虎機下方快速向上滾動時吸附
+                // 手指向下滑動 → 頁面向上滾動 → direction = 'up'  
+                if (position === 'below' && direction === 'up') {
+                    console.log('✅ 符合需求2: 下方區域，頁面向上滾動');
+                    return true;
+                }
+                
+                // 所有其他情況都不觸發
+                console.log(`❌ 不符合觸發條件: 頁面${direction}滾動 在 ${position} 位置`);
+                return false;
+            }
+            
+            // 使用錨點檢測位置 - 更可靠的方法
+            getRelativePosition() {
+                const currentScroll = window.pageYOffset;
+                const viewportHeight = window.innerHeight;
+                const viewportCenter = currentScroll + (viewportHeight / 2);
+                
+                // 獲取三個區域的錨點
+                const section1 = document.querySelector('.section-1'); // 上方區域
+                const slotMachine = document.querySelector('[data-name="slot-machine"]'); // 老虎機
+                const section3 = document.querySelector('.section-3'); // 下方區域
+                
+                if (!section1 || !slotMachine || !section3) return 'unknown';
+                
+                // 計算各區域的中心點
+                const section1Rect = section1.getBoundingClientRect();
+                const section1Center = section1Rect.top + currentScroll + (section1Rect.height / 2);
+                
+                const slotRect = slotMachine.getBoundingClientRect();
+                const slotCenter = slotRect.top + currentScroll + (slotRect.height / 2);
+                
+                const section3Rect = section3.getBoundingClientRect();
+                const section3Center = section3Rect.top + currentScroll + (section3Rect.height / 2);
+                
+                // 判斷視窗中心最接近哪個區域的中心
+                const distanceToSection1 = Math.abs(viewportCenter - section1Center);
+                const distanceToSlot = Math.abs(viewportCenter - slotCenter);
+                const distanceToSection3 = Math.abs(viewportCenter - section3Center);
+                
+                const minDistance = Math.min(distanceToSection1, distanceToSlot, distanceToSection3);
+                
+                if (minDistance === distanceToSection1) {
+                    return 'above';
+                } else if (minDistance === distanceToSlot) {
+                    return 'within';
+                } else {
+                    return 'below';
+                }
+            }
+            
+            snapToTarget() {
+                const target = document.querySelector('[data-name="slot-machine"]');
+                if (!target) {
+                    this.log('❌ 找不到目標元素');
+                    return;
+                }
+                
+                const rect = target.getBoundingClientRect();
+                const currentScroll = window.pageYOffset;
+                const targetTop = rect.top + currentScroll;
+                
+                this.log(`🎯 目標位置: ${targetTop}px (當前: ${currentScroll}px)`);
+                
+                // 改進的滾動方法 - 使用多步驟精確定位
+                this.preciseScrollTo(targetTop);
+            }
+            
+            // 自定義平滑滾動 - 精確控制
+            preciseScrollTo(targetPosition) {
+                const startPosition = window.pageYOffset;
+                const distance = Math.abs(targetPosition - startPosition);
+                const direction = targetPosition > startPosition ? 1 : -1;
+                
+                // 阻止原生滾動干擾
+                document.body.style.overflow = 'hidden';
+                
+                this.log(`🎯 開始自定義滾動: ${startPosition}px -> ${targetPosition}px`);
+                
+                // 自定義動畫參數
+                const duration = Math.min(300 + distance * 0.3, 500); // 動態持續時間
+                const startTime = performance.now();
+                
+                const animateScroll = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // 使用 easeOutCubic 緩動函數，避免滾過頭
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    
+                    const currentPosition = startPosition + (targetPosition - startPosition) * easeProgress;
+                    
+                    window.scrollTo(0, currentPosition);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateScroll);
+                    } else {
+                        // 動畫完成，確保精確到位
+                        window.scrollTo(0, targetPosition);
+                        setTimeout(() => {
+                            this.verifyScrollResult(targetPosition, startPosition);
+                        }, 50);
+                    }
+                };
+                
+                requestAnimationFrame(animateScroll);
+            }
+            
+            // 驗證滾動結果
+            verifyScrollResult(targetPosition, startPosition) {
+                // 恢復滾動
+                document.body.style.overflow = '';
+                
+                const finalPosition = window.pageYOffset;
+                const accuracy = Math.abs(finalPosition - targetPosition);
+                const totalDistance = Math.abs(targetPosition - startPosition);
+                
+                // 記錄精度統計
+                this.accuracyHistory.push(accuracy);
+                const avgAccuracy = this.accuracyHistory.reduce((a, b) => a + b, 0) / this.accuracyHistory.length;
+                
+                // 記錄技術資訊
+                const techInfo = {
+                    時間: new Date().toLocaleTimeString(),
+                    開始位置: Math.round(startPosition),
+                    目標位置: Math.round(targetPosition),
+                    最終位置: Math.round(finalPosition),
+                    精度: Math.round(accuracy * 100) / 100,
+                    滾動距離: Math.round(totalDistance),
+                    位置狀態: this.getRelativePosition()
+                };
+                
+                this.techInfo.push(techInfo);
+                
+                // 更新 UI
+                document.getElementById('last-accuracy').textContent = `${accuracy.toFixed(1)}px`;
+                document.getElementById('avg-accuracy').textContent = `${avgAccuracy.toFixed(1)}px`;
+                
+                if (accuracy <= 10) {
+                    this.log(`✅ 滾動成功: 位置=${finalPosition.toFixed(1)}px, 精度=${accuracy.toFixed(1)}px`);
+                } else {
+                    this.log(`⚠️ 精度不佳: 位置=${finalPosition.toFixed(1)}px, 精度=${accuracy.toFixed(1)}px`);
+                }
+                
+                this.updatePosition();
+            }
+            
+            updatePosition() {
+                const position = this.getRelativePosition();
+                document.getElementById('position').textContent = position;
+            }
+            
+            log(message) {
+                console.log(`[FixedScrollSnap] ${message}`);
+                document.getElementById('status').textContent = message;
+                document.getElementById('last-event').textContent = new Date().toLocaleTimeString();
+            }
+        }
+        
+        // 複製技術資訊功能
+        function copyTechInfo() {
+            if (!window.fixedScrollSnap || !window.fixedScrollSnap.techInfo.length) {
+                alert('還沒有技術資訊可複製');
+                return;
+            }
+            
+            const info = window.fixedScrollSnap.techInfo;
+            const latest = info[info.length - 1];
+            const avgAccuracy = window.fixedScrollSnap.accuracyHistory.reduce((a, b) => a + b, 0) / window.fixedScrollSnap.accuracyHistory.length;
+            
+            const techReport = `
+🔧 滾動吸附技術報告
+===================
+最新測試結果:
+- 時間: ${latest.時間}
+- 開始位置: ${latest.開始位置}px
+- 目標位置: ${latest.目標位置}px  
+- 最終位置: ${latest.最終位置}px
+- 精度: ${latest.精度}px
+- 滾動距離: ${latest.滾動距離}px
+- 位置狀態: ${latest.位置狀態}
+
+統計資訊:
+- 總觸發次數: ${window.fixedScrollSnap.triggerCount}
+- 平均精度: ${avgAccuracy.toFixed(1)}px
+- 最佳精度: ${Math.min(...window.fixedScrollSnap.accuracyHistory).toFixed(1)}px
+- 最差精度: ${Math.max(...window.fixedScrollSnap.accuracyHistory).toFixed(1)}px
+
+瀏覽器資訊:
+- User Agent: ${navigator.userAgent}
+- 視窗尺寸: ${window.innerWidth}x${window.innerHeight}
+- 設備像素比: ${window.devicePixelRatio}
+
+最近5次測試:
+${info.slice(-5).map(item => 
+    `${item.時間}: ${item.開始位置}px -> ${item.目標位置}px (精度: ${item.精度}px)`
+).join('\n')}
+            `.trim();
+            
+            navigator.clipboard.writeText(techReport).then(() => {
+                alert('✅ 技術資訊已複製到剪貼板');
+            }).catch(() => {
+                // 備用方案
+                const textArea = document.createElement('textarea');
+                textArea.value = techReport;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ 技術資訊已複製到剪貼板 (備用方案)');
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.fixedScrollSnap = new FixedScrollSnap();
+            
+            // 定期更新位置顯示
+            setInterval(() => {
+                if (window.fixedScrollSnap && !window.fixedScrollSnap.isTracking) {
+                    window.fixedScrollSnap.updatePosition();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

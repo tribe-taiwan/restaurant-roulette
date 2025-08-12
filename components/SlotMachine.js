@@ -180,6 +180,47 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     };
 
+    // 複製 Google Maps 連結到剪貼簿
+    const copyGoogleMapsLink = async (restaurant) => {
+      if (!restaurant) return;
+      
+      try {
+        const url = getDirectionsUrl(restaurant);
+        
+        // 使用現代的 Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          // 回退方案：創建臨時 input 元素
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          try {
+            document.execCommand('copy');
+            textArea.remove();
+          } catch (err) {
+            console.error('複製失敗:', err);
+            textArea.remove();
+            throw err;
+          }
+        }
+        
+        console.log('📋 Google Maps 連結已複製到剪貼簿');
+        
+        // 顯示複製成功提示（可選：添加視覺反饋）
+        // 可以在這裡添加 toast 提示或其他反饋機制
+        
+      } catch (error) {
+        console.error('複製 Google Maps 連結失敗:', error);
+      }
+    };
+
     // 圖片預載入函數 - 整合預載入池
     const preloadImage = (url) => {
       return new Promise((resolve, reject) => {
@@ -1011,7 +1052,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           return '';
       }
     };
-
+    // 老虎機的 HTML 結構
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-t-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center">
@@ -1374,6 +1415,38 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 title="搜尋下一家餐廳"
               >
                 <div className="icon-chevron-right text-white text-6xl drop-shadow-lg"></div>
+              </div>
+            )}
+
+            {/* Copy Google Maps Link Button - Top Right Corner */}
+            {finalRestaurant && !isSpinning && (
+              <div
+                className="absolute top-3 right-3 w-10 h-10 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 backdrop-blur-sm z-20"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyGoogleMapsLink(finalRestaurant);
+                }}
+                title="複製 Google Maps 連結"
+              >
+                {/* Simple CSS Copy Icon */}
+                <div 
+                  className="w-5 h-5 relative"
+                  style={{
+                    background: 'transparent',
+                    border: '1.5px solid white',
+                    borderRadius: '2px'
+                  }}
+                >
+                  {/* Copy icon overlay */}
+                  <div 
+                    className="absolute -top-1 -right-1 w-4 h-4"
+                    style={{
+                      background: 'white',
+                      border: '1.5px solid white',
+                      borderRadius: '1px'
+                    }}
+                  ></div>
+                </div>
               </div>
             )}
 
