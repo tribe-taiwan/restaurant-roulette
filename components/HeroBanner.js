@@ -296,7 +296,7 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
           </div>
 
           <div
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-40"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer z-30"
             onClick={slideToNext}
             title="下一個主題"
           >
