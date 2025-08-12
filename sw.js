@@ -1,9 +1,10 @@
 // Service Worker for Restaurant Roulette PWA
-// Version 1.0.0
+// Version 1.0.1 - Force Update Enabled
 
-const CACHE_NAME = 'restaurant-roulette-v1.0.0';
-const STATIC_CACHE_NAME = 'restaurant-roulette-static-v1.0.0';
-const DYNAMIC_CACHE_NAME = 'restaurant-roulette-dynamic-v1.0.0';
+const CACHE_VERSION = Date.now(); // 使用時間戳確保每次都是新版本
+const CACHE_NAME = `restaurant-roulette-v${CACHE_VERSION}`;
+const STATIC_CACHE_NAME = `restaurant-roulette-static-v${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `restaurant-roulette-dynamic-v${CACHE_VERSION}`;
 
 // 靜態資源 - 核心應用檔案
 const STATIC_ASSETS = [
@@ -74,7 +75,7 @@ const NO_CACHE_PATTERNS = [
 
 // Service Worker 安裝事件
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker');
+  console.log('[SW] Installing Service Worker with force update');
   
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
@@ -84,24 +85,28 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         console.log('[SW] Static assets cached successfully');
-        return self.skipWaiting(); // 立即啟用新的 Service Worker
+        // 強制跳過等待，立即啟用新的 Service Worker
+        return self.skipWaiting();
       })
       .catch((error) => {
         console.error('[SW] Failed to cache static assets:', error);
+        // 即使快取失敗也要跳過等待，確保使用最新版本
+        return self.skipWaiting();
       })
   );
 });
 
 // Service Worker 啟用事件
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker');
+  console.log('[SW] Activating Service Worker with force refresh');
   
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
+    Promise.all([
+      // 刪除所有舊快取
+      caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            // 刪除舊版本的快取
+            // 刪除所有舊版本的快取，包括當前版本以外的所有快取
             if (cacheName !== STATIC_CACHE_NAME && 
                 cacheName !== DYNAMIC_CACHE_NAME &&
                 cacheName.startsWith('restaurant-roulette-')) {
@@ -110,11 +115,21 @@ self.addEventListener('activate', (event) => {
             }
           })
         );
+      }),
+      // 立即控制所有頁面
+      self.clients.claim(),
+      // 通知所有客戶端重新載入
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'FORCE_RELOAD',
+            message: 'New version available, reloading...'
+          });
+        });
       })
-      .then(() => {
-        console.log('[SW] Service Worker activated');
-        return self.clients.claim(); // 立即控制所有頁面
-      })
+    ]).then(() => {
+      console.log('[SW] Service Worker activated and clients notified');
+    })
   );
 });
 
@@ -133,29 +148,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // 處理靜態資源 - Cache First 策略
+  // 處理核心應用檔案 - Network First 策略 (確保總是最新)
   if (STATIC_ASSETS.some(asset => request.url.endsWith(asset))) {
     event.respondWith(
-      caches.match(request)
+      fetch(request)
         .then((response) => {
-          if (response) {
-            return response;
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE_NAME)
+              .then((cache) => cache.put(request, responseClone));
           }
-          return fetch(request)
-            .then((response) => {
-              if (response.status === 200) {
-                const responseClone = response.clone();
-                caches.open(STATIC_CACHE_NAME)
-                  .then((cache) => cache.put(request, responseClone));
-              }
-              return response;
-            });
+          return response;
         })
         .catch(() => {
-          // 離線時的 fallback
-          if (request.destination === 'document') {
-            return caches.match('/index.html');
-          }
+          // 網路失敗時才從快取返回
+          return caches.match(request).then((response) => {
+            if (response) {
+              return response;
+            }
+            // 離線時的 fallback
+            if (request.destination === 'document') {
+              return caches.match('/index.html');
+            }
+          });
         })
     );
     return;
@@ -260,7 +275,7 @@ self.addEventListener('sync', (event) => {
   }
 });
 
-// 定期清理快取
+// 定期清理快取和更新檢查
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CLEAN_CACHE') {
     event.waitUntil(
@@ -270,6 +285,19 @@ self.addEventListener('message', (event) => {
         })
         .catch((error) => {
           event.ports[0].postMessage({ success: false, error: error.message });
+        })
+    );
+  }
+  
+  // 處理更新檢查請求
+  if (event.data && event.data.type === 'CHECK_FOR_UPDATES') {
+    event.waitUntil(
+      self.registration.update()
+        .then(() => {
+          console.log('[SW] Update check completed');
+        })
+        .catch((error) => {
+          console.error('[SW] Update check failed:', error);
         })
     );
   }

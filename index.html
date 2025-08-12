@@ -591,12 +591,17 @@
     
     <!-- PWA Service Worker 註冊 -->
     <script>
-      // Service Worker 註冊
+      // Service Worker 註冊 - 強制更新版本
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/sw.js', { 
+            updateViaCache: 'none' // 防止 Service Worker 被瀏覽器快取
+          })
             .then((registration) => {
               console.log('✅ Service Worker 註冊成功:', registration.scope);
+              
+              // 強制檢查更新
+              registration.update();
               
               // 監聽更新
               registration.addEventListener('updatefound', () => {
@@ -605,8 +610,9 @@
                 
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('🆕 Service Worker 更新完成');
-                    // 可以在這裡顯示更新提示給用戶
+                    console.log('🆕 Service Worker 更新完成，即將重載');
+                    // 立即重載頁面以使用新版本
+                    window.location.reload();
                   }
                 });
               });
@@ -614,6 +620,23 @@
             .catch((error) => {
               console.log('❌ Service Worker 註冊失敗:', error);
             });
+
+          // 監聽來自 Service Worker 的強制重載訊息
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'FORCE_RELOAD') {
+              console.log('🔄 收到強制重載指令:', event.data.message);
+              window.location.reload();
+            }
+          });
+
+          // 定期檢查更新 (每60秒)
+          setInterval(() => {
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({
+                type: 'CHECK_FOR_UPDATES'
+              });
+            }
+          }, 60000);
         });
         
         // PWA 安裝提示
