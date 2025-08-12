@@ -15,6 +15,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setButtonClickState('normal');
       }
     }, [candidateList.length]);
+
+    // 當餐廳改變時重置按鈕狀態
+    React.useEffect(() => {
+      setButtonClickState('normal');
+    }, [finalRestaurant?.place_id]);
     
     // 處理輪盤按鈕點擊（重置加入按鈕狀態）
     const handleSpinClick = () => {
