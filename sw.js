@@ -15,6 +15,9 @@ const STATIC_ASSETS = [
   
   // 組件檔案
   '/components/LanguageSelector.js',
+  '/components/SlotMachineAnimationConfig.js',
+  '/components/SlotMachineUtils.js',
+  '/components/SlotMachineSlotAnimation.js',
   '/components/SlotMachine.js',
   '/components/RestaurantCard.js',
   '/components/LocationManager.js',

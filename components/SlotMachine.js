@@ -146,85 +146,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         onAddCandidate();
       }
     };
-    // 🎬 滑動動畫配置中心 - 集中管理所有滑動動畫參數
-    const getSlideAnimationConfig = React.useCallback(() => {
-      // 動畫時間分配：前70%慢速移動10%距離，後30%加速完成90%距離
-      const slowPhasePercent = 60;     // 慢速階段佔總時間的百分比
-      const slowMoveDistance = 5;     // 慢速階段移動的距離百分比
-      const totalDuration = 700;       // 總動畫時間(ms)
 
-      // 計算關鍵幀參數
-      const slowPhaseEnd = slowPhasePercent; // 70%時間點
-      const slowDistanceEnd = slowMoveDistance; // 10%距離點
-
-      // 生成 CSS keyframes 字符串
-      const generateKeyframes = (animationName, startPos, slowEndPos, finalPos) => `
-        @keyframes ${animationName} {
-          0% { transform: translateX(${startPos}%); }
-          ${slowPhaseEnd}% { transform: translateX(${slowEndPos}%); }
-          100% { transform: translateX(${finalPos}%); }
-        }
-      `;
-
-      // 動態生成所有動畫的 keyframes
-      const keyframes = [
-        generateKeyframes('slideOutToLeft', 0, -slowDistanceEnd, -100),
-        generateKeyframes('slideOutToRight', 0, slowDistanceEnd, 100),
-        generateKeyframes('slideInFromRight', 100, 100 - slowDistanceEnd, 0),
-        generateKeyframes('slideInFromLeft', -100, -100 + slowDistanceEnd, 0),
-        // 🎯 添加元素淡出動畫 - 柔和漸隱
-        `@keyframes fadeOutSlide {
-          0% { 
-            opacity: 1; 
-            transform: scale(1); 
-          }
-          50% { 
-            opacity: 0.6; 
-            transform: scale(0.98); 
-          }
-          100% { 
-            opacity: 0; 
-            transform: scale(0.95); 
-          }
-        }`
-      ].join('\n');
-
-      // 自訂 cubic-bezier 曲線，實現前慢後快效果
-      const timingFunction = 'cubic-bezier(0.05, 0, 0.2, 1)';
-
-      return {
-        duration: totalDuration,
-        timingFunction,
-        keyframes,
-        slowPhasePercent,
-        slowMoveDistance
-      };
-    }, []);
-
-    // 應用動畫配置到 DOM
-    const applySlideAnimationStyles = React.useCallback(() => {
-      const config = getSlideAnimationConfig();
-
-      // 移除舊的動畫樣式
-      const oldStyle = document.getElementById('custom-slide-animation');
-      if (oldStyle) {
-        oldStyle.remove();
-      }
-
-      // 創建新的動畫樣式
-      const style = document.createElement('style');
-      style.id = 'custom-slide-animation';
-      style.textContent = config.keyframes;
-      document.head.appendChild(style);
-
-      // RR_UI_081: 滑動動畫配置更新
-      window.RRLog?.debug('RR_UI_UPDATE', '滑動動畫配置已更新', {
-        slowPhasePercent: config.slowPhasePercent,
-        slowMoveDistance: config.slowMoveDistance
-      });
-
-      return config;
-    }, [getSlideAnimationConfig]);
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
     const [apiWaitingLevel, setApiWaitingLevel] = React.useState(1); // 1-5 API等待動畫級別
@@ -600,7 +522,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       setIsSliding(true);
 
       // 使用動態配置的動畫時間
-      const currentConfig = getSlideAnimationConfig();
+      const currentConfig = window.getSlideAnimationConfig();
       setTimeout(() => {
         setIsSliding(false);
         setCurrentImage(null);
@@ -613,11 +535,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           onComplete();
         }
       }, currentConfig.duration);
-    }, [finalRestaurant, isSliding, isSpinning, preloadedImages, getSlideAnimationConfig]);
+    }, [finalRestaurant, isSliding, isSpinning, preloadedImages]);
 
     // 初始化動畫配置
     React.useEffect(() => {
-      const config = applySlideAnimationStyles();
+      const config = window.applySlideAnimationStyles();
       setAnimationConfig(config);
     }, []); // 只在組件載入時執行一次
 
@@ -753,166 +675,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       "./assets/image/slot-machine/slot (22).jpg"
     ]);
 
-    // 自動偵測可用的slot圖片數量 - 使用fetch避免404錯誤
-    const autoDetectSlotImages = React.useCallback(async () => {
-      const basePath = './assets/image/slot-machine';
-      const detectedImages = [];
-      const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
-      // RR_UI_059: 開始自動偵測slot圖片
-      window.RRLog?.debug('RR_UI_UPDATE', '開始自動偵測slot圖片數量', {
-        supportedFormats: extensions
-      });
 
-      let i = 1;
-      while (true) {
-        let imageFound = false;
 
-        // 嘗試每種副檔名
-        for (const ext of extensions) {
-          const imagePath = `${basePath}/slot (${i})${ext}`;
 
-          try {
-            // 使用fetch進行HEAD請求，避免下載圖片內容，減少404錯誤顯示
-            const response = await fetch(imagePath, {
-              method: 'HEAD',
-              cache: 'no-cache'
-            });
 
-            if (response.ok) {
-              detectedImages.push(imagePath);
-              imageFound = true;
-              break; // 找到就跳出副檔名迴圈
-            }
-          } catch (error) {
-            // 繼續嘗試下一個副檔名，不輸出錯誤
-          }
-        }
-
-        if (!imageFound) {
-          // RR_UI_060: slot圖片偵測完成
-          window.RRLog?.info('RR_UI_UPDATE', 'slot圖片偵測完成', {
-            totalFound: detectedImages.length,
-            range: `slot (1) ~ slot (${detectedImages.length})`
-          });
-          break; // 沒找到任何格式的圖片，停止搜尋
-        }
-
-        i++;
-
-        // 安全上限，避免無限迴圈
-        if (i > 100) {
-          // RR_UI_061: 達到圖片搜尋上限
-          window.RRLog?.warn('RR_UI_ERROR', '達到圖片搜尋上限100張，停止搜尋');
-          break;
-        }
-      }
-
-      // RR_UI_062: slot圖片載入成功
-      window.RRLog?.info('RR_UI_UPDATE', 'slot圖片載入成功', {
-        count: detectedImages.length,
-        supportedFormats: extensions,
-        images: detectedImages.slice(0, 3).map(img => img.split('/').pop()) // 只顯示前3個檔名
-      });
-
-      return detectedImages;
-    }, []);
-
-    // 🎯 動態生成CSS動畫 - 修改為固定每張顯示時間的模式
-    const createDynamicAnimation = React.useCallback((imageCount, timePerImage = 0.3) => {
-      const itemWidth = 256; // 每張圖片寬度（w-64 = 256px）
-
-      // 🎯 使用原來的邏輯：slot圖片 + 前2張 + 餐廳圖片（保持相同效果）
-      const totalImages = imageCount + 2 + 1;
-      const finalPosition = (totalImages - 1) * itemWidth; // 停在最後一張（餐廳圖片）
-
-      // 保持原來的70%位置計算方式
-      const midPosition = Math.floor((totalImages - 3) * itemWidth);
-
-      // 🎯 新的動畫時間計算：每張圖片固定顯示時間
-      const apiWaitingTotalDuration = timePerImage * imageCount * 5; // slot_apiWaiting模式總時間（增加循環時間）
-      const apiReceivedTotalDuration = timePerImage * totalImages; // slot_apiReceived模式總時間
-
-      // 🎯 API等待動畫：移動所有slot圖片的距離，讓用戶看到所有圖片
-      const apiWaitingScrollDistance = imageCount * itemWidth;
-
-      // RR_UI_088: 動畫參數計算
-      window.RRLog?.debug('RR_UI_UPDATE', '動畫參數計算', {
-        imageCount,
-        timePerImage,
-        apiWaitingTotalDuration,
-        apiReceivedTotalDuration
-      });
-
-      // 動態創建CSS keyframes - 使用GPU加速的transform3d
-      const keyframes = `
-        @keyframes scrollApiWaitingDynamic {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-          100% {
-            transform: translate3d(-${apiWaitingScrollDistance}px, 0, 0);
-          }
-        }
-
-        @keyframes scrollApiReceivedStopDynamic {
-          0% {
-            transform: translate3d(0, 0, 0);
-            animation-timing-function: ease-out;
-          }
-          70% {
-            transform: translate3d(-${midPosition}px, 0, 0);
-            animation-timing-function: ease-in;
-          }
-          100% {
-            transform: translate3d(-${finalPosition}px, 0, 0);
-          }
-        }
-        
-        /* API等待動畫 - 使用新的時間計算 */
-        .animate-scroll-api-waiting-dynamic-1 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 0.8).toFixed(2)}s linear infinite; }
-        .animate-scroll-api-waiting-dynamic-2 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.0).toFixed(2)}s linear infinite; }
-        .animate-scroll-api-waiting-dynamic-3 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.2).toFixed(2)}s linear infinite; }
-        .animate-scroll-api-waiting-dynamic-4 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.4).toFixed(2)}s linear infinite; }
-        .animate-scroll-api-waiting-dynamic-5 { animation: scrollApiWaitingDynamic ${(apiWaitingTotalDuration * 1.6).toFixed(2)}s linear infinite; }
-        
-        /* API接收過渡動畫 */
-        .animate-scroll-api-received-stop-dynamic { animation: scrollApiReceivedStopDynamic ${apiReceivedTotalDuration.toFixed(2)}s ease-out forwards; }
-      `;
-
-      // 移除舊的動畫樣式
-      const oldStyle = document.getElementById('dynamic-slot-animation');
-      if (oldStyle) {
-        oldStyle.remove();
-      }
-
-      // 添加新的動畫樣式
-      const style = document.createElement('style');
-      style.id = 'dynamic-slot-animation';
-      style.textContent = keyframes;
-      document.head.appendChild(style);
-
-      // 返回時間參數供其他地方使用
-      return {
-        apiWaitingDuration: apiWaitingTotalDuration,
-        apiReceivedDuration: apiReceivedTotalDuration,
-        timePerImage
-      };
-    }, []);
-
-    // 🎲 亂數排序函數 - 增加轉盤的隨機性
-    const shuffleArray = React.useCallback((array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    }, []);
 
     // 組件初始化時自動偵測圖片
     React.useEffect(() => {
-      autoDetectSlotImages().then(detectedImages => {
+      window.autoDetectSlotImages().then(detectedImages => {
         // RR_UI_074: 偵測到的圖片
         window.RRLog?.debug('RR_UI_UPDATE', '偵測到的圖片', {
           images: detectedImages.slice(0, 5).map(img => img.split('/').pop()) // 只顯示前5個檔名
@@ -920,7 +691,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         if (detectedImages.length > 0) {
           // 🎲 一開始就亂數排序圖片順序，增加隨機性
-          const shuffledImages = shuffleArray(detectedImages);
+          const shuffledImages = window.shuffleArray(detectedImages);
           setSlotImages(shuffledImages);
 
           // RR_UI_075: 設定slot圖片
@@ -939,13 +710,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           });
 
           // 🎯 根據偵測結果生成動態CSS動畫（預設0.5秒/張）
-          createDynamicAnimation(detectedImages.length, 0.5);
+          window.createDynamicAnimation(detectedImages.length, 0.5);
         } else {
           // RR_UI_077: 沒有偵測到任何圖片
           window.RRLog?.warn('RR_UI_ERROR', '沒有偵測到任何圖片，將保持預設值');
         }
       });
-    }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
+    }, []);
 
     // 觸控事件處理（手機）
     const handleImageTouchStart = (e) => {
@@ -1025,7 +796,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setAnimationPhase('slot_apiReceived');
 
           // 🎲 每次轉動都亂數排序
-          const shuffledSlots = shuffleArray(slotImages);
+          const shuffledSlots = window.shuffleArray(slotImages);
 
           // 🔗 構建最終序列：基於fast序列確保視覺連續性
           const finalSequence = [];
@@ -1058,7 +829,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           // 動畫時間計算
           const actualSequenceLength = finalSequence.length - 1;
-          const animationResult = createDynamicAnimation(actualSequenceLength, 0.5);
+          const animationResult = window.createDynamicAnimation(actualSequenceLength, 0.5);
           const apiReceivedAnimationDuration = animationResult.apiReceivedDuration * 1000;
 
           // RR_UI_094: slot_apiReceived動畫參數
@@ -1138,7 +909,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setApiWaitingLevel(1);
         setScrollingNames([]);
       }
-    }, [isSpinning, finalRestaurant, animationPhase, apiWaitingSequenceCache, slotImages, shuffleArray, createDynamicAnimation]);
+    }, [isSpinning, finalRestaurant, animationPhase, apiWaitingSequenceCache, slotImages]);
 
     // 🚫 移除漸進式減速邏輯，使用固定速度避免卡頓
     // 漸進式變速會導致動畫中斷和視覺跳躍，改用單一固定速度
