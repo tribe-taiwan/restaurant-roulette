@@ -2,7 +2,6 @@
 
 function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
   try {
-    const [selectedImage, setSelectedImage] = React.useState(null);
 
     // 使用共用的價位標籤
     const priceLabels = window.getPriceLabels();
@@ -68,9 +67,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
       window.open(url, '_blank');
     };
 
-    const closeModal = () => {
-      setSelectedImage(null);
-    };
 
     // 使用共用的導航URL生成函數
     const getDirectionsUrl = () => {
@@ -109,18 +105,16 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           {/* 地址顯示 - 與其他區塊統一風格 */}
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-2 mb-1">
-              {restaurant.website && (
-                <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
-                  <div className="icon-globe text-xl text-gray-500 hover:text-blue-600 cursor-pointer"></div>
-                </a>
-              )}
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold whitespace-nowrap">
                 {restaurant.address}
               </div>
             </div>
-            {restaurant.phone && (
-              <div className="text-sm text-gray-600">
-                {restaurant.phone}
+            {restaurant.website && (
+              <div className="text-sm">
+                <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 flex items-center justify-center gap-1">
+                  <div className="icon-globe text-lg"></div>
+                  <span>官方網站</span>
+                </a>
               </div>
             )}
           </div>
@@ -221,73 +215,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             {/* 非營業狀態警告已移至頂部 */}
         </div>
 
-        {/* TODO: Google菜單功能 - 需要額外的Places Details API呼叫 */}
-        {/* 
-        Google Places API可能包含菜單連結，但需要：
-        1. 使用getDetails API取得更多餐廳資訊
-        2. 檢查是否有菜單URL (如menu_url, delivery_url等)
-        3. 由於API配額和複雜性，暫時不實現
-        如需實現，可在formatRestaurantData函數中添加菜單資料獲取邏輯
-        */}
-
-        {/* Modal for Image Views */}
-        {selectedImage && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeModal}>
-            <div className="bg-[var(--surface-color)] rounded-lg p-6 max-w-2xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">
-                  {selectedImage === 'menu' && (language === 'zh' ? '菜單' : 'Menu')}
-                  {selectedImage === 'photos' && (language === 'zh' ? '菜品相簿' : 'Food Photos')}
-                  {selectedImage === 'directions' && (language === 'zh' ? '導航路線' : 'Directions')}
-                </h3>
-                <button onClick={closeModal} className="icon-x text-xl text-gray-400 hover:text-white"></button>
-              </div>
-              
-              <div className="text-center">
-                {selectedImage === 'menu' && (
-                  <div>
-                    <p className="text-[var(--text-secondary)] mb-4">
-                      {language === 'zh' ? '點擊下方按鈕查看完整菜單' : 'Click below to view the full menu'}
-                    </p>
-                    <button className="btn-primary">
-                      <div className="icon-external-link text-lg mr-2"></div>
-                      {language === 'zh' ? '查看菜單' : 'View Menu'}
-                    </button>
-                  </div>
-                )}
-                
-                {selectedImage === 'photos' && (
-                  <div>
-                    <p className="text-[var(--text-secondary)] mb-4">
-                      {language === 'zh' ? '瀏覽餐廳的菜品照片' : 'Browse restaurant food photos'}
-                    </p>
-                    <button className="btn-primary">
-                      <div className="icon-camera text-lg mr-2"></div>
-                      {language === 'zh' ? '查看相簿' : 'View Photos'}
-                    </button>
-                  </div>
-                )}
-                
-                {selectedImage === 'directions' && (
-                  <div>
-                    <p className="text-[var(--text-secondary)] mb-4">
-                      {language === 'zh' ? '獲取前往餐廳的導航路線' : 'Get directions to the restaurant'}
-                    </p>
-                    <a 
-                      href={getDirectionsUrl()} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="btn-primary inline-flex items-center"
-                    >
-                      <div className="icon-navigation text-lg mr-2"></div>
-                      {language === 'zh' ? '開始導航' : 'Get Directions'}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   } catch (error) {
