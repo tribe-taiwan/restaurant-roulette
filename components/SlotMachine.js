@@ -3,6 +3,76 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 追蹤按鈕點擊狀態
     const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
     
+    // 左滑刪除狀態管理
+    const [swipeStates, setSwipeStates] = React.useState({});
+    
+    // 觸控事件處理函數
+    const handleTouchStart = (e, index) => {
+      const touch = e.touches[0];
+      setSwipeStates(prev => ({
+        ...prev,
+        [index]: {
+          startX: touch.clientX,
+          startY: touch.clientY,
+          currentX: touch.clientX,
+          offsetX: 0,
+          isSwiping: false,
+          startTime: Date.now()
+        }
+      }));
+    };
+
+    const handleTouchMove = (e, index) => {
+      if (!swipeStates[index]) return;
+      
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - swipeStates[index].startX;
+      const deltaY = touch.clientY - swipeStates[index].startY;
+      
+      // 判斷是否為水平滑動（左滑）
+      if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0) {
+        e.preventDefault(); // 防止頁面滾動
+        
+        const maxOffset = -100; // 最大滑動距離
+        const offsetX = Math.max(deltaX, maxOffset);
+        
+        setSwipeStates(prev => ({
+          ...prev,
+          [index]: {
+            ...prev[index],
+            currentX: touch.clientX,
+            offsetX: offsetX,
+            isSwiping: true
+          }
+        }));
+      }
+    };
+
+    const handleTouchEnd = (e, index) => {
+      if (!swipeStates[index]) return;
+      
+      const { offsetX, startTime } = swipeStates[index];
+      const duration = Date.now() - startTime;
+      const threshold = -80; // 觸發刪除的閾值（滑動超過80px）
+      
+      // 如果滑動距離超過閾值且不是快速點擊，則刪除
+      if (offsetX < threshold && duration > 100) {
+        if (onRemoveCandidate) {
+          onRemoveCandidate(index);
+        }
+      }
+      
+      // 重置滑動狀態
+      setSwipeStates(prev => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          offsetX: 0,
+          isSwiping: false
+        }
+      }));
+    };
+    
     // 檢查當前餐廳是否已在候選清單中
     const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate => 
       (candidate.place_id && finalRestaurant.place_id && candidate.place_id === finalRestaurant.place_id) ||
@@ -849,16 +919,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     }, [autoDetectSlotImages, createDynamicAnimation, shuffleArray]);
 
     // 觸控事件處理（手機）
-    const handleTouchStart = (e) => {
+    const handleImageTouchStart = (e) => {
       setTouchEnd(null);
       setTouchStart(e.targetTouches[0].clientX);
     };
 
-    const handleTouchMove = (e) => {
+    const handleImageTouchMove = (e) => {
       setTouchEnd(e.targetTouches[0].clientX);
     };
 
-    const handleTouchEnd = () => {
+    const handleImageTouchEnd = () => {
       if (!touchStart || !touchEnd) return;
 
       const distance = touchStart - touchEnd;
@@ -1065,9 +1135,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* Restaurant Image Display with Slide Transition */}
           <div
             className="group rounded-t-lg h-64 overflow-hidden relative cursor-pointer select-none"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            onTouchStart={handleImageTouchStart}
+            onTouchMove={handleImageTouchMove}
+            onTouchEnd={handleImageTouchEnd}
             onClick={() => finalRestaurant && !isSpinning && onImageClick && onImageClick()}
             title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
@@ -1528,20 +1598,40 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
 
                   return (
-                    <a
+                    <div
                       key={index}
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24"
-                      style={{
-                        backgroundImage: restaurant.image ?
-                          `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${restaurant.image})` :
-                          'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
+                      className="relative overflow-hidden h-24"
+                      onTouchStart={(e) => handleTouchStart(e, index)}
+                      onTouchMove={(e) => handleTouchMove(e, index)}
+                      onTouchEnd={(e) => handleTouchEnd(e, index)}
                     >
+                      {/* 左滑時顯示的刪除背景 */}
+                      <div
+                        className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6 z-0"
+                        style={{
+                          opacity: swipeStates[index]?.offsetX ? Math.min(Math.abs(swipeStates[index].offsetX) / 50, 1) : 0,
+                          transition: swipeStates[index]?.isSwiping ? 'none' : 'opacity 0.3s ease-out'
+                        }}
+                      >
+                        <div className="text-white text-xl font-bold">刪除</div>
+                      </div>
+                      
+                      {/* 原本的餐廳卡片 */}
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24 z-10"
+                        style={{
+                          backgroundImage: restaurant.image ?
+                            `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${restaurant.image})` :
+                            'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          transform: `translateX(${swipeStates[index]?.offsetX || 0}px)`,
+                          transition: swipeStates[index]?.isSwiping ? 'none' : 'transform 0.3s ease-out'
+                        }}
+                      >
                       {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
                       <div
                         className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
@@ -1571,26 +1661,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         </div>
                       </div>
 
-                      {/* Price Label - Bottom Right */}
-                      <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
-                        {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
-                      </div>
-
-                      {/* Delete Button - Top Right */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (onRemoveCandidate) {
-                            onRemoveCandidate(index);
-                          }
-                        }}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm z-10"
-                        title={translations.removeFromList || "從列表中移除"}
-                      >
-                        <span className="text-white text-xs font-bold leading-none">×</span>
-                      </button>
-                    </a>
+                        {/* Price Label - Bottom Right */}
+                        <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
+                          {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
+                        </div>
+                      </a>
+                    </div>
                   );
                 })}
               </div>
