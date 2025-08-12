@@ -139,7 +139,8 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                   title={t?.BackToHotel || '回民宿家'}
                   style={{'--pulse-delay': '1s'}}
                 >
-                  <span>{t?.BackToHotel || '回民宿家'}</span>
+                  <div className="icon-home text-sm"></div>
+                  <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                 </div>
               </div>
             </div>
@@ -202,8 +203,8 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     title={t?.BackToHotel || '回民宿家'}
                     style={{'--pulse-delay': '1s'}}
                   >
-                    <i className="lucide lucide-home icon-home"></i>
-                    <span>{t?.BackToHotel || '回民宿家'}</span>
+                    <div className="icon-home text-sm"></div>
+                    <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                   </div>
                 </div>
               </div>
@@ -264,8 +265,8 @@ function HeroBannerWithSliding({ selectedLanguage, onLanguageChange, userLocatio
                     title={t?.BackToHotel || '回民宿家'}
                     style={{'--pulse-delay': '1s'}}
                   >
-                    <i className="lucide lucide-home icon-home"></i>
-                    <span>{t?.BackToHotel || '回民宿家'}</span>
+                    <div className="icon-home text-sm"></div>
+                    <span><span>{t?.BackToHotel || '回民宿家'}</span></span>
                   </div>
                 </div>
               </div>
