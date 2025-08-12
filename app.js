@@ -434,7 +434,12 @@ function App() {
         );
         
         if (!alreadyExists) {
-          setCandidateList(prevList => [...prevList, currentRestaurant]);
+          // 新餐廳加入到列表最前面
+          setCandidateList(prevList => [currentRestaurant, ...prevList]);
+          // 加入候選後自動搜尋下一家餐廳
+          setTimeout(() => {
+            handleUserSpin(false);
+          }, 100);
         }
       }
     };
