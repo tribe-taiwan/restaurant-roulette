@@ -643,7 +643,7 @@ function App() {
         </div>
         
         {/* Location and Search Settings */}
-        <div className="max-w-6xl mx-auto mt-16 mb-8 px-4">
+        <div className="max-w-6xl mx-auto mt-8 mb-8 px-4">
           <LocationManager 
             locationStatus={locationStatus}
             userAddress={userAddress}
