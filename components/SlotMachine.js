@@ -1433,8 +1433,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           {/* Restaurant List */}
           {candidateList.length > 0 && (
-            <div className="mt-6 w-full">
-              <div className="flex items-center justify-between mb-4 px-4">
+            <div className="w-full">
+              <div className="flex items-center justify-between px-4 slot-machine-buttons">
                 <div className="text-sm text-gray-300">
                   {translations.candidates} ({candidateList.length}/9)
                 </div>
@@ -1445,7 +1445,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   {translations.clearList}
                 </button>
               </div>
-              <div className="space-y-3 w-full">
+              <div className="w-full divide-y divide-white/10"> {/* 添加了 2px 細白線分隔，移除了 space-y-1（垂直間距）*/}
                 {candidateList.map((restaurant, index) => {
                   const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
 
