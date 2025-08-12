@@ -18,6 +18,8 @@ const STATIC_ASSETS = [
   '/components/SlotMachineAnimationConfig.js',
   '/components/SlotMachineUtils.js',
   '/components/SlotMachineSlotAnimation.js',
+  '/components/SlotMachineTouchHandler.js',
+  '/components/SlotMachineButtonLogic.js',
   '/components/SlotMachine.js',
   '/components/RestaurantCard.js',
   '/components/LocationManager.js',

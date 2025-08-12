@@ -9,82 +9,38 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 左滑刪除狀態管理
     const [swipeStates, setSwipeStates] = React.useState({});
 
-    // 觸控事件處理函數
-    const handleTouchStart = (e, index) => {
-      const touch = e.touches[0];
-      setSwipeStates(prev => ({
-        ...prev,
-        [index]: {
-          startX: touch.clientX,
-          startY: touch.clientY,
-          currentX: touch.clientX,
-          offsetX: 0,
-          isSwiping: false,
-          startTime: Date.now()
-        }
-      }));
-    };
+    // 創建觸控事件處理器
+    const touchHandlers = React.useMemo(() => {
+      return window.createTouchHandlers({
+        setSwipeStates,
+        swipeStates,
+        onRemoveCandidate,
+        setTouchStart,
+        setTouchEnd,
+        touchStart,
+        touchEnd,
+        isSpinning,
+        onSpin,
+        onPreviousRestaurant
+      });
+    }, [swipeStates, onRemoveCandidate, touchStart, touchEnd, isSpinning, onSpin, onPreviousRestaurant]);
 
-    const handleTouchMove = (e, index) => {
-      if (!swipeStates[index]) return;
+    // 創建按鈕邏輯處理器
+    const buttonLogic = React.useMemo(() => {
+      return window.createButtonLogic({
+        finalRestaurant,
+        candidateList,
+        translations,
+        buttonClickState,
+        setButtonClickState,
+        isSpinning,
+        onAddCandidate,
+        onSpin,
+        isRestaurantInCandidates
+      });
+    }, [finalRestaurant, candidateList, translations, buttonClickState, isSpinning, onAddCandidate, onSpin, isRestaurantInCandidates]);
 
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - swipeStates[index].startX;
-      const deltaY = touch.clientY - swipeStates[index].startY;
 
-      // 判斷是否為水平滑動（左滑）
-      if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0 && Math.abs(deltaX) > 15) {
-        e.preventDefault(); // 防止頁面滾動
-
-        const maxOffset = -100; // 最大滑動距離
-        const offsetX = Math.max(deltaX, maxOffset);
-
-        setSwipeStates(prev => ({
-          ...prev,
-          [index]: {
-            ...prev[index],
-            currentX: touch.clientX,
-            offsetX: offsetX,
-            isSwiping: true
-          }
-        }));
-      }
-      // 如果已經是左滑狀態，繼續阻止頁面滾動
-      else if (swipeStates[index].isSwiping && swipeStates[index].offsetX < 0) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchEnd = (e, index) => {
-      if (!swipeStates[index]) return;
-
-      const { offsetX, startTime, isSwiping } = swipeStates[index];
-      const duration = Date.now() - startTime;
-      const threshold = -80; // 觸發刪除的閾值（滑動超過80px）
-
-      // 只有在左滑時才阻止瀏覽器的預設行為（避免觸發頁面滾動）
-      if (isSwiping && offsetX < 0) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      // 如果滑動距離超過閾值且不是快速點擊，則刪除
-      if (offsetX < threshold && duration > 100) {
-        if (onRemoveCandidate) {
-          onRemoveCandidate(index);
-        }
-      }
-
-      // 重置滑動狀態
-      setSwipeStates(prev => ({
-        ...prev,
-        [index]: {
-          ...prev[index],
-          offsetX: 0,
-          isSwiping: false
-        }
-      }));
-    };
 
     // 檢查當前餐廳是否已在候選清單中
     const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate =>
@@ -104,48 +60,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       setButtonClickState('normal');
     }, [finalRestaurant]);
 
-    // 處理輪盤按鈕點擊（重置加入按鈕狀態）
-    const handleSpinClick = () => {
-      setButtonClickState('normal');
-      onSpin(false);
-    };
 
-    // 檢查餐廳是否可以加入候選（營業狀態檢查）
-    const isRestaurantOperational = (restaurant) => {
-      if (!restaurant) return false;
-      // 檢查營業狀態，只有OPERATIONAL的餐廳才能加入候選
-      return !restaurant.businessStatus || restaurant.businessStatus === 'OPERATIONAL';
-    };
 
-    // 按鈕文字邏輯
-    const getAddCandidateButtonText = () => {
-      if (!finalRestaurant) return translations.addCandidate;
 
-      // 檢查營業狀態
-      if (!isRestaurantOperational(finalRestaurant)) return '暫停營業';
-
-      // 檢查候選列表是否已滿
-      if (candidateList.length >= 9) return translations.listFull || '名單已滿';
-
-      // 只有在點擊後才顯示狀態文字
-      if (buttonClickState === 'added') return translations.candidateAdded || '已加入';
-      if (buttonClickState === 'exists') return translations.candidateAlreadyExists || '加過了';
-
-      // 默認狀態：顯示加入候選
-      return translations.addCandidate;
-    };
-
-    // 處理加入候選按鈕點擊
-    const handleAddCandidateClick = () => {
-      if (!finalRestaurant || candidateList.length >= 9 || isSpinning) return;
-
-      if (isRestaurantInCandidates) {
-        setButtonClickState('exists');
-      } else {
-        setButtonClickState('added');
-        onAddCandidate();
-      }
-    };
 
     const [scrollingNames, setScrollingNames] = React.useState([]);
     const [animationPhase, setAnimationPhase] = React.useState('idle'); // idle, fast, slow
@@ -718,31 +635,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     }, []);
 
-    // 觸控事件處理（手機）
-    const handleImageTouchStart = (e) => {
-      setTouchEnd(null);
-      setTouchStart(e.targetTouches[0].clientX);
-    };
 
-    const handleImageTouchMove = (e) => {
-      setTouchEnd(e.targetTouches[0].clientX);
-    };
-
-    const handleImageTouchEnd = () => {
-      if (!touchStart || !touchEnd) return;
-
-      const distance = touchStart - touchEnd;
-      const isLeftSwipe = distance > 50; // 左滑距離超過50px（搜尋下一家）
-      const isRightSwipe = distance < -50; // 右滑距離超過50px（回到上一家）
-
-      if (isLeftSwipe && !isSpinning) {
-        // 左滑：搜尋下一家餐廳
-        onSpin(false);
-      } else if (isRightSwipe && !isSpinning && onPreviousRestaurant) {
-        // 右滑：回到上一家餐廳
-        onPreviousRestaurant();
-      }
-    };
 
     // 鍵盤事件處理（電腦）
     const handleKeyDown = (e) => {
@@ -935,9 +828,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* Restaurant Image Display with Slide Transition */}
           <div
             className="group rounded-t-lg h-64 overflow-hidden relative cursor-pointer select-none"
-            onTouchStart={handleImageTouchStart}
-            onTouchMove={handleImageTouchMove}
-            onTouchEnd={handleImageTouchEnd}
+            onTouchStart={touchHandlers.handleImageTouchStart}
+            onTouchMove={touchHandlers.handleImageTouchMove}
+            onTouchEnd={touchHandlers.handleImageTouchEnd}
             onClick={() => finalRestaurant && !isSpinning && onImageClick && onImageClick()}
             title={finalRestaurant && !isSpinning ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
           >
@@ -1361,7 +1254,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           <div className="grid grid-cols-[1fr_120px] gap-3 px-4 slot-machine-buttons">
             {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
             <button
-              onClick={() => handleSpinClick()}
+              onClick={() => buttonLogic.handleSpinClick()}
               className="min-h-[72px] p-3 rounded-lg border-2 
                          flex flex-col items-center justify-center text-white shadow-lg"
               style={{
@@ -1385,26 +1278,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
             {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
             <button
-              onClick={(!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? null : handleAddCandidateClick}
-              disabled={!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)}
+              onClick={buttonLogic.isAddButtonDisabled() ? null : buttonLogic.handleAddCandidateClick}
+              disabled={buttonLogic.isAddButtonDisabled()}
               className="min-h-[72px] p-3 rounded-lg border-2
                          flex flex-col items-center justify-center text-white shadow-lg"
-              style={{
-                background: !isRestaurantOperational(finalRestaurant) ?
-                  'linear-gradient(135deg, #9CA3AF, #6B7280)' : // 灰色漸層表示暫停營業
-                  'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                borderColor: !isRestaurantOperational(finalRestaurant) ? '#6B7280' : 'var(--theme-primary)',
-                touchAction: 'manipulation',
-                transition: 'none',
-                margin: 0,
-                opacity: (!finalRestaurant || candidateList.length >= 9 || !isRestaurantOperational(finalRestaurant)) ? 0.3 : (isSpinning ? 0.5 : 1),
-                cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? 'not-allowed' : 'pointer'
-              }}
-              title={finalRestaurant && candidateList.length < 9 && isRestaurantOperational(finalRestaurant) ? translations.addCandidate :
-                !isRestaurantOperational(finalRestaurant) ? '餐廳暫停營業，無法加入候選' : ''}
+              style={buttonLogic.getAddButtonStyle()}
+              title={buttonLogic.getAddButtonTitle()}
             >
               <div className="text-xl font-bold text-center">
-                {getAddCandidateButtonText()}
+                {buttonLogic.getAddCandidateButtonText()}
               </div>
             </button>
           </div>
@@ -1431,9 +1313,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     <div
                       key={index}
                       className="relative overflow-hidden h-24"
-                      onTouchStart={(e) => handleTouchStart(e, index)}
-                      onTouchMove={(e) => handleTouchMove(e, index)}
-                      onTouchEnd={(e) => handleTouchEnd(e, index)}
+                      onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
+                      onTouchMove={(e) => touchHandlers.handleTouchMove(e, index)}
+                      onTouchEnd={(e) => touchHandlers.handleTouchEnd(e, index)}
                     >
                       {/* 左滑時顯示的刪除背景 */}
                       <div
