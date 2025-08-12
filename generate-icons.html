@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Icon Generator - 甲崩喔美食輪盤</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ff4c00;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .icon-item {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .icon-preview {
+            margin: 10px 0;
+        }
+        .download-btn {
+            background: #ff4c00;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            background: #e63900;
+        }
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        canvas {
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ 甲崩喔 PWA Icon Generator</h1>
+        
+        <div class="instructions">
+            <h3>📖 使用說明：</h3>
+            <ol>
+                <li>點擊「🎨 生成所有圖標」按鈕</li>
+                <li>等待所有圖標生成完成</li>
+                <li>點擊「📦 一鍵下載全部」或「🗜️ 下載ZIP壓縮檔」</li>
+                <li>將下載的圖片放入 <code>assets/icons/</code> 目錄</li>
+            </ol>
+            <p><strong>📱 iOS用戶：</strong> 這些圖標確保你的PWA在iPhone上能正確顯示，包括主畫面圖標和啟動畫面。</p>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="generateAllIcons()" style="background: #4f46e5; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; margin-right: 10px;">
+                🎨 生成所有圖標
+            </button>
+            <button id="downloadAllBtn" onclick="downloadAllIcons()" style="background: #ff4c00; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; display: none; margin-right: 10px;">
+                📦 一鍵下載全部
+            </button>
+            <button id="downloadZipBtn" onclick="downloadAsZip()" style="background: #059669; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; display: none;">
+                🗜️ 下載ZIP壓縮檔
+            </button>
+        </div>
+
+        <div id="iconGrid" class="icon-grid"></div>
+    </div>
+
+    <script>
+        // PWA 所需的所有圖標尺寸
+        const iconSizes = [
+            { size: 16, name: 'icon-16x16.png', desc: 'Favicon 小圖標' },
+            { size: 32, name: 'icon-32x32.png', desc: 'Favicon 標準' },
+            { size: 70, name: 'icon-70x70.png', desc: 'Windows Metro' },
+            { size: 72, name: 'icon-72x72.png', desc: 'Android Chrome' },
+            { size: 96, name: 'icon-96x96.png', desc: 'Android Chrome' },
+            { size: 128, name: 'icon-128x128.png', desc: 'Android Chrome' },
+            { size: 144, name: 'icon-144x144.png', desc: 'Windows Metro Tile' },
+            { size: 150, name: 'icon-150x150.png', desc: 'Windows Metro' },
+            { size: 152, name: 'icon-152x152.png', desc: 'iOS Safari' },
+            { size: 180, name: 'icon-180x180.png', desc: 'iOS Safari (iPhone)' },
+            { size: 192, name: 'icon-192x192.png', desc: 'Android Chrome (推薦)' },
+            { size: 310, name: 'icon-310x150.png', desc: 'Windows Wide Tile', width: 310, height: 150 },
+            { size: 310, name: 'icon-310x310.png', desc: 'Windows Large Tile' },
+            { size: 384, name: 'icon-384x384.png', desc: 'Android Chrome' },
+            { size: 512, name: 'icon-512x512.png', desc: 'Android Chrome (推薦)' },
+            { size: 180, name: 'apple-touch-icon.png', desc: 'iOS 通用圖標' }
+        ];
+
+        // 存儲生成的圖標blob
+        let generatedIcons = new Map();
+
+        function createIconSVG(size, isWide = false) {
+            const width = isWide ? 310 : size;
+            const height = isWide ? 150 : size;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 2;
+            const innerRadius = radius * 0.75;
+            
+            return `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+                    <!-- 背景圓圈或矩形 -->
+                    ${isWide ? 
+                        `<rect x="0" y="0" width="${width}" height="${height}" rx="20" fill="#ff4c00"/>` :
+                        `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="#ff4c00"/>`
+                    }
+                    
+                    <!-- 白色背景區域 -->
+                    ${isWide ? 
+                        `<rect x="10" y="10" width="${width-20}" height="${height-20}" rx="15" fill="white"/>` :
+                        `<circle cx="${centerX}" cy="${centerY}" r="${innerRadius}" fill="white"/>`
+                    }
+                    
+                    ${size >= 72 ? `
+                        <!-- 餐盤 -->
+                        <circle cx="${centerX}" cy="${centerY + radius * 0.1}" r="${radius * 0.45}" fill="none" stroke="#ff4c00" stroke-width="${Math.max(2, radius * 0.06)}"/>
+                        
+                        <!-- 刀叉 -->
+                        <g transform="translate(${centerX - radius * 0.25}, ${centerY - radius * 0.25})">
+                            <rect x="0" y="0" width="${radius * 0.08}" height="${radius * 0.5}" fill="#4f46e5"/>
+                            <rect x="${-radius * 0.08}" y="0" width="${radius * 0.06}" height="${radius * 0.15}" fill="#4f46e5"/>
+                            <rect x="${radius * 0.08}" y="0" width="${radius * 0.06}" height="${radius * 0.15}" fill="#4f46e5"/>
+                        </g>
+                        
+                        <g transform="translate(${centerX + radius * 0.25}, ${centerY - radius * 0.25})">
+                            <rect x="0" y="0" width="${radius * 0.08}" height="${radius * 0.5}" fill="#4f46e5"/>
+                            <path d="M ${-radius * 0.06} 0 L ${radius * 0.14} 0 L ${radius * 0.08} ${-radius * 0.12} L ${-radius * 0.06} ${-radius * 0.12} Z" fill="#4f46e5"/>
+                        </g>
+                        
+                        <!-- 指針 -->
+                        <g transform="translate(${centerX}, ${centerY}) rotate(45)">
+                            <path d="M 0 ${-radius * 0.3} L ${radius * 0.06} ${-radius * 0.08} L 0 0 L ${-radius * 0.06} ${-radius * 0.08} Z" fill="#ff4c00"/>
+                        </g>
+                        
+                        <!-- 中心點 -->
+                        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.05}" fill="#4f46e5"/>
+                    ` : `
+                        <!-- 簡化版本 (小尺寸) -->
+                        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.3}" fill="#4f46e5"/>
+                        <text x="${centerX}" y="${centerY + radius * 0.1}" font-family="Arial, sans-serif" font-size="${radius * 0.4}" fill="white" text-anchor="middle">🍽</text>
+                    `}
+                    
+                    ${isWide && size >= 150 ? `
+                        <!-- Wide tile 文字 -->
+                        <text x="${centerX}" y="${centerY + 20}" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#4f46e5" text-anchor="middle">甲崩喔美食輪盤</text>
+                    ` : ''}
+                </svg>
+            `;
+        }
+
+        function generateAllIcons() {
+            const iconGrid = document.getElementById('iconGrid');
+            iconGrid.innerHTML = '';
+
+            iconSizes.forEach(iconDef => {
+                const isWide = iconDef.name.includes('310x150');
+                const width = iconDef.width || iconDef.size;
+                const height = iconDef.height || iconDef.size;
+                
+                // 創建容器
+                const iconItem = document.createElement('div');
+                iconItem.className = 'icon-item';
+                
+                // 創建SVG
+                const svgContent = createIconSVG(iconDef.size, isWide);
+                
+                // 創建canvas並轉換為PNG
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.width = Math.min(width, 100) + 'px';
+                canvas.style.height = Math.min(height, 100) + 'px';
+                
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 創建下載連結
+                    canvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        
+                        // 存儲到全域Map中，供批量下載使用
+                        generatedIcons.set(iconDef.name, { blob, url });
+                        
+                        const downloadBtn = iconItem.querySelector('.download-btn');
+                        downloadBtn.onclick = function() {
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = iconDef.name;
+                            a.click();
+                        };
+                        
+                        // 檢查是否所有圖標都已生成
+                        if (generatedIcons.size === iconSizes.length) {
+                            document.getElementById('downloadAllBtn').style.display = 'inline-block';
+                            document.getElementById('downloadZipBtn').style.display = 'inline-block';
+                            console.log('🎉 所有圖標已生成完成！');
+                        }
+                    }, 'image/png');
+                };
+                
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)));
+                
+                iconItem.innerHTML = `
+                    <h4>${iconDef.name}</h4>
+                    <p>${iconDef.desc}</p>
+                    <p><strong>${width}×${height}</strong></p>
+                    <div class="icon-preview"></div>
+                    <button class="download-btn">下載 PNG</button>
+                `;
+                
+                iconItem.querySelector('.icon-preview').appendChild(canvas);
+                iconGrid.appendChild(iconItem);
+            });
+        }
+
+        // 批量下載所有圖標
+        async function downloadAllIcons() {
+            if (generatedIcons.size === 0) {
+                alert('請先生成圖標！');
+                return;
+            }
+
+            console.log('🚀 開始批量下載所有圖標...');
+            
+            // 顯示下載進度
+            const downloadBtn = document.getElementById('downloadAllBtn');
+            const originalText = downloadBtn.textContent;
+            
+            let downloaded = 0;
+            const total = generatedIcons.size;
+            
+            for (const [filename, iconData] of generatedIcons) {
+                try {
+                    // 創建下載連結
+                    const a = document.createElement('a');
+                    a.href = iconData.url;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    downloaded++;
+                    downloadBtn.textContent = `下載中 ${downloaded}/${total}`;
+                    
+                    // 短暫延遲，避免瀏覽器阻擋批量下載
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error(`下載 ${filename} 失敗:`, error);
+                }
+            }
+            
+            downloadBtn.textContent = originalText;
+            console.log('✅ 所有圖標下載完成！');
+            alert(`🎉 成功下載 ${downloaded} 個圖標！\n\n請將這些PNG檔案移動到 assets/icons/ 目錄`);
+        }
+
+        // 創建ZIP下載功能 (備選方案)
+        async function downloadAsZip() {
+            if (generatedIcons.size === 0) {
+                alert('請先生成圖標！');
+                return;
+            }
+
+            // 動態載入JSZip庫
+            if (typeof JSZip === 'undefined') {
+                console.log('正在載入 JSZip...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                script.onload = () => downloadAsZip();
+                document.head.appendChild(script);
+                return;
+            }
+
+            const zip = new JSZip();
+            
+            for (const [filename, iconData] of generatedIcons) {
+                zip.file(filename, iconData.blob);
+            }
+            
+            zip.generateAsync({ type: 'blob' }).then(function(content) {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = 'pwa-icons.zip';
+                a.click();
+            });
+        }
+
+        // 頁面載入時自動生成
+        window.addEventListener('load', generateAllIcons);
+    </script>
+</body>
+</html>

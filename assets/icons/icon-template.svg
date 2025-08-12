@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景圓圈 -->
+  <circle cx="256" cy="256" r="256" fill="#1a1a1a"/>
+  
+  <!-- CRIBE logo 設計 -->
+  <!-- 橙色上半部 -->
+  <path d="M 256 0 A 256 256 0 0 1 512 256 L 256 256 Z" fill="#ff4c00"/>
+  
+  <!-- 紫色下半部 -->
+  <path d="M 256 256 L 512 256 A 256 256 0 0 1 256 512 Z" fill="#4f46e5"/>
+  
+  <!-- 白色 C 字母區域 -->
+  <rect x="32" y="180" width="180" height="152" rx="20" fill="white"/>
+  
+  <!-- CRIBE 文字 -->
+  <text x="130" y="320" font-family="Arial, sans-serif" font-size="85" font-weight="bold" fill="#4f46e5" text-anchor="middle">C</text>
+  <text x="280" y="200" font-family="Arial, sans-serif" font-size="68" font-weight="bold" fill="white" text-anchor="middle">R</text>
+  <text x="320" y="200" font-family="Arial, sans-serif" font-size="68" font-weight="bold" fill="white" text-anchor="middle">I</text>
+  <text x="360" y="200" font-family="Arial, sans-serif" font-size="68" font-weight="bold" fill="white" text-anchor="middle">B</text>
+  <text x="400" y="200" font-family="Arial, sans-serif" font-size="68" font-weight="bold" fill="white" text-anchor="middle">E</text>
+  
+  <!-- 美食符號疊加 -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="80" text-anchor="middle">🍽️</text>
+</svg>

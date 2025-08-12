@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景圓圈，使用品牌橙色 -->
+  <circle cx="256" cy="256" r="256" fill="#ff4c00"/>
+  
+  <!-- 白色圓形背景，讓圖標更清晰 -->
+  <circle cx="256" cy="256" r="200" fill="white"/>
+  
+  <!-- 簡化的餐廳/美食圖標 -->
+  <!-- 餐盤 -->
+  <circle cx="256" cy="280" r="120" fill="none" stroke="#ff4c00" stroke-width="12"/>
+  
+  <!-- 刀叉圖案 -->
+  <!-- 叉子 -->
+  <g transform="translate(200, 200)">
+    <rect x="0" y="0" width="8" height="120" fill="#4f46e5"/>
+    <rect x="-8" y="0" width="6" height="40" fill="#4f46e5"/>
+    <rect x="8" y="0" width="6" height="40" fill="#4f46e5"/>
+    <rect x="-12" y="0" width="4" height="25" fill="#4f46e5"/>
+    <rect x="14" y="0" width="4" height="25" fill="#4f46e5"/>
+  </g>
+  
+  <!-- 刀子 -->
+  <g transform="translate(312, 200)">
+    <rect x="0" y="0" width="8" height="120" fill="#4f46e5"/>
+    <path d="M -6 0 L 14 0 L 8 -15 L -6 -15 Z" fill="#4f46e5"/>
+  </g>
+  
+  <!-- 餐廳輪盤指針 -->
+  <g transform="translate(256, 256) rotate(45)">
+    <path d="M 0 -80 L 15 -20 L 0 0 L -15 -20 Z" fill="#ff4c00"/>
+  </g>
+  
+  <!-- 中心點 -->
+  <circle cx="256" cy="256" r="12" fill="#4f46e5"/>
+  
+  <!-- 品牌文字 - 簡化版 -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">甲崩喔</text>
+</svg>

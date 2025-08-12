@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 
     <title>甲崩喔 Restaurant Roulette - 台南美食輪盤 | 舞鶴台南民宿</title>
     <meta name="description" content="舞鶴台南民宿推薦！隨機發現台南附近的美食餐廳，使用有趣的老虎機介面探索在地美味，支援多語言和精準定位功能。">
@@ -32,8 +32,88 @@
     <meta name="twitter:image:alt" content="甲崩喔 台南美食輪盤 - 舞鶴民宿推薦">
     <meta name="twitter:site" content="@tainanbnb_maizuru">
     
-    <!-- Favicon -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="甲崩喔美食輪盤">
+    <meta name="application-name" content="甲崩喔美食輪盤">
+    <meta name="msapplication-TileColor" content="#ff4c00">
+    <meta name="theme-color" content="#ff4c00">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ff4c00">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
+    
+    <!-- 更多PWA優化 -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="MobileOptimized" content="width">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    
+    <!-- Favicon 標準尺寸 -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/icon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-32x32.png">
+    
+    <!-- Apple Touch Icons - 完整尺寸支援 -->
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180x180.png">
+    <!-- Fallback for missing icons -->
+    <link rel="apple-touch-icon" href="assets/image/apple-touch-icon.png">
+    
+    <!-- Android Chrome Icons - 所有生成的尺寸 -->
+    <link rel="icon" type="image/png" sizes="72x72" href="assets/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="assets/icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="assets/icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="assets/icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512x512.png">
+    
+    <!-- Microsoft Tiles - 完整Windows支援 -->
+    <meta name="msapplication-TileImage" content="assets/icons/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#ff4c00">
+    <meta name="msapplication-square70x70logo" content="assets/icons/icon-70x70.png">
+    <meta name="msapplication-square150x150logo" content="assets/icons/icon-150x150.png">
+    <meta name="msapplication-wide310x150logo" content="assets/icons/icon-310x150.png">
+    <meta name="msapplication-square310x310logo" content="assets/icons/icon-310x310.png">
+    <meta name="msapplication-notification" content="frequency=30;polling-uri=https://eat.tribe.org.tw/api/notifications">
+    <meta name="msapplication-starturl" content="/">
+    <meta name="msapplication-window" content="width=1024;height=768">
+    <meta name="msapplication-tooltip" content="甲崩喔美食輪盤 - 發現台南在地美食">
+    
+    <!-- Startup Images for iOS -->
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-2048-2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1668-2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1536-2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1290-2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1179-2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1284-2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1170-2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1125-2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1242-2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-828-1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1242-2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-750-1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-640-1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+    <!-- 性能和安全優化 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="light dark">
+    <link rel="preconnect" href="https://maps.googleapis.com">
+    <link rel="preconnect" href="https://resource.trickle.so">
+    <link rel="dns-prefetch" href="//maps.googleapis.com">
+    <link rel="dns-prefetch" href="//images.unsplash.com">
+    
+    <!-- PWA Shortcuts Support -->
+    <meta name="mobile-web-app-shortcut" content="yes">
+    <meta name="apple-mobile-web-app-shortcut" content="yes">
 
     <!-- 組件樣式 -->
     <link rel="stylesheet" href="components/shared/garmin-design-system.css">
@@ -508,5 +588,81 @@
     
     <!-- 主應用程式 - 在檢查通過後才會執行 -->
     <script type="text/babel" src="app.js"></script>
+    
+    <!-- PWA Service Worker 註冊 -->
+    <script>
+      // Service Worker 註冊
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ Service Worker 註冊成功:', registration.scope);
+              
+              // 監聽更新
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('🔄 Service Worker 更新中...');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🆕 Service Worker 更新完成');
+                    // 可以在這裡顯示更新提示給用戶
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.log('❌ Service Worker 註冊失敗:', error);
+            });
+        });
+        
+        // PWA 安裝提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+          console.log('📱 PWA 安裝提示事件觸發');
+          e.preventDefault();
+          deferredPrompt = e;
+          
+          // 可以在這裡顯示自定義的安裝按鈕
+          // 例如：showInstallButton();
+        });
+        
+        window.addEventListener('appinstalled', (evt) => {
+          console.log('✅ PWA 已安裝成功');
+          deferredPrompt = null;
+        });
+        
+        // iOS Safari 安裝提示（通過檢測 standalone 模式）
+        if (window.navigator.standalone === false) {
+          // 可以在這裡顯示 iOS 安裝說明
+          console.log('📱 iOS Safari: 可提示用戶手動安裝 PWA');
+        }
+      } else {
+        console.log('❌ 瀏覽器不支援 Service Worker');
+      }
+      
+      // PWA 快捷操作處理
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      
+      if (action === 'spin') {
+        // 延遲執行，等待應用初始化完成
+        setTimeout(() => {
+          if (window.handleUserSpin) {
+            window.handleUserSpin(false);
+            console.log('🎰 PWA快捷操作: 執行輪盤轉動');
+          }
+        }, 2000);
+      } else if (action === 'candidates') {
+        // 延遲執行，聚焦到候選清單
+        setTimeout(() => {
+          const candidateList = document.querySelector('[data-name="candidate-list"]');
+          if (candidateList) {
+            candidateList.scrollIntoView({ behavior: 'smooth' });
+            console.log('📋 PWA快捷操作: 聚焦候選清單');
+          }
+        }, 2000);
+      }
+    </script>
 </body>
 </html>
