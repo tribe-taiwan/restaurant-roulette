@@ -2,10 +2,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
   try {
     // 追蹤按鈕點擊狀態
     const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
-    
+
+    // 追蹤分享按鈕狀態
+    const [shareButtonState, setShareButtonState] = React.useState('normal'); // 'normal', 'copying', 'success', 'error'
+
     // 左滑刪除狀態管理
     const [swipeStates, setSwipeStates] = React.useState({});
-    
+
     // 觸控事件處理函數
     const handleTouchStart = (e, index) => {
       const touch = e.touches[0];
@@ -24,18 +27,18 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     const handleTouchMove = (e, index) => {
       if (!swipeStates[index]) return;
-      
+
       const touch = e.touches[0];
       const deltaX = touch.clientX - swipeStates[index].startX;
       const deltaY = touch.clientY - swipeStates[index].startY;
-      
+
       // 判斷是否為水平滑動（左滑）
       if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0 && Math.abs(deltaX) > 15) {
         e.preventDefault(); // 防止頁面滾動
-        
+
         const maxOffset = -100; // 最大滑動距離
         const offsetX = Math.max(deltaX, maxOffset);
-        
+
         setSwipeStates(prev => ({
           ...prev,
           [index]: {
@@ -54,24 +57,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     const handleTouchEnd = (e, index) => {
       if (!swipeStates[index]) return;
-      
+
       const { offsetX, startTime, isSwiping } = swipeStates[index];
       const duration = Date.now() - startTime;
       const threshold = -80; // 觸發刪除的閾值（滑動超過80px）
-      
+
       // 只有在左滑時才阻止瀏覽器的預設行為（避免觸發頁面滾動）
       if (isSwiping && offsetX < 0) {
         e.preventDefault();
         e.stopPropagation();
       }
-      
+
       // 如果滑動距離超過閾值且不是快速點擊，則刪除
       if (offsetX < threshold && duration > 100) {
         if (onRemoveCandidate) {
           onRemoveCandidate(index);
         }
       }
-      
+
       // 重置滑動狀態
       setSwipeStates(prev => ({
         ...prev,
@@ -82,13 +85,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         }
       }));
     };
-    
+
     // 檢查當前餐廳是否已在候選清單中
-    const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate => 
+    const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate =>
       (candidate.place_id && finalRestaurant.place_id && candidate.place_id === finalRestaurant.place_id) ||
       (candidate.name && finalRestaurant.name && candidate.name === finalRestaurant.name)
     );
-    
+
     // 當候選清單被清空時重置按鈕狀態
     React.useEffect(() => {
       if (candidateList.length === 0) {
@@ -100,13 +103,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     React.useEffect(() => {
       setButtonClickState('normal');
     }, [finalRestaurant]);
-    
+
     // 處理輪盤按鈕點擊（重置加入按鈕狀態）
     const handleSpinClick = () => {
       setButtonClickState('normal');
       onSpin(false);
     };
-    
+
     // 檢查餐廳是否可以加入候選（營業狀態檢查）
     const isRestaurantOperational = (restaurant) => {
       if (!restaurant) return false;
@@ -131,11 +134,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       // 默認狀態：顯示加入候選
       return translations.addCandidate;
     };
-    
+
     // 處理加入候選按鈕點擊
     const handleAddCandidateClick = () => {
       if (!finalRestaurant || candidateList.length >= 9 || isSpinning) return;
-      
+
       if (isRestaurantInCandidates) {
         setButtonClickState('exists');
       } else {
@@ -268,10 +271,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 複製 Google Maps 連結到剪貼簿
     const copyGoogleMapsLink = async (restaurant) => {
       if (!restaurant) return;
-      
+
+      // 設置複製中狀態
+      setShareButtonState('copying');
+
       try {
         const url = getDirectionsUrl(restaurant);
-        
+
         // 使用現代的 Clipboard API
         if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(url);
@@ -285,7 +291,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           document.body.appendChild(textArea);
           textArea.focus();
           textArea.select();
-          
+
           try {
             document.execCommand('copy');
             textArea.remove();
@@ -295,14 +301,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             throw err;
           }
         }
-        
+
         console.log('📋 Google Maps 連結已複製到剪貼簿');
-        
-        // 顯示複製成功提示（可選：添加視覺反饋）
-        // 可以在這裡添加 toast 提示或其他反饋機制
-        
+
+        // 設置成功狀態
+        setShareButtonState('success');
+
+        // 1.5秒後恢復正常狀態
+        setTimeout(() => {
+          setShareButtonState('normal');
+        }, 1500);
+
       } catch (error) {
         console.error('複製 Google Maps 連結失敗:', error);
+
+        // 設置錯誤狀態
+        setShareButtonState('error');
+
+        // 2秒後恢復正常狀態
+        setTimeout(() => {
+          setShareButtonState('normal');
+        }, 2000);
       }
     };
 
@@ -1503,35 +1522,65 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             )}
 
-            {/* Copy Google Maps Link Button - Top Right Corner */}
+            {/* 分享 Copy Google Maps Link Button - Top Right Corner */}
             {finalRestaurant && !isSpinning && (
               <div
-                className="absolute top-3 right-3 w-10 h-10 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 backdrop-blur-sm z-20"
+                className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm z-20 ${shareButtonState === 'copying' ? 'bg-blue-500 bg-opacity-80 scale-110' :
+                    shareButtonState === 'success' ? 'bg-green-500 bg-opacity-80 scale-110' :
+                      shareButtonState === 'error' ? 'bg-red-500 bg-opacity-80 scale-110' :
+                        'bg-black bg-opacity-50 hover:bg-opacity-70'
+                  }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  copyGoogleMapsLink(finalRestaurant);
+                  if (shareButtonState === 'normal') {
+                    copyGoogleMapsLink(finalRestaurant);
+                  }
                 }}
-                title="複製 Google Maps 連結"
+                title={
+                  shareButtonState === 'copying' ? '複製中...' :
+                    shareButtonState === 'success' ? '已複製！' :
+                      shareButtonState === 'error' ? '複製失敗' :
+                        '複製 Google Maps 連結'
+                }
               >
-                {/* Simple CSS Copy Icon */}
-                <div 
-                  className="w-5 h-5 relative"
-                  style={{
-                    background: 'transparent',
-                    border: '1.5px solid white',
-                    borderRadius: '2px'
-                  }}
-                >
-                  {/* Copy icon overlay */}
-                  <div 
-                    className="absolute -top-1 -right-1 w-4 h-4"
+                {shareButtonState === 'copying' ? (
+                  // 載入動畫
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : shareButtonState === 'success' ? (
+                  // 成功勾勾
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                ) : shareButtonState === 'error' ? (
+                  // 錯誤 X
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                ) : (
+                  // 正常的複製圖標
+                  <div
+                    className="w-5 h-5 relative"
                     style={{
-                      background: 'white',
+                      background: 'transparent',
                       border: '1.5px solid white',
-                      borderRadius: '1px'
+                      borderRadius: '2px'
                     }}
-                  ></div>
-                </div>
+                  >
+                    {/* Copy icon overlay */}
+                    <div
+                      className="absolute -top-1 -right-1 w-4 h-4"
+                      style={{
+                        background: 'white',
+                        border: '1.5px solid white',
+                        borderRadius: '1px'
+                      }}
+                    ></div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1581,7 +1630,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? 'not-allowed' : 'pointer'
               }}
               title={finalRestaurant && candidateList.length < 9 && isRestaurantOperational(finalRestaurant) ? translations.addCandidate :
-                     !isRestaurantOperational(finalRestaurant) ? '餐廳暫停營業，無法加入候選' : ''}
+                !isRestaurantOperational(finalRestaurant) ? '餐廳暫停營業，無法加入候選' : ''}
             >
               <div className="text-xl font-bold text-center">
                 {getAddCandidateButtonText()}
@@ -1625,7 +1674,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       >
                         <div className="text-white text-xl font-bold">刪除</div>
                       </div>
-                      
+
                       {/* 原本的餐廳卡片 */}
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
@@ -1642,34 +1691,34 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           transition: swipeStates[index]?.isSwiping ? 'none' : 'transform 0.3s ease-out'
                         }}
                       >
-                      {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
-                      <div
-                        className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
-                        style={{
-                          width: '38.2%',
-                          background: 'linear-gradient(to right, rgba(255,255,255,0.25), rgba(255,255,255,0.1), transparent)',
-                          backdropFilter: 'blur(12px)',
-                          WebkitBackdropFilter: 'blur(12px)', // Safari support
-                          borderRight: '1px solid rgba(255,255,255,0.1)'
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(getDirectionsUrl(restaurant), '_blank');
-                        }}
-                        title="點擊導航到此餐廳"
-                      >
-                        <div className="text-left pointer-events-none">
-                          <div className="font-semibold text-white text-base mb-1 leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-                            {index + 1}. {restaurant.name}
-                          </div>
-                          {restaurant.distance && (
-                            <div className="text-xs text-white flex items-center gap-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                              <div className="icon-map text-xs"></div>
-                              <span>{restaurant.distance} km</span>
+                        {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
+                        <div
+                          className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
+                          style={{
+                            width: '38.2%',
+                            background: 'linear-gradient(to right, rgba(255,255,255,0.25), rgba(255,255,255,0.1), transparent)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)', // Safari support
+                            borderRight: '1px solid rgba(255,255,255,0.1)'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(getDirectionsUrl(restaurant), '_blank');
+                          }}
+                          title="點擊導航到此餐廳"
+                        >
+                          <div className="text-left pointer-events-none">
+                            <div className="font-semibold text-white text-base mb-1 leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                              {index + 1}. {restaurant.name}
                             </div>
-                          )}
+                            {restaurant.distance && (
+                              <div className="text-xs text-white flex items-center gap-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                <div className="icon-map text-xs"></div>
+                                <span>{restaurant.distance} km</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
                         {/* Price Label - Bottom Right */}
                         <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
