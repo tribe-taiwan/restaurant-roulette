@@ -508,6 +508,12 @@
   .unified-banner-home-link {
     font-size: var(--font-size-xs);
     margin-top: var(--spacing-xs);
+    /* 強制手機版完全置中對齊 */
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 
@@ -518,6 +524,15 @@
 
   .unified-banner-subtitle {
     font-size: clamp(var(--font-size-sm), 4vw, var(--font-size-md));
+  }
+  
+  .unified-banner-home-link {
+    /* 極小螢幕強制置中 */
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 
