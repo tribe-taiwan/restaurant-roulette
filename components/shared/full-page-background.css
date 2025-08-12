@@ -171,14 +171,8 @@
   backdrop-filter: blur(3px) saturate(0.6) contrast(1.2);
   -webkit-backdrop-filter: blur(3px) saturate(0.6) contrast(1.2);
   
-  /* 霧面邊緣陰影層 - 移除內部白色高光 */
-  box-shadow:
-    /* 頂部白色高光線 */
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    /* 霧面擴散效果 */
-    0 1px 4px rgba(0, 0, 0, 0.15),
-    /* 外部柔和陰影 */
-    0 3px 12px rgba(0, 0, 0, 0.08);
+  /* 使用系統成熟的陰影 - 跟語言選擇器一樣自然 */
+  box-shadow: var(--theme-shadow-md);
   
   /* 霧面不透明度 */
   opacity: 0.9;
