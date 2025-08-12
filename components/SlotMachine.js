@@ -30,7 +30,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       const deltaY = touch.clientY - swipeStates[index].startY;
       
       // 判斷是否為水平滑動（左滑）
-      if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0) {
+      if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0 && Math.abs(deltaX) > 15) {
         e.preventDefault(); // 防止頁面滾動
         
         const maxOffset = -100; // 最大滑動距離
@@ -46,14 +46,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           }
         }));
       }
+      // 如果已經是左滑狀態，繼續阻止頁面滾動
+      else if (swipeStates[index].isSwiping && swipeStates[index].offsetX < 0) {
+        e.preventDefault();
+      }
     };
 
     const handleTouchEnd = (e, index) => {
       if (!swipeStates[index]) return;
       
-      const { offsetX, startTime } = swipeStates[index];
+      const { offsetX, startTime, isSwiping } = swipeStates[index];
       const duration = Date.now() - startTime;
       const threshold = -80; // 觸發刪除的閾值（滑動超過80px）
+      
+      // 只有在左滑時才阻止瀏覽器的預設行為（避免觸發頁面滾動）
+      if (isSwiping && offsetX < 0) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       
       // 如果滑動距離超過閾值且不是快速點擊，則刪除
       if (offsetX < threshold && duration > 100) {
