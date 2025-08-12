@@ -444,6 +444,11 @@ function App() {
       setCandidateList([]);
     };
 
+    // 從候選列表中移除特定餐廳函數
+    const handleRemoveCandidate = (indexToRemove) => {
+      setCandidateList(prevList => prevList.filter((_, index) => index !== indexToRemove));
+    };
+
     // 處理圖片點擊跳轉到 Google Maps 相片功能
     const handleImageClick = () => {
       if (currentRestaurant) {
@@ -612,6 +617,7 @@ function App() {
                 candidateList={candidateList}
                 language={selectedLanguage}
                 onClearList={handleClearList}
+                onRemoveCandidate={handleRemoveCandidate}
                 onImageClick={handleImageClick}
                 userLocation={userLocation}
                 userAddress={userAddress}

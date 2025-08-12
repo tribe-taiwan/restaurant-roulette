@@ -1,4 +1,4 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onRemoveCandidate, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
   try {
     // 追蹤按鈕點擊狀態
     const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
@@ -1497,6 +1497,21 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
                         {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
                       </div>
+
+                      {/* Delete Button - Top Right */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (onRemoveCandidate) {
+                            onRemoveCandidate(index);
+                          }
+                        }}
+                        className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm z-10"
+                        title={translations.removeFromList || "從列表中移除"}
+                      >
+                        <span className="text-white text-xs font-bold leading-none">×</span>
+                      </button>
                     </a>
                   );
                 })}
