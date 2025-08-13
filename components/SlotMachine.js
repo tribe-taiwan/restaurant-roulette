@@ -690,6 +690,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-t-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center">
+          {/* Slot Machine Title */}
+          <div className="mb-4 px-4">
+            <h2 className="text-2xl font-bold text-white drop-shadow-lg text-center">
+              {translations.slotMachineTitle}
+            </h2>
+          </div>
 
           {/* Restaurant Image Display with Slide Transition */}
           <div

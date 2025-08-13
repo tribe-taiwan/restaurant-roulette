@@ -105,7 +105,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
           {/* 地址顯示 - 與其他區塊統一風格 */}
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <div className="text-2xl font-bold whitespace-nowrap">
+              <div className="text-md font-medium break-words">
                 {restaurant.address}
               </div>
             </div>
