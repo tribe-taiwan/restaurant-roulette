@@ -38,6 +38,15 @@ function App() {
       isInitialLoad
     );
 
+    // 額外的位置變更清除邏輯 - 確保 handleAddressConfirm 觸發的位置變更也會清除歷史
+    React.useEffect(() => {
+      if (window.clearRestaurantHistory && !isInitialLoad && userLocation) {
+        const actualRadius = baseUnit * unitMultiplier;
+        console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius, userLocation });
+        window.clearRestaurantHistory();
+      }
+    }, [selectedMealTime, baseUnit, unitMultiplier, userLocation, isInitialLoad]);
+
     // 初始化位置服務模組
     const locationService = React.useMemo(() => {
       return window.createLocationService ? window.createLocationService() : null;
