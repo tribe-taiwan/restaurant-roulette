@@ -296,12 +296,15 @@ function calculateMinutesUntilClose(openingHours, utcOffsetMinutes = null) {
   let now, currentDay, currentTime;
   
   if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
-    // 使用餐廳當地時間
-    const utcNow = new Date();
-    const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
-    now = restaurantLocalTime;
-    currentDay = restaurantLocalTime.getDay();
-    currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes();
+    // 使用餐廳當地時間 - 修復時區計算錯誤
+    const utcTimestamp = Date.now();
+    const restaurantTimestamp = utcTimestamp + (utcOffsetMinutes * 60 * 1000);
+    const tempDate = new Date(restaurantTimestamp);
+    
+    // 使用 UTC 方法避免本地時區干擾
+    now = new Date(); // 保留原始 now 對象用於時間計算
+    currentDay = tempDate.getUTCDay();
+    currentTime = tempDate.getUTCHours() * 100 + tempDate.getUTCMinutes();
   } else {
     // 回退到設備時間
     now = new Date();
@@ -405,12 +408,15 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime, utcOffsetMi
       let now, currentDay, currentTime;
       
       if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
-        // 使用餐廳當地時間計算（修復跨時區問題）
-        const utcNow = new Date();
-        const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
-        now = restaurantLocalTime;
-        currentDay = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-        currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes(); // 格式: HHMM
+        // 使用餐廳當地時間計算（修復跨時區問題）- 修復時區計算錯誤
+        const utcTimestamp = Date.now();
+        const restaurantTimestamp = utcTimestamp + (utcOffsetMinutes * 60 * 1000);
+        const tempDate = new Date(restaurantTimestamp);
+        
+        // 使用 UTC 方法避免本地時區干擾
+        now = new Date(); // 保留原始 now 對象用於其他計算
+        currentDay = tempDate.getUTCDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        currentTime = tempDate.getUTCHours() * 100 + tempDate.getUTCMinutes(); // 格式: HHMM
         // 使用餐廳當地時間計算營業狀態（時區修復）
       } else {
         // 回退到設備時間（原有邏輯）
@@ -470,12 +476,15 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime, utcOffsetMi
   let now, currentHour, dayOfWeek;
   
   if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
-    // 使用餐廳當地時間計算
-    const utcNow = new Date();
-    const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
-    now = restaurantLocalTime;
-    currentHour = restaurantLocalTime.getHours();
-    dayOfWeek = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    // 使用餐廳當地時間計算 - 修復時區計算錯誤
+    const utcTimestamp = Date.now();
+    const restaurantTimestamp = utcTimestamp + (utcOffsetMinutes * 60 * 1000);
+    const tempDate = new Date(restaurantTimestamp);
+    
+    // 使用 UTC 方法避免本地時區干擾
+    now = new Date(); // 保留原始 now 對象用於其他計算
+    currentHour = tempDate.getUTCHours();
+    dayOfWeek = tempDate.getUTCDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   } else {
     // 回退到設備時間
     now = new Date();
