@@ -1264,20 +1264,22 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
   // 【防護性註解：2025-01-02】遊客時間寶貴，沒有營業時間數據的餐廳必須排除，避免白跑一趟
   // 【重要】不得將沒有營業時間數據的餐廳視為營業中，這會誤導用戶
   if (timeSlot === 'current') {
-    if (!restaurant.detailsCache?.opening_hours) {
-      // 只在非抑制模式下顯示日誌
-      if (!suppressLog) {
-        // 避免重複日誌：每家餐廳只記錄一次
-        const logKey = `no-hours-${restaurant.id || restaurant.name}`;
-        if (!loggedRestaurants.has(logKey)) {
-          loggedRestaurants.add(logKey);
-          // RR_SEARCH_039: 餐廳沒有營業時間數據
-          window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳沒有營業時間數據已排除', { restaurant: restaurant.name });
-        }
-      }
-      return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
+    // 優先嘗試使用 isOpen() 方法
+    if (restaurant.detailsCache?.opening_hours) {
+      return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current', restaurant.detailsCache.utc_offset_minutes);
     }
-    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current', restaurant.detailsCache.utc_offset_minutes);
+    
+    // 如果沒有營業時間數據，排除餐廳（保護觀光客時間）
+    if (!suppressLog) {
+      // 避免重複日誌：每家餐廳只記錄一次
+      const logKey = `no-hours-${restaurant.id || restaurant.name}`;
+      if (!loggedRestaurants.has(logKey)) {
+        loggedRestaurants.add(logKey);
+        // RR_SEARCH_039: 餐廳沒有營業時間數據
+        window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳沒有營業時間數據已排除', { restaurant: restaurant.name });
+      }
+    }
+    return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
   }
 
   // 其他時段篩選保持原有邏輯
