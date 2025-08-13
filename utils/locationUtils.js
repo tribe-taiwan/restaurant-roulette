@@ -17,6 +17,23 @@ function isNetworkError(status) {
 }
 
 /**
+ * 解釋 Google Places API 狀態碼的含義
+ */
+function getStatusMeaning(status) {
+  const statusMeanings = {
+    'OK': '成功',
+    'ZERO_RESULTS': '沒有找到結果',
+    'OVER_QUERY_LIMIT': 'API 調用次數超過限制',
+    'REQUEST_DENIED': '請求被拒絕（API 金鑰問題）',
+    'INVALID_REQUEST': '請求格式無效',
+    'NOT_FOUND': '地點不存在',
+    'UNKNOWN_ERROR': '未知錯誤（伺服器問題）',
+    'ERROR': '一般錯誤'
+  };
+  return statusMeanings[status] || `未知狀態: ${status}`;
+}
+
+/**
  * API 調用重試機制 - 區分網路失敗和搜不到餐廳
  * @param {Function} apiCall - 要執行的 API 調用函數
  * @param {Object} options - 重試選項
@@ -693,18 +710,57 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
 
     // 隨機打亂餐廳列表順序，增加多樣性
     const shuffledRestaurants = allRestaurants.sort(() => Math.random() - 0.5);
+    // 統計變數
+    let successCount = 0;
+    let failedCount = 0;
+    let errorTypes = {};
+
     const restaurantsWithDetails = await Promise.all(
       shuffledRestaurants.map(async (restaurant) => {
         try {
           const details = await getPlaceDetails(restaurant.place_id);
+          if (details) {
+            successCount++;
+            // RR_API_SUCCESS: getPlaceDetails 成功
+            window.RRLog?.debug('RR_API_SUCCESS', 'getPlaceDetails 成功', { 
+              restaurant: restaurant.name, 
+              hasOpeningHours: !!details.opening_hours,
+              businessStatus: details.business_status 
+            });
+          } else {
+            failedCount++;
+            errorTypes['returned_null'] = (errorTypes['returned_null'] || 0) + 1;
+            // RR_API_WARNING: getPlaceDetails 返回 null
+            window.RRLog?.warn('RR_API_WARNING', 'getPlaceDetails 返回 null', { 
+              restaurant: restaurant.name, 
+              placeId: restaurant.place_id 
+            });
+          }
           return { ...restaurant, detailsCache: details };
         } catch (error) {
+          failedCount++;
+          const errorType = error.message || 'unknown_error';
+          errorTypes[errorType] = (errorTypes[errorType] || 0) + 1;
           // RR_SEARCH_025: 無法獲取餐廳詳細資訊
-          window.RRLog?.debug('RR_API_ERROR', '無法獲取餐廳詳細資訊', { restaurant: restaurant.name, error: error.message });
+          window.RRLog?.debug('RR_API_ERROR', '無法獲取餐廳詳細資訊', { 
+            restaurant: restaurant.name, 
+            placeId: restaurant.place_id, 
+            error: error.message 
+          });
           return { ...restaurant, detailsCache: null };
         }
       })
     );
+
+    // RR_API_STATS: getPlaceDetails 統計
+    const totalRestaurants = shuffledRestaurants.length;
+    window.RRLog?.info('RR_API_STATS', 'getPlaceDetails 調用統計', {
+      total: totalRestaurants,
+      success: successCount,
+      failed: failedCount,
+      successRate: `${((successCount / totalRestaurants) * 100).toFixed(1)}%`,
+      errorTypes: Object.keys(errorTypes).length > 0 ? errorTypes : '無錯誤'
+    });
 
     // 轉換為應用程式格式
     const formattedRestaurants = await Promise.all(
@@ -750,7 +806,12 @@ async function getPlaceDetails(placeId, language = 'zh-TW') {
           } else {
             // API 問題（如找不到地點），不重試
             // RR_API_027: 無法獲取地點詳細資訊
-            window.RRLog?.debug('RR_API_ERROR', '無法獲取地點詳細資訊', { status });
+            window.RRLog?.warn('RR_API_ERROR', 'getDetails API 調用失敗', { 
+              status: status,
+              placeId: placeId,
+              language: language,
+              statusMeaning: getStatusMeaning(status)
+            });
             resolve(null);
           }
         });
