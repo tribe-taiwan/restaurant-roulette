@@ -394,19 +394,13 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime, utcOffsetMi
         now = restaurantLocalTime;
         currentDay = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
         currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes(); // 格式: HHMM
-        // RR_SEARCH_TIMEZONE: 使用餐廳當地時間
-        window.RRLog?.debug('RR_SEARCH_TIMEZONE', '使用餐廳當地時間計算營業狀態', { 
-          utcOffsetMinutes, 
-          restaurantLocalTime: restaurantLocalTime.toISOString(),
-          deviceTime: utcNow.toISOString()
-        });
+        // 使用餐廳當地時間計算營業狀態（時區修復）
       } else {
         // 回退到設備時間（原有邏輯）
         now = new Date();
         currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
         currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
-        // RR_SEARCH_TIMEZONE: 使用設備時間
-        window.RRLog?.debug('RR_SEARCH_TIMEZONE', '無時區資訊，使用設備時間計算營業狀態');
+        // 無時區資訊，使用設備時間計算營業狀態（回退邏輯）
       }
       
       // 檢查今天的營業時段
