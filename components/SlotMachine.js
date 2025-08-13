@@ -40,6 +40,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     }, [finalRestaurant, candidateList, translations, buttonClickState, isSpinning, onAddCandidate, onSpin, isRestaurantInCandidates]);
 
+    // 創建分享按鈕邏輯處理器
+    const shareButtonLogic = React.useMemo(() => {
+      return window.createShareButtonLogic({
+        setShareButtonState,
+        getDirectionsUrl
+      });
+    }, [setShareButtonState]);
+
     // 創建鍵盤事件處理器
     const keyboardHandler = React.useMemo(() => {
       return window.createKeyboardHandler({
@@ -175,62 +183,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     };
 
-    // 複製 Google Maps 連結到剪貼簿
-    const copyGoogleMapsLink = async (restaurant) => {
-      if (!restaurant) return;
-
-      // 設置複製中狀態
-      setShareButtonState('copying');
-
-      try {
-        const url = getDirectionsUrl(restaurant);
-
-        // 使用現代的 Clipboard API
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(url);
-        } else {
-          // 回退方案：創建臨時 input 元素
-          const textArea = document.createElement('textarea');
-          textArea.value = url;
-          textArea.style.position = 'fixed';
-          textArea.style.left = '-999999px';
-          textArea.style.top = '-999999px';
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-
-          try {
-            document.execCommand('copy');
-            textArea.remove();
-          } catch (err) {
-            console.error('複製失敗:', err);
-            textArea.remove();
-            throw err;
-          }
-        }
-
-        console.log('📋 Google Maps 連結已複製到剪貼簿');
-
-        // 設置成功狀態
-        setShareButtonState('success');
-
-        // 1.5秒後恢復正常狀態
-        setTimeout(() => {
-          setShareButtonState('normal');
-        }, 1500);
-
-      } catch (error) {
-        console.error('複製 Google Maps 連結失敗:', error);
-
-        // 設置錯誤狀態
-        setShareButtonState('error');
-
-        // 2秒後恢復正常狀態
-        setTimeout(() => {
-          setShareButtonState('normal');
-        }, 2000);
-      }
-    };
 
     // 圖片預載入函數 - 整合預載入池
     const preloadImage = (url) => {
@@ -1069,7 +1021,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 onClick={(e) => {
                   e.stopPropagation();
                   if (shareButtonState === 'normal') {
-                    copyGoogleMapsLink(finalRestaurant);
+                    shareButtonLogic.copyGoogleMapsLink(finalRestaurant);
                   }
                 }}
                 title={

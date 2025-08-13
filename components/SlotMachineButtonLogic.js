@@ -1,5 +1,5 @@
 // SlotMachineButtonLogic.js
-// 🔘 按鈕邏輯處理模塊 - 處理加入候選按鈕的狀態和邏輯
+// 🔘 按鈕邏輯處理模塊 - 處理加入候選按鈕和分享按鈕的狀態和邏輯
 
 /**
  * 檢查餐廳是否可以加入候選（營業狀態檢查）
@@ -120,6 +120,79 @@ const createButtonLogic = (params) => {
   };
 };
 
+/**
+ * 創建分享按鈕邏輯處理器
+ * @param {Object} params - 參數對象
+ * @param {Function} params.setShareButtonState - 設置分享按鈕狀態函數
+ * @param {Function} params.getDirectionsUrl - 獲取導航URL函數
+ * @returns {Object} 分享按鈕邏輯處理器對象
+ */
+const createShareButtonLogic = (params) => {
+  const { setShareButtonState, getDirectionsUrl } = params;
+
+  // 複製 Google Maps 連結到剪貼簿
+  const copyGoogleMapsLink = async (restaurant) => {
+    if (!restaurant) return;
+
+    // 設置複製中狀態
+    setShareButtonState('copying');
+
+    try {
+      const url = getDirectionsUrl(restaurant);
+
+      // 使用現代的 Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // 回退方案：創建臨時 input 元素
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand('copy');
+          textArea.remove();
+        } catch (err) {
+          console.error('複製失敗:', err);
+          textArea.remove();
+          throw err;
+        }
+      }
+
+      console.log('📋 Google Maps 連結已複製到剪貼簿');
+
+      // 設置成功狀態
+      setShareButtonState('success');
+
+      // 1.5秒後恢復正常狀態
+      setTimeout(() => {
+        setShareButtonState('normal');
+      }, 1500);
+
+    } catch (error) {
+      console.error('複製 Google Maps 連結失敗:', error);
+
+      // 設置錯誤狀態
+      setShareButtonState('error');
+
+      // 2秒後恢復正常狀態
+      setTimeout(() => {
+        setShareButtonState('normal');
+      }, 2000);
+    }
+  };
+
+  return {
+    copyGoogleMapsLink
+  };
+};
+
 // 註冊到全局變數
 window.createButtonLogic = createButtonLogic;
+window.createShareButtonLogic = createShareButtonLogic;
 window.isRestaurantOperational = isRestaurantOperational;
