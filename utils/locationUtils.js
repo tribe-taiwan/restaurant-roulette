@@ -267,16 +267,30 @@ function initializeGoogleMaps() {
 /**
  * 計算餐廳距離關門還有幾分鐘（用於20分鐘緩衝區）
  * @param {Object} openingHours - Google Places API 營業時間物件
+ * @param {number|null} utcOffsetMinutes - 餐廳時區偏移量（分鐘）
  * @returns {number|null} 距離關門的分鐘數，如果無法計算則返回 null
  */
-function calculateMinutesUntilClose(openingHours) {
+function calculateMinutesUntilClose(openingHours, utcOffsetMinutes = null) {
   if (!openingHours || !openingHours.periods) {
     return null;
   }
 
-  const now = new Date();
-  const currentDay = now.getDay();
-  const currentTime = now.getHours() * 100 + now.getMinutes();
+  // 🔧 時區修復：使用餐廳當地時間計算關門時間
+  let now, currentDay, currentTime;
+  
+  if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
+    // 使用餐廳當地時間
+    const utcNow = new Date();
+    const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
+    now = restaurantLocalTime;
+    currentDay = restaurantLocalTime.getDay();
+    currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes();
+  } else {
+    // 回退到設備時間
+    now = new Date();
+    currentDay = now.getDay();
+    currentTime = now.getHours() * 100 + now.getMinutes();
+  }
 
   try {
     // 找到今天的營業時間
@@ -325,7 +339,7 @@ function calculateMinutesUntilClose(openingHours) {
   return null;
 }
 
-function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
+function isRestaurantOpenForMealTime(openingHours, selectedMealTime, utcOffsetMinutes = null) {
   if (!openingHours || selectedMealTime === 'all') {
     return true; // 如果沒有營業時間資訊或選擇全部時段，則顯示所有餐廳
   }
@@ -345,7 +359,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
         if (isOpenNow !== undefined) {
           // 如果營業中，檢查20分鐘緩衝區
           if (isOpenNow) {
-            const minutesUntilClose = calculateMinutesUntilClose(openingHours);
+            const minutesUntilClose = calculateMinutesUntilClose(openingHours, utcOffsetMinutes);
             if (minutesUntilClose !== null && minutesUntilClose <= 20) {
               // RR_SEARCH_015: 餐廳即將關門
               window.RRLog?.debug('RR_SEARCH_FILTER', '餐廳即將關門已排除', { minutesUntilClose });
@@ -370,9 +384,30 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     
     // 回退邏輯：使用 periods 手動計算當前營業狀態
     if (openingHours.periods && openingHours.periods.length > 0) {
-      const now = new Date();
-      const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-      const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+      // 🔧 時區修復：如果有餐廳時區資訊，使用餐廳當地時間；否則使用設備時間
+      let now, currentDay, currentTime;
+      
+      if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
+        // 使用餐廳當地時間計算（修復跨時區問題）
+        const utcNow = new Date();
+        const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
+        now = restaurantLocalTime;
+        currentDay = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes(); // 格式: HHMM
+        // RR_SEARCH_TIMEZONE: 使用餐廳當地時間
+        window.RRLog?.debug('RR_SEARCH_TIMEZONE', '使用餐廳當地時間計算營業狀態', { 
+          utcOffsetMinutes, 
+          restaurantLocalTime: restaurantLocalTime.toISOString(),
+          deviceTime: utcNow.toISOString()
+        });
+      } else {
+        // 回退到設備時間（原有邏輯）
+        now = new Date();
+        currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+        // RR_SEARCH_TIMEZONE: 使用設備時間
+        window.RRLog?.debug('RR_SEARCH_TIMEZONE', '無時區資訊，使用設備時間計算營業狀態');
+      }
       
       // 檢查今天的營業時段
       for (const period of openingHours.periods) {
@@ -420,9 +455,22 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime) {
     return true; // 2025年優化：如果有營業時間數據但無法解析，預設為營業中
   }
   
-  const now = new Date();
-  const currentHour = now.getHours();
-  const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  // 🔧 時區修復：對於非 'current' 時段，也使用餐廳當地時間計算
+  let now, currentHour, dayOfWeek;
+  
+  if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
+    // 使用餐廳當地時間計算
+    const utcNow = new Date();
+    const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
+    now = restaurantLocalTime;
+    currentHour = restaurantLocalTime.getHours();
+    dayOfWeek = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  } else {
+    // 回退到設備時間
+    now = new Date();
+    currentHour = now.getHours();
+    dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  }
   
   // 使用統一的用餐時段配置
   const mealTimes = window.getMealTimeConfig();
@@ -807,7 +855,7 @@ async function formatRestaurantData(place) {
       ['餐廳'];
 
     // 計算營業狀態 - 需要語言參數，但這裡沒有，所以使用預設中文
-    const businessStatusInfo = getBusinessStatus(details?.opening_hours, 'zh');
+    const businessStatusInfo = getBusinessStatus(details?.opening_hours, 'zh', details?.utc_offset_minutes);
 
     // 計算距離（如果有用戶位置）
     let distance = null;
@@ -895,7 +943,7 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
  * @param {string} language - 語言代碼 ('en', 'zh', 'ja', 'ko', 'es', 'fr')
  * @returns {Object} 營業狀態信息
  */
-function getBusinessStatus(openingHours, language = 'zh') {
+function getBusinessStatus(openingHours, language = 'zh', utcOffsetMinutes = null) {
   // 這裡有翻譯系統
 
   if (!openingHours) {
@@ -923,9 +971,22 @@ function getBusinessStatus(openingHours, language = 'zh') {
     }
   }
 
-  const now = new Date();
-  const currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-  const currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+  // 🔧 時區修復：使用餐廳當地時間計算營業狀態
+  let now, currentDay, currentTime;
+  
+  if (utcOffsetMinutes !== null && utcOffsetMinutes !== undefined) {
+    // 使用餐廳當地時間
+    const utcNow = new Date();
+    const restaurantLocalTime = new Date(utcNow.getTime() + (utcOffsetMinutes * 60 * 1000));
+    now = restaurantLocalTime;
+    currentDay = restaurantLocalTime.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    currentTime = restaurantLocalTime.getHours() * 100 + restaurantLocalTime.getMinutes(); // 格式: HHMM
+  } else {
+    // 回退到設備時間
+    now = new Date();
+    currentDay = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    currentTime = now.getHours() * 100 + now.getMinutes(); // 格式: HHMM
+  }
 
   try {
     // 如果 isOpen() 方法不可用，使用 periods 計算邏輯作為備用
@@ -1222,7 +1283,7 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
       }
       return false; // 沒有營業時間數據時，必須排除該餐廳，保護用戶時間
     }
-    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current');
+    return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, 'current', restaurant.detailsCache.utc_offset_minutes);
   }
 
   // 其他時段篩選保持原有邏輯
@@ -1236,7 +1297,7 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
   const slot = timeSlots[timeSlot];
   if (!slot) return true;
 
-  return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, timeSlot);
+  return isRestaurantOpenForMealTime(restaurant.detailsCache.opening_hours, timeSlot, restaurant.detailsCache.utc_offset_minutes);
 }
 
 /**
