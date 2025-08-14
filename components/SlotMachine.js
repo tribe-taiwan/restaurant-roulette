@@ -19,6 +19,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const [sliderRestaurants, setSliderRestaurants] = React.useState([]);
     const sliderRef = React.useRef(null);
 
+    // Simple spinning logic (adopting test file approach) - moved here to fix undefined error
+    const [spinningState, setSpinningState] = React.useState({
+      isActive: false,
+      intervalId: null,
+      targetRestaurant: null,
+      spinsRemaining: 0
+    });
+
     // Basic navigation functions (adopting test file logic)
     const nextSlide = React.useCallback(() => {
       if (keenSlider && !(isSpinning || spinningState.isActive)) {
@@ -462,13 +470,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [finalRestaurant, managePreloadPool]);
 
-    // Simple spinning logic (adopting test file approach)
-    const [spinningState, setSpinningState] = React.useState({
-      isActive: false,
-      intervalId: null,
-      targetRestaurant: null,
-      spinsRemaining: 0
-    });
+
 
     // Start simple spinning animation with timer + nextSlide
     const startSimpleSpinning = React.useCallback((targetRestaurant = null) => {
