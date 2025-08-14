@@ -9,7 +9,8 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@upstash/context7-mcp": "^1.0.14"
+    "@upstash/context7-mcp": "^1.0.14",
+    "react-use": "^17.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",

@@ -38,14 +38,17 @@ function App() {
       isInitialLoad
     );
 
-    // 額外的位置變更清除邏輯 - 確保 handleAddressConfirm 觸發的位置變更也會清除歷史
-    React.useEffect(() => {
-      if (window.clearRestaurantHistory && !isInitialLoad && userLocation) {
+    // 使用滑動轉場管理器 - 解決競態條件
+    const slideManager = window.useSlideTransitionManager(currentRestaurant, setCurrentRestaurant);
+
+    // 額外的位置變更清除邏輯 - 使用 useUpdateEffect 避免初始渲染衝突
+    window.useUpdateEffect(() => {
+      if (window.clearRestaurantHistory && userLocation) {
         const actualRadius = baseUnit * unitMultiplier;
         console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius, userLocation });
         window.clearRestaurantHistory();
       }
-    }, [selectedMealTime, baseUnit, unitMultiplier, userLocation, isInitialLoad]);
+    }, [selectedMealTime, baseUnit, unitMultiplier, userLocation]);
 
     // 初始化位置服務模組
     const locationService = React.useMemo(() => {
@@ -121,8 +124,8 @@ function App() {
       };
     }, []);
     
-    // 語言切換時重新獲取地址
-    React.useEffect(() => {
+    // 語言切換時重新獲取地址 - 使用 useUpdateEffect 避免初始渲染衝突
+    window.useUpdateEffect(() => {
       if (userLocation && locationStatus === 'success') {
         getAddressFromCoords(userLocation.lat, userLocation.lng);
       }
@@ -481,46 +484,41 @@ function App() {
     // 追蹤操作方向
     const [navigationDirection, setNavigationDirection] = React.useState(null);
 
-    // 處理回到上一家餐廳
+    // 處理回到上一家餐廳 - 使用滑動轉場管理器
     const handlePreviousClick = () => {
       const previousRestaurant = handlePreviousRestaurant();
       if (previousRestaurant) {
         setNavigationDirection('previous'); // 標記為向後操作
-        // 延遲更新currentRestaurant，先觸發滑動轉場
-        if (triggerSlideTransition && currentRestaurant) {
-          triggerSlideTransition(currentRestaurant, previousRestaurant, 'right', () => {
-            // 滑動轉場完成後才更新currentRestaurant
-            setCurrentRestaurant(previousRestaurant);
-          });
-        } else {
-          setCurrentRestaurant(previousRestaurant);
-        }
+        // 使用安全的餐廳切換函數
+        slideManager.safeRestaurantSwitch(previousRestaurant, 'right');
       }
     };
 
-    // 處理用戶主動搜尋餐廳（觸發滑動轉場）
+    // 處理用戶主動搜尋餐廳 - 使用滑動轉場管理器避免競態條件
     const handleUserSpin = async () => {
       // RR_UI_055: handleUserSpin被觸發
       window.RRLog?.debug('RR_UI_CLICK', 'handleUserSpin被觸發', { isSpinning });
       window.RRLog?.updateStats('ui', 'click');
+      
       // 如果正在搜尋中，按按鈕停止搜尋
       if (isSpinning) {
-        // RR_UI_056: 偵測到正在搜尋中
         window.RRLog?.debug('RR_UI_UPDATE', '偵測到正在搜尋中，呼叫停止搜尋');
         handleStopSearch();
         return;
       }
 
-      // 如果有當前餐廳，先觸發滑動轉場
-      if (triggerSlideTransition && currentRestaurant) {
-        // 先搜尋新餐廳
+      // 檢查是否可以開始滑動轉場
+      if (!slideManager.canStartSlide) {
+        window.RRLog?.debug('RR_UI_UPDATE', '滑動轉場進行中，跳過此次請求');
+        return;
+      }
+
+      // 如果有當前餐廳，使用安全的餐廳切換
+      if (currentRestaurant) {
         const newRestaurant = await searchNewRestaurant();
         if (newRestaurant) {
           setNavigationDirection('next');
-          triggerSlideTransition(currentRestaurant, newRestaurant, 'left', () => {
-            // 滑動轉場完成後才更新currentRestaurant
-            setCurrentRestaurant(newRestaurant);
-          });
+          slideManager.safeRestaurantSwitch(newRestaurant, 'left');
         }
       } else {
         // 沒有當前餐廳，直接搜尋
@@ -563,13 +561,15 @@ function App() {
       }
     };
 
-    // 處理滑動轉場觸發
+    // 處理滑動轉場觸發 - 註冊到滑動轉場管理器
     const handleTriggerSlideTransition = React.useCallback((slideTransitionFn) => {
       setTriggerSlideTransition(() => slideTransitionFn);
-    }, []);
+      // 同時註冊到滑動轉場管理器
+      slideManager.registerSlideTransition(slideTransitionFn);
+    }, [slideManager]);
 
-    // 更新餐廳歷史記錄
-    React.useEffect(() => {
+    // 更新餐廳歷史記錄 - 使用 useUpdateEffect 避免初始渲染衝突
+    window.useUpdateEffect(() => {
       if (currentRestaurant) {
         previousRestaurantRef.current = currentRestaurant;
       }
