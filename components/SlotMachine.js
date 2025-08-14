@@ -959,78 +959,96 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* 刪除分享和導航按鈕區塊，合併上下區塊 */}
 
           {/* Candidate List Display */}
-          {candidateList && candidateList.length > 0 && (
-            <div className="mt-4 px-4">
-              <div className="bg-black bg-opacity-20 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-bold text-lg">
-                    {translations.candidates || '候選名單'} ({candidateList.length}/9)
-                  </h3>
-                  {candidateList.length > 0 && (
-                    <button
-                      onClick={onClearList}
-                      className="text-xs px-3 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
-                      disabled={isSpinning || spinningState.isActive}
-                    >
-                      {translations.clearList || '清空'}
-                    </button>
-                  )}
+          {/* Restaurant List */}
+          {candidateList.length > 0 && (
+            <div className="w-full">
+              <div className="flex items-center justify-between px-4 slot-machine-buttons">
+                <div className="text-sm text-gray-300">
+                  {translations.candidates} ({candidateList.length}/9)
                 </div>
-                
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {candidateList.map((candidate, index) => (
+                <button
+                  onClick={onClearList}
+                  className="text-sm text-gray-300 hover:text-gray-100 transition-colors"
+                >
+                  {translations.clearList}
+                </button>
+              </div>
+              <div className="w-full divide-y divide-white/10"> {/* 添加了 2px 細白線分隔，移除了 space-y-1（垂直間距）*/}
+                {candidateList.map((restaurant, index) => {
+                  const priceLevel = restaurant.priceLevel || restaurant.price_level || 2;
+
+                  return (
                     <div
-                      key={candidate.place_id || candidate.id || `candidate-${index}`}
-                      className="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-3"
-                      style={{
-                        transform: swipeStates[index]?.transform || 'translateX(0)',
-                        transition: swipeStates[index]?.transition || 'none',
-                        opacity: swipeStates[index]?.opacity || 1
-                      }}
-                      {...(touchHandlers ? {
-                        onTouchStart: (e) => touchHandlers.handleTouchStart(e, index),
-                        onTouchMove: (e) => touchHandlers.handleTouchMove(e, index),
-                        onTouchEnd: (e) => touchHandlers.handleTouchEnd(e, index)
-                      } : {})}
+                      key={index}
+                      className="relative overflow-hidden h-24"
+                      onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
+                      onTouchMove={(e) => touchHandlers.handleTouchMove(e, index)}
+                      onTouchEnd={(e) => touchHandlers.handleTouchEnd(e, index)}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-white font-medium truncate">
-                          {candidate.name_zh || candidate.name}
-                        </div>
-                        <div className="text-gray-300 text-sm flex items-center gap-2">
-                          {candidate.rating && (
-                            <span className="flex items-center gap-1">
-                              <span>{renderStars(candidate.rating)}</span>
-                              <span>{candidate.rating}</span>
-                            </span>
-                          )}
-                          {candidate.distance && (
-                            <span>📍 {candidate.distance} km</span>
-                          )}
-                          {candidate.priceLevel && (
-                            <span className="bg-[var(--accent-color)] text-black px-2 py-0.5 rounded text-xs">
-                              {priceLabels[language]?.[candidate.priceLevel] || priceLabels.en[candidate.priceLevel]}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => onRemoveCandidate(index)}
-                        className="ml-3 text-red-400 hover:text-red-300 transition-colors p-1"
-                        disabled={isSpinning || spinningState.isActive}
-                        title={translations.removeCandidate || '移除候選'}
+                      {/* 左滑時顯示的刪除背景 */}
+                      <div
+                        className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6 z-0"
+                        style={{
+                          opacity: swipeStates[index]?.offsetX ? Math.min(Math.abs(swipeStates[index].offsetX) / 50, 1) : 0,
+                          transition: swipeStates[index]?.isSwiping ? 'none' : 'opacity 0.3s ease-out'
+                        }}
                       >
-                        ❌
-                      </button>
+                        <div className="text-white text-xl font-bold">刪除</div>
+                      </div>
+
+                      {/* 原本的餐廳卡片 */}
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24 z-10"
+                        style={{
+                          backgroundImage: restaurant.image ?
+                            `linear-gradient(rgba(0,0,0,var(--image-overlay-opacity)), rgba(0,0,0,var(--image-overlay-opacity))), url(${restaurant.image})` :
+                            'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          transform: `translateX(${swipeStates[index]?.offsetX || 0}px)`,
+                          transition: swipeStates[index]?.isSwiping ? 'none' : 'transform 0.3s ease-out'
+                        }}
+                      >
+                        {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
+                        <div
+                          className="absolute left-0 top-0 h-full flex flex-col justify-center p-4 cursor-pointer hover:bg-opacity-75 transition-all duration-200"
+                          style={{
+                            width: '38.2%',
+                            background: 'linear-gradient(to right, rgba(255,255,255,0.25), rgba(255,255,255,0.1), transparent)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)', // Safari support
+                            borderRight: '1px solid rgba(255,255,255,0.1)'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(getDirectionsUrl(restaurant), '_blank');
+                          }}
+                          title="點擊導航到此餐廳"
+                        >
+                          <div className="text-left pointer-events-none">
+                            <div className="font-semibold text-white text-base mb-1 leading-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                              {index + 1}. {restaurant.name}
+                            </div>
+                            {restaurant.distance && (
+                              <div className="text-xs text-white flex items-center gap-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                <div className="icon-map text-xs"></div>
+                                <span>{restaurant.distance} km</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Price Label - Bottom Right */}
+                        <div className="absolute bottom-3 right-3 bg-[var(--accent-color)] text-black px-2 py-1 rounded-full text-xs font-semibold pointer-events-none">
+                          {priceLabels[language]?.[priceLevel] || priceLabels.en[priceLevel]}
+                        </div>
+                      </a>
                     </div>
-                  ))}
-                </div>
-                
-                {/* Swipe hint for mobile */}
-                <div className="mt-2 text-center text-gray-400 text-xs">
-                  {translations.swipeToRemove || '左滑可移除候選餐廳'}
-                </div>
+                  );
+                })}
               </div>
             </div>
           )}
