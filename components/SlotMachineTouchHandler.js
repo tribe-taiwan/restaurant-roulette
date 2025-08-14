@@ -34,6 +34,8 @@ const createTouchHandlers = (params) => {
     previousSlide
   } = params;
 
+
+
   // 候選列表左滑刪除 - 觸控開始
   const handleTouchStart = (e, index) => {
     const touch = e.touches[0];
@@ -126,29 +128,35 @@ const createTouchHandlers = (params) => {
 
   // 圖片觸控滑動 - 觸控結束 (整合 Keen Slider 導航控制)
   const handleImageTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      // 如果沒有滑動，可能是點擊或雙擊，不執行滑動邏輯
+      return;
+    }
 
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50; // 左滑距離超過50px（下一張）
     const isRightSwipe = distance < -50; // 右滑距離超過50px（上一張）
 
-    if (isLeftSwipe && !isSpinning) {
-      // 左滑：使用 Keen Slider 的 nextSlide 函數
-      if (nextSlide && typeof nextSlide === 'function') {
-        nextSlide();
-        console.log('👆 觸控左滑 - 下一張');
-      } else {
-        // 回退到原有邏輯
-        onSpin(false);
-      }
-    } else if (isRightSwipe && !isSpinning) {
-      // 右滑：使用 Keen Slider 的 previousSlide 函數
-      if (previousSlide && typeof previousSlide === 'function') {
-        previousSlide();
-        console.log('👆 觸控右滑 - 上一張');
-      } else if (onPreviousRestaurant) {
-        // 回退到原有邏輯
-        onPreviousRestaurant();
+    // 只有在明確的滑動手勢時才執行導航，避免與雙擊衝突
+    if (Math.abs(distance) > 50 && !isSpinning) {
+      if (isLeftSwipe) {
+        // 左滑：使用 Keen Slider 的 nextSlide 函數
+        if (nextSlide && typeof nextSlide === 'function') {
+          nextSlide();
+          console.log('👆 觸控左滑 - 下一張');
+        } else {
+          // 回退到原有邏輯
+          onSpin(false);
+        }
+      } else if (isRightSwipe) {
+        // 右滑：使用 Keen Slider 的 previousSlide 函數
+        if (previousSlide && typeof previousSlide === 'function') {
+          previousSlide();
+          console.log('👆 觸控右滑 - 上一張');
+        } else if (onPreviousRestaurant) {
+          // 回退到原有邏輯
+          onPreviousRestaurant();
+        }
       }
     }
   };

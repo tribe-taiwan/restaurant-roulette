@@ -154,9 +154,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       console.log('🔧 初始化 Keen Slider...');
 
       // Initialize slider with basic configuration (loop: false, slides: {perView: 1})
+      // Disable built-in touch/drag to prevent conflicts with custom touch handlers
       const slider = new window.KeenSlider(sliderRef.current, {
         initial: 0,
         loop: false,
+        drag: false, // Disable built-in drag to prevent conflicts
         slides: {
           perView: 1,
           spacing: 0
@@ -164,7 +166,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         slideChanged(s) {
           const newIndex = s.track.details.rel;
           setCurrentSlideIndex(newIndex);
-          
+
           // Log current restaurant info for debugging
           if (sliderRestaurants[newIndex]) {
             const restaurant = sliderRestaurants[newIndex];
@@ -619,12 +621,17 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             </h2>
           </div>
 
-          {/* Keen Slider Container - Basic Architecture */}
+          {/* Keen Slider Container - Basic Architecture with Touch Integration */}
           <div
             ref={sliderRef}
             className="keen-slider group rounded-t-lg h-64 overflow-hidden relative cursor-pointer select-none"
             onClick={() => finalRestaurant && !(isSpinning || spinningState.isActive) && onImageClick && onImageClick()}
             title={finalRestaurant && !(isSpinning || spinningState.isActive) ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
+            {...(touchHandlers ? {
+              onTouchStart: touchHandlers.handleImageTouchStart,
+              onTouchMove: touchHandlers.handleImageTouchMove,
+              onTouchEnd: touchHandlers.handleImageTouchEnd
+            } : {})}
           >
             {/* Keen Slider Slides - Dynamic Content Structure */}
             {sliderRestaurants.map((restaurant, index) => (
