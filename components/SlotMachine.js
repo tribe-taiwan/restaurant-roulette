@@ -1,5 +1,16 @@
 function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onRemoveCandidate, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
   try {
+    // 🎯 整合智能預載入模組 - 恢復舊版本的9個方向預載入功能
+    const [preloadedImages, setPreloadedImages] = React.useState(new Map());
+    const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState(0);
+
+    // 🎯 使用keen-slider處理所有滑動邏輯 - 避免圖片閃爍問題
+
+    // 創建智能預載入管理器
+    const advancedPreloader = React.useMemo(() => {
+      return window.createAdvancedPreloader({ selectedMealTime, userLocation });
+    }, [selectedMealTime, userLocation]);
+
     // 追蹤按鈕點擊狀態
     const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
 
@@ -178,6 +189,23 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     };
 
     // 已經在上面定義過了，移除重複
+
+    // 🎯 智能預載入初始化 - 恢復舊版本功能
+    React.useEffect(() => {
+      const initializeAdvancedPreloading = async () => {
+        console.log('🚀 初始化智能預載入系統...');
+
+        if (finalRestaurant) {
+          await advancedPreloader.initializePreloading(
+            finalRestaurant,
+            restaurantHistory,
+            managePreloadPool
+          );
+        }
+      };
+
+      initializeAdvancedPreloading();
+    }, []); // 只在組件載入時執行一次
 
     // Keen Slider initialization - adopting test file logic with dynamic content support
     React.useEffect(() => {
@@ -371,22 +399,30 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [finalRestaurant, ensureImagePreloaded]);
 
-    // Preload pool state - simplified architecture
-    const [preloadPool, setPreloadPool] = React.useState(new Map());
+    // 🎯 使用智能預載入模組替換簡化版本 - preloadedImages已在上方定義
     const [backgroundRestaurants, setBackgroundRestaurants] = React.useState([]);
 
-    // Simplified preload pool management - adopting test file approach
+    // 為了兼容現有代碼，創建preloadPool的別名和setter
+    const preloadPool = preloadedImages;
+    const setPreloadPool = setPreloadedImages;
+
+    // 🎯 智能預載入池管理 - 使用舊版本的9個方向預載入邏輯
     const managePreloadPool = React.useCallback(async (currentRestaurant) => {
       if (!currentRestaurant || !selectedMealTime) return;
 
+      // 調用智能預載入模組
+      await advancedPreloader.managePreloadPool(
+        currentRestaurant,
+        restaurantHistory,
+        setPreloadedImages,
+        setAvailableRestaurantsCount
+      );
+
+      // 保持背景餐廳邏輯以兼容現有代碼
       try {
-        // Get available restaurants from cache (simplified trigger logic)
-        const cachedRestaurants = window.getAvailableRestaurantsFromCache ? 
+        const cachedRestaurants = window.getAvailableRestaurantsFromCache ?
           await window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
 
-        console.log('🔄 管理預載入池，快取餐廳數量:', cachedRestaurants.length);
-
-        // Filter out already shown restaurants
         const history = window.getRestaurantHistory ? window.getRestaurantHistory() : [];
         const historyArray = Array.isArray(history) ? history : [];
         const availableRestaurants = cachedRestaurants.filter(cached => {
@@ -394,64 +430,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                  cached.place_id !== currentRestaurant.place_id;
         });
 
-        console.log('🍽️ 可用餐廳數量:', availableRestaurants.length);
-
-        // Update background restaurants for slider content
-        setBackgroundRestaurants(availableRestaurants.slice(0, 10)); // Keep first 10 for performance
-
-        // Simplified preload logic - preload next 5 restaurant images
-        const restaurantsToPreload = availableRestaurants.slice(0, 5);
-        
-        setPreloadPool(prevPool => {
-          const newPool = new Map(prevPool);
-          
-          restaurantsToPreload.forEach((restaurant, index) => {
-            if (restaurant.image && !newPool.has(restaurant.image)) {
-              // Create preload entry
-              newPool.set(restaurant.image, {
-                restaurant: restaurant,
-                isLoaded: false,
-                imageObject: null
-              });
-
-              // Preload image asynchronously
-              const img = new Image();
-              img.onload = () => {
-                setPreloadPool(current => {
-                  const updated = new Map(current);
-                  if (updated.has(restaurant.image)) {
-                    updated.set(restaurant.image, {
-                      ...updated.get(restaurant.image),
-                      isLoaded: true,
-                      imageObject: img
-                    });
-                  }
-                  return updated;
-                });
-                console.log('🖼️ 預載入完成:', restaurant.name_zh || restaurant.name);
-              };
-
-              img.onerror = () => {
-                console.warn('⚠️ 預載入失敗:', restaurant.image);
-                setPreloadPool(current => {
-                  const updated = new Map(current);
-                  if (updated.has(restaurant.image)) {
-                    updated.set(restaurant.image, {
-                      ...updated.get(restaurant.image),
-                      isLoaded: true,
-                      imageObject: null
-                    });
-                  }
-                  return updated;
-                });
-              };
-
-              img.src = restaurant.image;
-            }
-          });
-
-          return newPool;
-        });
+        setBackgroundRestaurants(availableRestaurants.slice(0, 10));
+        console.log('🔄 智能預載入池管理完成，背景餐廳數量:', availableRestaurants.length);
 
         // Background refill trigger - simplified logic
         const BACKGROUND_REFILL_THRESHOLD = 5;
@@ -479,7 +459,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       } catch (error) {
         console.warn('⚠️ 預載入池管理失敗:', error);
       }
-    }, [selectedMealTime, userLocation]);
+    }, [selectedMealTime, userLocation, advancedPreloader, restaurantHistory]);
+
+    // 🎯 keen-slider處理所有滑動邏輯，無需額外的滑動轉場函數
 
     // Update slider content with preloaded restaurants - ensure preloaded images display correctly
     React.useEffect(() => {
@@ -498,7 +480,31 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [finalRestaurant, backgroundRestaurants, preloadPool, updateSliderContent]);
 
-    // Trigger preload pool management when restaurant changes
+    // 🎯 監聽立即餐廳變更事件 - 恢復舊版本功能
+    React.useEffect(() => {
+      const handleRestaurantChanged = async (event) => {
+        const { restaurant, history } = event.detail;
+        console.log('🔄 立即響應餐廳變更:', restaurant?.name_zh || restaurant?.name);
+
+        // 立即管理預載入池 - 異步處理
+        if (restaurant) {
+          await advancedPreloader.managePreloadPool(
+            restaurant,
+            history || restaurantHistory,
+            setPreloadedImages,
+            setAvailableRestaurantsCount
+          );
+        }
+      };
+
+      window.addEventListener('restaurantChanged', handleRestaurantChanged);
+
+      return () => {
+        window.removeEventListener('restaurantChanged', handleRestaurantChanged);
+      };
+    }, [advancedPreloader, restaurantHistory]);
+
+    // Trigger preload pool management when restaurant changes (備用)
     React.useEffect(() => {
       if (finalRestaurant) {
         managePreloadPool(finalRestaurant);
@@ -636,8 +642,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     React.useEffect(() => {
       // Make functions available to parent components
       if (typeof onTriggerSlideTransition === 'function') {
-        // Register the slide transition function
-        onTriggerSlideTransition(slideTransitionFunction);
+        // 🎯 keen-slider處理所有滑動，不需要額外的滑動轉場函數
+        onTriggerSlideTransition(null);
 
         // Also expose utility functions as before (for backward compatibility)
         if (window.slotMachineUtils) {
@@ -720,6 +726,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               onTouchEnd: touchHandlers.handleImageTouchEnd
             } : {})}
           >
+            {/* 🎯 keen-slider處理所有滑動邏輯，無需額外的滑動轉場UI */}
             {/* Keen Slider Slides - Dynamic Content Structure */}
             {sliderRestaurants.map((restaurant, index) => (
               <div key={restaurant.id || `slide-${index}`} className="keen-slider__slide">
