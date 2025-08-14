@@ -1005,7 +1005,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   return (
                     <div
                       key={index}
-                      className="relative overflow-hidden transition-all duration-250 ease-out"
+                      className="relative overflow-hidden"
                       data-swipe-index={index}
                       onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
                       onTouchEnd={(e) => touchHandlers.handleTouchEnd(e, index)}
