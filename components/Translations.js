@@ -95,7 +95,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "Open Now",
       anyTime: "Any Time",
       // 距離控制相關
-      searchRadius: "Search Radius"
+      searchRadius: "Search Radius",
+      // 候選清單相關
+      swipeToRemove: "Swipe left to remove candidate",
+      // 分享按鈕相關
+      copyLink: "Copy Link",
+      navigate: "Navigate"
     },
     zh: {
       title: themeTranslations.zh,
@@ -165,7 +170,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "現在營業中",
       anyTime: "不限時間",
       // 距離控制相關
-      searchRadius: "搜索範圍"
+      searchRadius: "搜索範圍",
+      // 候選清單相關
+      swipeToRemove: "左滑可移除候選餐廳",
+      // 分享按鈕相關
+      copyLink: "複製連結",
+      navigate: "導航"
     },
     ja: {
       title: themeTranslations.ja,
@@ -227,7 +237,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "現在営業中",
       anyTime: "いつでも",
       // 距離控制相關
-      searchRadius: "検索範囲"
+      searchRadius: "検索範囲",
+      // 候選清單相關
+      swipeToRemove: "左スワイプで候補を削除",
+      // 分享按鈕相關
+      copyLink: "リンクコピー",
+      navigate: "ナビ"
     },
     ko: {
       title: themeTranslations.ko,
@@ -289,7 +304,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "지금 영업 중",
       anyTime: "언제든",
       // 距離控制相關
-      searchRadius: "검색 범위"
+      searchRadius: "검색 범위",
+      // 候選清單相關
+      swipeToRemove: "왼쪽으로 스와이프하여 후보 제거",
+      // 分享按鈕相關
+      copyLink: "링크 복사",
+      navigate: "내비게이션"
     },
     vi: {
       title: themeTranslations.vi,
@@ -351,7 +371,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "Hiện đang mở cửa",
       anyTime: "Bất kì lúc nào",
       // 距離控制相關
-      searchRadius: "Bán kính tìm kiếm"
+      searchRadius: "Bán kính tìm kiếm",
+      // 候選清單相關
+      swipeToRemove: "Vuốt trái để xóa ứng viên",
+      // 分享按鈕相關
+      copyLink: "Sao chép liên kết",
+      navigate: "Điều hướng"
     },
     ms: {
       title: themeTranslations.ms,
@@ -413,7 +438,12 @@ function createTranslations(brandSubtitle) {
       openNowFilter: "Sedang Buka Sekarang",
       anyTime: "Bila-bila Masa",
       // 距離控制相關
-      searchRadius: "Radius Carian"
+      searchRadius: "Radius Carian",
+      // 候選清單相關
+      swipeToRemove: "Leret ke kiri untuk buang calon",
+      // 分享按鈕相關
+      copyLink: "Salin Pautan",
+      navigate: "Navigasi"
     }
   };
 }

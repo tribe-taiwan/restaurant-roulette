@@ -162,6 +162,7 @@ window.getAddressFromCoordinates = async function(lat, lng, language = 'zh') {
 // 全局變數儲存 Google Maps 服務
 let placesService = null;
 let geocoder = null;
+let isGoogleMapsLoading = false; // 防止重複載入
 
 /**
  * 初始化 Google Maps JavaScript API
@@ -189,7 +190,25 @@ function initializeGoogleMaps() {
       resolve();
       return;
     }
-    
+
+    // 檢查是否正在載入中，避免重複載入
+    if (isGoogleMapsLoading) {
+      // 等待當前載入完成
+      const checkInterval = setInterval(() => {
+        if (!isGoogleMapsLoading) {
+          clearInterval(checkInterval);
+          if (window.google && window.google.maps) {
+            resolve();
+          } else {
+            reject(new Error('Google Maps API 載入失敗'));
+          }
+        }
+      }, 100);
+      return;
+    }
+
+    isGoogleMapsLoading = true;
+
     // 動態載入 Google Maps JavaScript API
     // RR_API_008: 開始載入Google Maps API
     window.RRLog?.info('RR_API_CALL', '載入 Google Maps JavaScript API');
@@ -201,7 +220,12 @@ function initializeGoogleMaps() {
     
     // 設定全局回調函數將在後面定義
     
+    // 腳本載入錯誤處理
     script.onerror = (error) => {
+      isGoogleMapsLoading = false; // 重置載入標誌
+      // RR_API_009: Google Maps API載入失敗
+      window.RRLog?.error('RR_API_ERROR', 'Google Maps API 腳本載入失敗');
+
       const errorDetails = {
         errorType: 'GoogleMapsLoadError',
         errorMessage: 'Google Maps JavaScript API 載入失敗',
@@ -209,19 +233,13 @@ function initializeGoogleMaps() {
         scriptSrc: script.src,
         apiKey: `${GOOGLE_PLACES_CONFIG.API_KEY.substring(0, 8)}xxxxxxxxxxxxxxxxxxxxxxxx`
       };
-      
-      reject(new Error(`Google Maps API 載入失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
-    };
 
-    // 腳本載入錯誤處理
-    script.onerror = () => {
-      // RR_API_009: Google Maps API載入失敗
-      window.RRLog?.error('RR_API_ERROR', 'Google Maps API 腳本載入失敗');
-      reject(new Error('Google Maps API 腳本載入失敗'));
+      reject(new Error(`Google Maps API 載入失敗。技術資訊: ${JSON.stringify(errorDetails)}`));
     };
 
     // 設定超時處理
     const timeout = setTimeout(() => {
+      isGoogleMapsLoading = false; // 重置載入標誌
       // RR_API_010: Google Maps API載入超時
       window.RRLog?.error('RR_API_ERROR', 'Google Maps API 載入超時');
       reject(new Error('Google Maps API 載入超時'));
@@ -234,6 +252,7 @@ function initializeGoogleMaps() {
     // 重新定義回調函數，確保只執行一次
     window.onGoogleMapsLoaded = () => {
       clearTimeout(timeout);
+      isGoogleMapsLoading = false; // 重置載入標誌
       try {
         // RR_API_011: Google Maps API載入完成
         window.RRLog?.info('RR_API_SUCCESS', 'Google Maps API 載入完成');
@@ -265,6 +284,7 @@ function initializeGoogleMaps() {
         window.RRLog?.info('RR_API_SUCCESS', 'Google Maps 服務初始化成功');
         originalResolve();
       } catch (error) {
+        isGoogleMapsLoading = false; // 重置載入標誌
         // RR_API_013: Google Maps API初始化失敗
         window.RRLog?.error('RR_API_ERROR', 'Google Maps API 初始化失敗', { error: error.message });
         originalReject(error);

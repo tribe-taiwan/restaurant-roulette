@@ -76,15 +76,22 @@ function useSlideTransitionManager(currentRestaurant, setCurrentRestaurant) {
       setCurrentRestaurant(newRestaurant);
       return;
     }
-    
+
+    // 檢查滑動轉場函數是否可用
+    if (typeof slideTransitionFn !== 'function') {
+      console.warn('⚠️ 滑動轉場函數未註冊，直接更新餐廳');
+      setCurrentRestaurant(newRestaurant);
+      return;
+    }
+
     // 開始滑動動畫
     coordinator.startSlideAnimation();
-    
+
     // 設置動畫完成後的狀態更新
     coordinator.setPendingUpdate(() => {
       setCurrentRestaurant(newRestaurant);
     });
-    
+
     // 觸發滑動轉場
     slideTransitionFn(currentRestaurant, newRestaurant, direction, () => {
       coordinator.endSlideAnimation();

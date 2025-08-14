@@ -61,6 +61,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       });
     }, [swipeStates, onRemoveCandidate, touchStart, touchEnd, isSpinning, spinningState.isActive, onSpin, onPreviousRestaurant, nextSlide, previousSlide]);
 
+    // 使用共用的導航URL生成函數
+    const getDirectionsUrl = React.useCallback((restaurant) => {
+      return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
+    }, [userLocation, userAddress, language]);
+
+    // 檢查當前餐廳是否已在候選清單中
+    const isRestaurantInCandidates = React.useMemo(() => {
+      return finalRestaurant && candidateList.some(candidate =>
+        (candidate.place_id && finalRestaurant.place_id && candidate.place_id === finalRestaurant.place_id) ||
+        (candidate.name && finalRestaurant.name && candidate.name === finalRestaurant.name)
+      );
+    }, [finalRestaurant, candidateList]);
+
     // 創建按鈕邏輯處理器 - updated for simple spinning
     const buttonLogic = React.useMemo(() => {
       return window.createButtonLogic({
@@ -84,9 +97,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const shareButtonLogic = React.useMemo(() => {
       return window.createShareButtonLogic({
         setShareButtonState,
-        getDirectionsUrl
+        getDirectionsUrl,
+        translations
       });
-    }, [setShareButtonState]);
+    }, [setShareButtonState, getDirectionsUrl, translations]);
 
     // 創建鍵盤事件處理器
     const keyboardHandler = React.useMemo(() => {
@@ -107,11 +121,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return keyboardHandler.setupKeyboardListeners();
     }, [keyboardHandler]);
 
-    // 檢查當前餐廳是否已在候選清單中
-    const isRestaurantInCandidates = finalRestaurant && candidateList.some(candidate =>
-      (candidate.place_id && finalRestaurant.place_id && candidate.place_id === finalRestaurant.place_id) ||
-      (candidate.name && finalRestaurant.name && candidate.name === finalRestaurant.name)
-    );
+    // 已經在上面定義過了，移除重複
 
     // 當候選清單被清空時重置按鈕狀態
     React.useEffect(() => {
@@ -142,10 +152,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       );
     };
 
-    // 使用共用的導航URL生成函數
-    const getDirectionsUrl = (restaurant) => {
-      return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
-    };
+    // 已經在上面定義過了，移除重複
 
     // Keen Slider initialization - adopting test file logic with dynamic content support
     React.useEffect(() => {
@@ -356,8 +363,9 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         // Filter out already shown restaurants
         const history = window.getRestaurantHistory ? window.getRestaurantHistory() : [];
+        const historyArray = Array.isArray(history) ? history : [];
         const availableRestaurants = cachedRestaurants.filter(cached => {
-          return !history.some(shown => shown.place_id === cached.place_id) &&
+          return !historyArray.some(shown => shown.place_id === cached.place_id) &&
                  cached.place_id !== currentRestaurant.place_id;
         });
 
@@ -570,44 +578,80 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       }
     }, [isSpinning, spinningState.isActive, sliderRestaurants.length, startSimpleSpinning, stopSimpleSpinning]);
 
+    // Create slide transition function for external use
+    const slideTransitionFunction = React.useCallback((currentRestaurant, newRestaurant, direction, onComplete) => {
+      // Simple slide transition using Keen Slider
+      console.log('🎬 執行滑動轉場:', {
+        from: currentRestaurant?.name_zh || currentRestaurant?.name,
+        to: newRestaurant?.name_zh || newRestaurant?.name,
+        direction
+      });
+
+      // Add the new restaurant to slider if not already present
+      if (newRestaurant && !sliderRestaurants.find(r => r.place_id === newRestaurant.place_id)) {
+        addRestaurantToSlider(newRestaurant);
+      }
+
+      // Perform slide transition
+      if (direction === 'left') {
+        nextSlide();
+      } else {
+        previousSlide();
+      }
+
+      // Complete the transition after animation
+      setTimeout(() => {
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      }, 300); // Match Keen Slider animation duration
+    }, [nextSlide, previousSlide, addRestaurantToSlider, sliderRestaurants]);
+
     // Expose utility functions for external use - including preload pool functions
     React.useEffect(() => {
       // Make functions available to parent components
       if (typeof onTriggerSlideTransition === 'function') {
-        onTriggerSlideTransition({
-          updateSliderContent,
-          addRestaurantToSlider,
-          getCurrentRestaurant,
-          nextSlide,
-          previousSlide,
-          startSimpleSpinning,
-          stopSimpleSpinning,
-          currentSlideIndex,
-          totalSlides: sliderRestaurants.length,
-          isSpinningActive: spinningState.isActive,
-          // Preload pool functions
-          managePreloadPool,
-          ensureImagePreloaded,
-          preloadPoolSize: preloadPool.size,
-          backgroundRestaurantsCount: backgroundRestaurants.length
-        });
+        // Register the slide transition function
+        onTriggerSlideTransition(slideTransitionFunction);
+
+        // Also expose utility functions as before (for backward compatibility)
+        if (window.slotMachineUtils) {
+          window.slotMachineUtils = {
+            updateSliderContent,
+            addRestaurantToSlider,
+            getCurrentRestaurant,
+            nextSlide,
+            previousSlide,
+            startSimpleSpinning,
+            stopSimpleSpinning,
+            currentSlideIndex,
+            totalSlides: sliderRestaurants.length,
+            isSpinningActive: spinningState.isActive,
+            // Preload pool functions
+            managePreloadPool,
+            ensureImagePreloaded,
+            preloadPoolSize: preloadPool.size,
+            backgroundRestaurantsCount: backgroundRestaurants.length
+          };
+        }
       }
     }, [
-      updateSliderContent, 
-      addRestaurantToSlider, 
-      getCurrentRestaurant, 
-      nextSlide, 
-      previousSlide, 
+      slideTransitionFunction,
+      onTriggerSlideTransition,
+      updateSliderContent,
+      addRestaurantToSlider,
+      getCurrentRestaurant,
+      nextSlide,
+      previousSlide,
       startSimpleSpinning,
       stopSimpleSpinning,
-      currentSlideIndex, 
+      currentSlideIndex,
       sliderRestaurants.length,
       spinningState.isActive,
       managePreloadPool,
       ensureImagePreloaded,
       preloadPool.size,
-      backgroundRestaurants.length,
-      onTriggerSlideTransition
+      backgroundRestaurants.length
     ]);
 
     // 老虎機的 HTML 結構
@@ -624,9 +668,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           {/* Keen Slider Container - Basic Architecture with Touch Integration */}
           <div
             ref={sliderRef}
-            className="keen-slider group rounded-t-lg h-64 overflow-hidden relative cursor-pointer select-none"
-            onClick={() => finalRestaurant && !(isSpinning || spinningState.isActive) && onImageClick && onImageClick()}
-            title={finalRestaurant && !(isSpinning || spinningState.isActive) ? "點擊查看Google地圖照片" : "左滑或按←鍵搜尋下一家餐廳"}
+            className="keen-slider group rounded-t-lg h-64 overflow-hidden relative select-none"
             {...(touchHandlers ? {
               onTouchStart: touchHandlers.handleImageTouchStart,
               onTouchMove: touchHandlers.handleImageTouchMove,
@@ -667,8 +709,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       </div>
                     ) : (
                       <>
-                        {/* Restaurant Name - Primary */}
-                        <div className="text-2xl font-bold drop-shadow-lg mb-1">
+                        {/* Restaurant Name - Primary - Clickable for navigation */}
+                        <div 
+                          className="text-2xl font-bold drop-shadow-lg mb-1 cursor-pointer hover:text-yellow-300 transition-colors"
+                          onClick={() => finalRestaurant && !(isSpinning || spinningState.isActive) && onImageClick && onImageClick()}
+                          title="點擊查看Google地圖照片"
+                        >
                           {restaurant.name_zh || restaurant.name}
                         </div>
                         
@@ -679,9 +725,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                           </div>
                         )}
                         
-                        {/* Distance Information */}
+                        {/* Distance Information - Clickable for navigation */}
                         {restaurant.distance && (
-                          <div className="text-sm drop-shadow">
+                          <div 
+                            className="text-sm drop-shadow cursor-pointer hover:text-yellow-300 transition-colors"
+                            onClick={() => finalRestaurant && !(isSpinning || spinningState.isActive) && onImageClick && onImageClick()}
+                            title="點擊查看Google地圖照片"
+                          >
                             <div className="flex items-center justify-center gap-1">
                               <div className="icon-map text-sm"></div>
                               <span>{restaurant.distance} km</span>
@@ -728,6 +778,36 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         )}
                       </div>
                     </div>
+                  )}
+
+                  {/* Navigation Arrow Buttons - Left and Right */}
+                  {!(isSpinning || spinningState.isActive) && (
+                    <>
+                      {/* Left Arrow - Previous Restaurant */}
+                      <button
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-all duration-200 z-20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPreviousRestaurant && onPreviousRestaurant();
+                        }}
+                        title="回到上一家餐廳"
+                      >
+                        <div className="icon-chevron-left text-white text-xl"></div>
+                      </button>
+
+                      {/* Right Arrow - Next Restaurant */}
+                      <button
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-all duration-200 z-20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('🔜 右箭頭被點擊，使用輪盤按鈕邏輯');
+                          buttonLogic.handleSpinClick();
+                        }}
+                        title="搜尋下一家餐廳"
+                      >
+                        <div className="icon-chevron-right text-white text-xl"></div>
+                      </button>
+                    </>
                   )}
 
                   {/* Preload Status Indicator (for debugging) */}
@@ -855,7 +935,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold">🗺️</span>
                 <span className="text-xs font-medium">
-                  {translations.navigate}
+                  {translations.navigate || '導航'}
                 </span>
               </div>
             </button>
@@ -867,7 +947,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               <div className="bg-black bg-opacity-20 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-white font-bold text-lg">
-                    {translations.candidateList || '候選名單'} ({candidateList.length}/9)
+                    {translations.candidates || '候選名單'} ({candidateList.length}/9)
                   </h3>
                   {candidateList.length > 0 && (
                     <button
@@ -875,7 +955,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       className="text-xs px-3 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
                       disabled={isSpinning || spinningState.isActive}
                     >
-                      {translations.clearAll || '清空'}
+                      {translations.clearList || '清空'}
                     </button>
                   )}
                 </div>

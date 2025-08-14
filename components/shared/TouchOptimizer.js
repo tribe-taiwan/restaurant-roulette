@@ -370,7 +370,7 @@ window.optimizeButtonTouch = function(button, options) {
     return window.touchOptimizer.optimizeButton(button, options);
 };
 
-// 導出類
-if (typeof module !== 'undefined' && module.exports) {
+// 導出類（僅在 Node.js 環境中）
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = TouchOptimizer;
 }

@@ -94,9 +94,10 @@ window.DeprecatedApiChecker = {
         // 只有不被排除的行才添加到位置列表
         if (!shouldExclude) {
           locations.push({
-          line: index + 1,
-          content: line.trim()
-        });
+            line: index + 1,
+            content: line.trim()
+          });
+        }
       }
     });
     

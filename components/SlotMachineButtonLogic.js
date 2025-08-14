@@ -160,10 +160,11 @@ const createButtonLogic = (params) => {
  * @param {Object} params - 參數對象
  * @param {Function} params.setShareButtonState - 設置分享按鈕狀態函數
  * @param {Function} params.getDirectionsUrl - 獲取導航URL函數
+ * @param {Object} params.translations - 翻譯對象
  * @returns {Object} 分享按鈕邏輯處理器對象
  */
 const createShareButtonLogic = (params) => {
-  const { setShareButtonState, getDirectionsUrl } = params;
+  const { setShareButtonState, getDirectionsUrl, translations } = params;
 
   // 複製 Google Maps 連結到剪貼簿
   const copyGoogleMapsLink = async (restaurant) => {
@@ -242,7 +243,7 @@ const createShareButtonLogic = (params) => {
 
   // 獲取分享按鈕文字
   const getShareButtonText = () => {
-    return '複製連結';
+    return translations.copyLink || '複製連結';
   };
 
   return {
