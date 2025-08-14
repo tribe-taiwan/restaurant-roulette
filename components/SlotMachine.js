@@ -1005,10 +1005,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   return (
                     <div
                       key={index}
-                      className="relative overflow-hidden h-24"
+                      className="relative overflow-hidden transition-all duration-250 ease-out"
                       data-swipe-index={index}
                       onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
                       onTouchEnd={(e) => touchHandlers.handleTouchEnd(e, index)}
+                      style={{
+                        height: swipeStates[index]?.isDeleting ? '0px' : '96px', // h-24 = 96px
+                        transition: swipeStates[index]?.isDeleting ? 'height 0.25s ease-out' : 'none'
+                      }}
                     >
                       {/* 左滑時顯示的刪除背景 */}
                       <div
@@ -1033,13 +1037,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                             'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
-                          transform: swipeStates[index]?.isDeleting 
-                            ? `translateX(${swipeStates[index].offsetX}px) translateY(-100%)` 
-                            : `translateX(${swipeStates[index]?.offsetX || 0}px)`,
-                          transition: swipeStates[index]?.isSwiping 
-                            ? 'none' 
-                            : swipeStates[index]?.isDeleting 
-                              ? 'transform 0.25s ease-out' 
+                          transform: `translateX(${swipeStates[index]?.offsetX || 0}px)`,
+                          transition: swipeStates[index]?.isSwiping
+                            ? 'none'
+                            : swipeStates[index]?.isDeleting
+                              ? 'transform 0.25s ease-out, opacity 0.25s ease-out'
                               : 'transform 0.3s ease-out',
                           opacity: swipeStates[index]?.isDeleting ? 0 : 1
                         }}
