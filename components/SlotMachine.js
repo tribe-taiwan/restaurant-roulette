@@ -1004,7 +1004,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
                   return (
                     <div
-                      key={index}
+                      key={restaurant.place_id || restaurant.name || `restaurant-${index}`}
                       className="relative overflow-hidden"
                       data-swipe-index={index}
                       onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
