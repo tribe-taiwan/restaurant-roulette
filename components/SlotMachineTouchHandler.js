@@ -120,10 +120,20 @@ const createTouchHandlers = (params) => {
         if (onRemoveCandidate) {
           onRemoveCandidate(index);
         }
-        // 清理狀態
+        // 重新整理 swipeStates，將所有大於被刪除index的狀態向前移動
         setSwipeStates(prev => {
-          const newState = { ...prev };
-          delete newState[index];
+          const newState = {};
+          Object.keys(prev).forEach(key => {
+            const keyIndex = parseInt(key);
+            if (keyIndex < index) {
+              // 保留小於被刪除index的狀態
+              newState[keyIndex] = prev[keyIndex];
+            } else if (keyIndex > index) {
+              // 將大於被刪除index的狀態向前移動一位
+              newState[keyIndex - 1] = prev[keyIndex];
+            }
+            // 跳過等於被刪除index的狀態（即被刪除的元素）
+          });
           return newState;
         });
       }, 250); // 250ms 動畫時間
