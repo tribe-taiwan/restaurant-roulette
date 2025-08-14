@@ -673,7 +673,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       animation: slideDirection === 'left'
                         ? `slideOutToLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
                         : `slideOutToRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
-                      zIndex: 1
+                      zIndex: 1,
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden'
                     }}
                   >
                     {/* 當前餐廳的UI元素 - 原餐廳的資料跟著原圖片一起滑出 */}
@@ -750,7 +753,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       animation: slideDirection === 'left'
                         ? `slideInFromRight ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`
                         : `slideInFromLeft ${animationConfig?.duration || 300}ms ${animationConfig?.timingFunction || 'ease-out'} forwards`,
-                      zIndex: 2
+                      zIndex: 2,
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden'
                     }}
                   >
                     {/* 新餐廳的UI元素 - 跟著新圖片一起滑入 */}

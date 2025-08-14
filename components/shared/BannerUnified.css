@@ -577,25 +577,49 @@
   overflow: hidden;
 }
 
-/* 滑動動畫關鍵幀 */
+/* 滑動動畫關鍵幀 - 移動端GPU加速優化 */
 @keyframes slideOutToLeft {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
+  from { 
+    transform: translateX(0) translateZ(0); 
+    will-change: transform;
+  }
+  to { 
+    transform: translateX(-100%) translateZ(0); 
+    will-change: auto;
+  }
 }
 
 @keyframes slideOutToRight {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
+  from { 
+    transform: translateX(0) translateZ(0); 
+    will-change: transform;
+  }
+  to { 
+    transform: translateX(100%) translateZ(0); 
+    will-change: auto;
+  }
 }
 
 @keyframes slideInFromRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { 
+    transform: translateX(100%) translateZ(0); 
+    will-change: transform;
+  }
+  to { 
+    transform: translateX(0) translateZ(0); 
+    will-change: auto;
+  }
 }
 
 @keyframes slideInFromLeft {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from { 
+    transform: translateX(-100%) translateZ(0); 
+    will-change: transform;
+  }
+  to { 
+    transform: translateX(0) translateZ(0); 
+    will-change: auto;
+  }
 }
 
 /* ===== 響應式設計 ===== */
