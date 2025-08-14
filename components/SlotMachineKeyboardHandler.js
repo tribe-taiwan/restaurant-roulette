@@ -30,7 +30,6 @@ const createKeyboardHandler = (params) => {
       // 左箭頭：使用 Keen Slider 的 previousSlide 函數
       if (previousSlide && typeof previousSlide === 'function') {
         previousSlide();
-        console.log('⌨️ 鍵盤左箭頭 - 上一張');
       } else {
         // 回退到原有邏輯
         onSpin(false);
@@ -40,7 +39,6 @@ const createKeyboardHandler = (params) => {
       // 右箭頭：使用 Keen Slider 的 nextSlide 函數
       if (nextSlide && typeof nextSlide === 'function') {
         nextSlide();
-        console.log('⌨️ 鍵盤右箭頭 - 下一張');
       } else {
         // 回退到原有邏輯
         onSpin(false);
@@ -54,7 +52,6 @@ const createKeyboardHandler = (params) => {
       // 空白鍵：轉動（採用測試檔案邏輯）
       e.preventDefault();
       onSpin(false);
-      console.log('⌨️ 鍵盤空白鍵 - 轉動');
     }
   };
 

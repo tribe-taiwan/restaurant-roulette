@@ -187,7 +187,6 @@ const createTouchHandlers = (params) => {
         // 左滑：使用 Keen Slider 的 nextSlide 函數
         if (nextSlide && typeof nextSlide === 'function') {
           nextSlide();
-          console.log('👆 觸控左滑 - 下一張');
         } else {
           // 回退到原有邏輯
           onSpin(false);
@@ -196,7 +195,6 @@ const createTouchHandlers = (params) => {
         // 右滑：使用 Keen Slider 的 previousSlide 函數
         if (previousSlide && typeof previousSlide === 'function') {
           previousSlide();
-          console.log('👆 觸控右滑 - 上一張');
         } else if (onPreviousRestaurant) {
           // 回退到原有邏輯
           onPreviousRestaurant();

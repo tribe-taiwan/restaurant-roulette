@@ -42,14 +42,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     const nextSlide = React.useCallback(() => {
       if (keenSlider && !(isSpinning || spinningState.isActive)) {
         keenSlider.next();
-        console.log('⏭️ Keen Slider 下一張');
       }
     }, [keenSlider, isSpinning, spinningState.isActive]);
 
     const previousSlide = React.useCallback(() => {
       if (keenSlider && !(isSpinning || spinningState.isActive)) {
         keenSlider.prev();
-        console.log('⏮️ Keen Slider 上一張');
       }
     }, [keenSlider, isSpinning, spinningState.isActive]);
 
@@ -193,7 +191,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 🎯 智能預載入初始化 - 恢復舊版本功能
     React.useEffect(() => {
       const initializeAdvancedPreloading = async () => {
-        console.log('🚀 初始化智能預載入系統...');
 
         if (finalRestaurant) {
           await advancedPreloader.initializePreloading(
@@ -254,13 +251,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       if (keenSlider && sliderRestaurants.length > 0) {
         // Update slider to reflect new content
         keenSlider.update();
-        console.log('🔄 Keen Slider 內容已更新, 總數:', sliderRestaurants.length);
         
         // Reset to first slide if current index is out of bounds
         if (currentSlideIndex >= sliderRestaurants.length) {
           keenSlider.moveToIdx(0);
           setCurrentSlideIndex(0);
-          console.log('🔄 重置到第一張 slide');
         }
       }
     }, [keenSlider, sliderRestaurants, currentSlideIndex]);
@@ -300,12 +295,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         .filter(Boolean); // Remove null entries
 
       setSliderRestaurants(slideData);
-      console.log('📊 更新 Keen Slider 餐廳數據:', slideData.length, '家餐廳');
       
       // Log restaurant names for debugging
       if (slideData.length > 0) {
         const names = slideData.map(r => r.name_zh || r.name).join(', ');
-        console.log('🍽️ 餐廳列表:', names);
       }
     }, [convertRestaurantToSlideData]);
 
@@ -324,7 +317,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           
           if (!exists) {
             const updated = [...prev, slideData];
-            console.log('➕ 添加餐廳到 Keen Slider:', slideData.name_zh || slideData.name);
             return updated;
           }
           return prev;
@@ -369,7 +361,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             }
             return updated;
           });
-          console.log('🖼️ 即時預載入完成:', restaurant.name_zh || restaurant.name);
         };
 
         img.onerror = () => {
@@ -431,7 +422,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         });
 
         setBackgroundRestaurants(availableRestaurants.slice(0, 10));
-        console.log('🔄 智能預載入池管理完成，背景餐廳數量:', availableRestaurants.length);
 
         // Background refill trigger - simplified logic
         const BACKGROUND_REFILL_THRESHOLD = 5;
@@ -476,7 +466,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         }));
 
         updateSliderContent(restaurantsWithPreloadStatus);
-        console.log('🔄 更新滑動器內容，總餐廳數:', restaurantsWithPreloadStatus.length);
       }
     }, [finalRestaurant, backgroundRestaurants, preloadPool, updateSliderContent]);
 
@@ -516,7 +505,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // Start simple spinning animation with timer + nextSlide
     const startSimpleSpinning = React.useCallback((targetRestaurant = null) => {
       if (spinningState.isActive || !keenSlider || sliderRestaurants.length === 0) {
-        console.log('⚠️ 無法開始轉動: 已在轉動中或滑動器未準備好');
         return;
       }
 
@@ -537,7 +525,6 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         keenSlider.next();
         currentSpins++;
         
-        console.log(`🎰 轉動進度: ${currentSpins}/${randomSpins}`);
 
         // Check if spinning should stop
         if (currentSpins >= randomSpins) {
@@ -612,11 +599,26 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // Create slide transition function for external use
     const slideTransitionFunction = React.useCallback((currentRestaurant, newRestaurant, direction, onComplete) => {
       // Simple slide transition using Keen Slider
-      console.log('🎬 執行滑動轉場:', {
-        from: currentRestaurant?.name_zh || currentRestaurant?.name,
-        to: newRestaurant?.name_zh || newRestaurant?.name,
-        direction
-      });
+      
+      if (!keenSlider || sliderRestaurants.length === 0) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      // Find target restaurant index
+      const targetIndex = sliderRestaurants.findIndex(r => 
+        r.place_id === newRestaurant?.place_id || 
+        r.name === newRestaurant?.name
+      );
+
+      if (targetIndex >= 0) {
+        keenSlider.moveToIdx(targetIndex);
+        setCurrentSlideIndex(targetIndex);
+      }
+
+      setTimeout(() => {
+        if (onComplete) onComplete();
+      }, 300); // Match Keen Slider animation duration
 
       // Add the new restaurant to slider if not already present
       if (newRestaurant && !sliderRestaurants.find(r => r.place_id === newRestaurant.place_id)) {
