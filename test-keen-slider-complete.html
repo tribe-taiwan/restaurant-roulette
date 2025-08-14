@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完整版 Keen Slider 測試 - Restaurant Roulette</title>
+    
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/keen-slider@6.8.6/keen-slider.min.css">
+    <link rel="stylesheet" href="components/shared/BannerUnified.css">
+    
+    <style>
+        /* 基礎樣式 - 與主應用一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Keen Slider 優化樣式 */
+        .keen-slider {
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        .keen-slider__slide {
+            min-height: 400px;
+            position: relative;
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 統一餐廳組件樣式 */
+        .restaurant-slide {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        /* 餐廳資訊樣式 */
+        .restaurant-name {
+            color: white !important;
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .restaurant-info {
+            color: white !important;
+            font-size: 1.1em;
+            margin: 5px 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .restaurant-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .star-rating {
+            color: #ffd700;
+            font-size: 1.2em;
+            margin-right: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .rating-text {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 按鈕樣式 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: none;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48cae4, #023e8a);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 控制界面 */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: #333;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 狀態指示器 */
+        .status-indicator {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* 候選列表樣式 */
+        .candidate-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .candidate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+
+        .candidate-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .remove-btn {
+            padding: 4px 8px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        /* 無餐廳狀態 */
+        .no-restaurant {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+            text-align: center;
+        }
+
+        .no-restaurant h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .no-restaurant p {
+            font-size: 1.1em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1 style="text-align: center; margin-bottom: 20px; color: #333;">完整版 Keen Slider 測試</h1>
+        
+        <!-- 語言選擇和設定界面 -->
+        <div class="controls">
+            <select id="languageSelect" onchange="changeLanguage()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="zh">繁體中文</option>
+                <option value="en">English</option>
+            </select>
+            
+            <select id="mealTimeSelect" onchange="changeMealTime()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="current">當前營業</option>
+                <option value="breakfast">早餐</option>
+                <option value="lunch">午餐</option>
+                <option value="dinner">晚餐</option>
+            </select>
+        </div>
+
+        <div class="controls">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.9em;">搜尋半徑:</span>
+                <input type="range" id="radiusSlider" min="1" max="10" value="1" onchange="changeRadius()" style="flex: 1;">
+                <span id="radiusDisplay">200m</span>
+            </div>
+        </div>
+        
+        <!-- 控制界面 -->
+        <div class="controls">
+            <button class="control-btn" onclick="previousSlide()">← 上一家</button>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div id="slideInfo" style="font-size: 0.9em; color: #666;">滑動 1 / 5</div>
+                <div id="animationStatus" style="font-size: 0.8em; color: #888;">準備就緒</div>
+            </div>
+            <button class="control-btn" onclick="nextSlide()">下一家 →</button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="startSpinning()">🎰 開始轉動</button>
+            <button class="control-btn" onclick="clearCandidates()">🗑️ 清空候選</button>
+        </div>
+
+        <!-- Keen Slider 容器 -->
+        <div id="keenSlider" class="keen-slider">
+            <!-- 滑動內容將由 JavaScript 動態生成 -->
+        </div>
+
+        <!-- 狀態指示器 -->
+        <div class="status-indicator">
+            <div id="currentRestaurantName">載入中...</div>
+            <div id="isSpinningStatus" style="font-size: 0.9em; margin-top: 5px;">狀態: 準備就緒</div>
+        </div>
+
+        <!-- 候選列表 -->
+        <div class="candidate-list">
+            <h3 style="margin-bottom: 15px; color: #333;">候選名單 (<span id="candidateCount">0</span>/9)</h3>
+            <div id="candidateItems">
+                <div style="text-align: center; color: #666; padding: 20px;">尚無候選餐廳</div>
+            </div>
+        </div>
+
+        <!-- 測試說明 -->
+        <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; font-size: 0.9em; color: #666;">
+            <h4 style="margin-bottom: 10px;">🔧 測試功能指南</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <strong>🎰 滑動控制:</strong><br>
+                    • 按鈕: ← 上一家 / 下一家 →<br>
+                    • 鍵盤: 左右箭頭鍵<br>
+                    • 觸控: 左右滑動手勢
+                </div>
+                <div>
+                    <strong>⚙️ 功能測試:</strong><br>
+                    • 空白鍵: 自動轉動輪盤<br>
+                    • Enter: 加入當前餐廳<br>
+                    • 語言/時段/半徑切換
+                </div>
+            </div>
+            <p style="margin-top: 10px; font-style: italic;">
+                📱 重點測試: <strong>在手機 Chrome 瀏覽器中測試滑動動畫是否還有閃爍問題</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/keen-slider@6.8.6/keen-slider.min.js"></script>
+
+    <script type="text/babel">
+        // 模擬餐廳數據 - 與主應用格式一致
+        const mockRestaurants = [
+            {
+                place_id: 'test_001',
+                name: '阿霞飯店',
+                vicinity: '台南市中西區忠義路二段',
+                rating: 4.5,
+                user_ratings_total: 1250,
+                price_level: 3,
+                opening_hours: { open_now: true },
+                geometry: { location: { lat: 22.991, lng: 120.203 } },
+                business_status: 'OPERATIONAL',
+                bgColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            {
+                place_id: 'test_002', 
+                name: '度小月擔仔麵',
+                vicinity: '台南市中西區中正路',
+                rating: 4.2,
+                user_ratings_total: 890,
+                price_level: 2,
+                opening_hours: { open_now: true },
+                geometry: { location: { lat: 22.992, lng: 120.204 } },
+                business_status: 'OPERATIONAL',
+                bgColor: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+            },
+            {
+                place_id: 'test_003',
+                name: '安平老街小吃',
+                vicinity: '台南市安平區效忠街',
+                rating: 4.0,
+                user_ratings_total: 567,
+                price_level: 1,
+                opening_hours: { open_now: false },
+                geometry: { location: { lat: 22.993, lng: 120.205 } },
+                business_status: 'OPERATIONAL',
+                bgColor: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+            },
+            {
+                place_id: 'test_004',
+                name: '成功大學餐廳',
+                vicinity: '台南市東區大學路一段',
+                rating: 3.8,
+                user_ratings_total: 234,
+                price_level: 1,
+                opening_hours: { open_now: true },
+                geometry: { location: { lat: 22.994, lng: 120.206 } },
+                business_status: 'OPERATIONAL',
+                bgColor: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+            },
+            {
+                place_id: 'test_005',
+                name: '台南夜市美食',
+                vicinity: '台南市中西區海安路二段',
+                rating: 4.3,
+                user_ratings_total: 678,
+                price_level: 2,
+                opening_hours: { open_now: true },
+                geometry: { location: { lat: 22.995, lng: 120.207 } },
+                business_status: 'OPERATIONAL',
+                bgColor: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            }
+        ];
+
+        // 應用狀態 - 模擬主應用的完整狀態
+        let currentSlideIndex = 0;
+        let isSpinning = false;
+        let candidateList = [];
+        let sliderInstance = null;
+        let selectedLanguage = 'zh';
+        let userLocation = { lat: 22.991, lng: 120.203 }; // 模擬台南位置
+        let userAddress = '台南市中西區';
+        let baseUnit = 200;
+        let unitMultiplier = 1;
+        let selectedMealTime = 'current';
+        let restaurantHistory = [];
+
+        // 多語言翻譯對象 - 簡化版
+        const translations = {
+            zh: {
+                addCandidate: '加入候選',
+                candidateAdded: '已加入',
+                candidateAlreadyExists: '加過了',
+                listFull: '名單已滿',
+                spin: '輪盤',
+                clear: '清空',
+                navigation: '導航',
+                open: '營業中',
+                closed: '目前休息',
+                breakfast: '早餐',
+                lunch: '午餐', 
+                dinner: '晚餐',
+                current: '當前營業'
+            },
+            en: {
+                addCandidate: 'Add to List',
+                candidateAdded: 'Added',
+                candidateAlreadyExists: 'Already Added',
+                listFull: 'List Full',
+                spin: 'Spin',
+                clear: 'Clear',
+                navigation: 'Navigate',
+                open: 'Open',
+                closed: 'Closed',
+                breakfast: 'Breakfast',
+                lunch: 'Lunch',
+                dinner: 'Dinner', 
+                current: 'Currently Open'
+            }
+        };
+
+        // 工具函數
+        function getStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            return '★'.repeat(fullStars) + (hasHalfStar ? '☆' : '');
+        }
+
+        function getPriceLevel(level) {
+            if (!level) return '';
+            return '$'.repeat(level);
+        }
+
+        function getBusinessStatus(restaurant) {
+            if (!restaurant.opening_hours || !restaurant.opening_hours.open_now) {
+                return '目前休息';
+            }
+            return '營業中';
+        }
+
+        // 獲取當前翻譯
+        function getCurrentTranslations() {
+            return translations[selectedLanguage] || translations.zh;
+        }
+
+        // 更新界面文字
+        function updateUILanguage() {
+            const t = getCurrentTranslations();
+            
+            // 更新選項文字
+            const mealTimeSelect = document.getElementById('mealTimeSelect');
+            if (mealTimeSelect) {
+                mealTimeSelect.innerHTML = `
+                    <option value="current">${t.current}</option>
+                    <option value="breakfast">${t.breakfast}</option>
+                    <option value="lunch">${t.lunch}</option>
+                    <option value="dinner">${t.dinner}</option>
+                `;
+                mealTimeSelect.value = selectedMealTime;
+            }
+            
+            updateUI(); // 重新渲染滑動內容
+        }
+
+        // 語言變更處理
+        function changeLanguage() {
+            const select = document.getElementById('languageSelect');
+            selectedLanguage = select.value;
+            updateUILanguage();
+            console.log('🌐 語言已切換至:', selectedLanguage);
+        }
+
+        // 用餐時段變更處理
+        function changeMealTime() {
+            const select = document.getElementById('mealTimeSelect');
+            selectedMealTime = select.value;
+            console.log('🍽️ 用餐時段已切換至:', selectedMealTime);
+            updateUI();
+        }
+
+        // 搜尋半徑變更處理
+        function changeRadius() {
+            const slider = document.getElementById('radiusSlider');
+            unitMultiplier = parseInt(slider.value);
+            const actualRadius = baseUnit * unitMultiplier;
+            document.getElementById('radiusDisplay').textContent = actualRadius + 'm';
+            console.log('📍 搜尋半徑已調整至:', actualRadius + 'm');
+        }
+
+        // 餐廳滑動組件
+        function RestaurantSlide({ restaurant, isActive, onAddCandidate }) {
+            const t = getCurrentTranslations();
+            if (!restaurant) {
+                return (
+                    <div className="restaurant-slide">
+                        <div className="slide-background" style={{
+                            background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)'
+                        }}>
+                            <div className="slide-overlay">
+                                <div className="no-restaurant">
+                                    <h3>🎰 轉動輪盤</h3>
+                                    <p>發現附近美食餐廳</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const isInCandidates = candidateList.some(c => c.place_id === restaurant.place_id);
+
+            return (
+                <div className="restaurant-slide">
+                    <div className="slide-background" style={{
+                        background: restaurant.bgColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    }}>
+                        <div className="slide-overlay">
+                            <div className="restaurant-name">{restaurant.name}</div>
+                            
+                            <div className="restaurant-info">📍 {restaurant.vicinity}</div>
+                            
+                            <div className="restaurant-rating">
+                                <div className="star-rating">{getStarRating(restaurant.rating)}</div>
+                                <div className="rating-text">
+                                    {restaurant.rating} ({restaurant.user_ratings_total || 0} 評論)
+                                </div>
+                            </div>
+                            
+                            <div className="restaurant-info">
+                                💰 {getPriceLevel(restaurant.price_level)} | 
+                                🕒 {getBusinessStatus(restaurant)}
+                            </div>
+
+                            <div className="action-buttons">
+                                <button 
+                                    className="btn btn-primary"
+                                    onClick={() => onAddCandidate(restaurant)}
+                                    disabled={isSpinning || candidateList.length >= 9 || isInCandidates}
+                                >
+                                    {isInCandidates ? t.candidateAlreadyExists : t.addCandidate}
+                                </button>
+                                
+                                <button 
+                                    className="btn btn-secondary"
+                                    onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ' ' + restaurant.vicinity)}`, '_blank')}
+                                >
+                                    📍 {t.navigation}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 初始化 Keen Slider
+        function initKeenSlider() {
+            console.log('🔧 開始初始化 Keen Slider...');
+            
+            const container = document.getElementById('keenSlider');
+            if (!container) {
+                console.error('❌ 找不到 keenSlider 容器');
+                return;
+            }
+
+            // 檢查 KeenSlider 是否已載入
+            if (typeof KeenSlider === 'undefined') {
+                console.error('❌ KeenSlider 未載入');
+                return;
+            }
+
+            // 生成滑動內容
+            container.innerHTML = mockRestaurants.map((restaurant, index) => 
+                `<div class="keen-slider__slide" id="slide-${index}"></div>`
+            ).join('');
+
+            console.log('✅ 滑動容器已生成，共', mockRestaurants.length, '個');
+
+            try {
+                // 創建 Keen Slider 實例
+                sliderInstance = new KeenSlider(container, {
+                    initial: 0,
+                    loop: false,
+                    mode: "snap",
+                    slides: {
+                        perView: 1,
+                        spacing: 0
+                    },
+                    drag: true,
+                    slideChanged(slider) {
+                        currentSlideIndex = slider.track.details.rel;
+                        console.log('📍 滑動到索引:', currentSlideIndex);
+                        updateUI();
+                    },
+                    animationStarted(slider) {
+                        document.getElementById('animationStatus').textContent = '滑動中...';
+                    },
+                    animationEnded(slider) {
+                        document.getElementById('animationStatus').textContent = '準備就緒';
+                    }
+                });
+
+                console.log('✅ Keen Slider 實例創建成功');
+
+                // 渲染每個滑動項目
+                mockRestaurants.forEach((restaurant, index) => {
+                    const slideElement = document.getElementById(`slide-${index}`);
+                    if (slideElement) {
+                        // 直接使用 innerHTML 而不是 React（簡化測試）
+                        slideElement.innerHTML = renderRestaurantSlide(restaurant, index === currentSlideIndex);
+                    }
+                });
+
+                console.log('✅ 滑動內容渲染完成');
+                updateUI();
+
+            } catch (error) {
+                console.error('❌ Keen Slider 初始化失敗:', error);
+            }
+        }
+
+        // 簡化的餐廳滑動內容渲染（不使用 React）
+        function renderRestaurantSlide(restaurant, isActive) {
+            const t = getCurrentTranslations();
+            
+            if (!restaurant) {
+                return `
+                    <div class="restaurant-slide">
+                        <div class="slide-background" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                            <div class="slide-overlay">
+                                <div class="no-restaurant">
+                                    <h3>🎰 轉動輪盤</h3>
+                                    <p>發現附近美食餐廳</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const isInCandidates = candidateList.some(c => c.place_id === restaurant.place_id);
+
+            return `
+                <div class="restaurant-slide">
+                    <div class="slide-background" style="background: ${restaurant.bgColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};">
+                        <div class="slide-overlay">
+                            <div class="restaurant-name">${restaurant.name}</div>
+                            <div class="restaurant-info">📍 ${restaurant.vicinity}</div>
+                            <div class="restaurant-rating">
+                                <div class="star-rating">${getStarRating(restaurant.rating)}</div>
+                                <div class="rating-text">
+                                    ${restaurant.rating} (${restaurant.user_ratings_total || 0} 評論)
+                                </div>
+                            </div>
+                            <div class="restaurant-info">
+                                💰 ${getPriceLevel(restaurant.price_level)} | 
+                                🕒 ${getBusinessStatus(restaurant)}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="addToCandidate(mockRestaurants[${mockRestaurants.indexOf(restaurant)}])" 
+                                    ${isSpinning || candidateList.length >= 9 || isInCandidates ? 'disabled' : ''}>
+                                    ${isInCandidates ? t.candidateAlreadyExists : t.addCandidate}
+                                </button>
+                                <button class="btn btn-secondary" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ' ' + restaurant.vicinity)}', '_blank')">
+                                    📍 ${t.navigation}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // UI 更新函數
+        function updateUI() {
+            const currentRestaurant = mockRestaurants[currentSlideIndex];
+            
+            // 更新滑動信息
+            document.getElementById('slideInfo').textContent = `滑動 ${currentSlideIndex + 1} / ${mockRestaurants.length}`;
+            
+            // 更新當前餐廳名稱
+            document.getElementById('currentRestaurantName').textContent = 
+                currentRestaurant ? currentRestaurant.name : '無餐廳';
+            
+            // 更新轉動狀態
+            document.getElementById('isSpinningStatus').textContent = 
+                `狀態: ${isSpinning ? '轉動中...' : '準備就緒'}`;
+
+            // 重新渲染當前滑動內容（確保內容正確顯示）
+            mockRestaurants.forEach((restaurant, index) => {
+                const slideElement = document.getElementById(`slide-${index}`);
+                if (slideElement) {
+                    slideElement.innerHTML = renderRestaurantSlide(restaurant, index === currentSlideIndex);
+                }
+            });
+
+            // 更新候選列表
+            updateCandidateList();
+        }
+
+        // 更新候選列表
+        function updateCandidateList() {
+            const container = document.getElementById('candidateItems');
+            const count = document.getElementById('candidateCount');
+            
+            count.textContent = candidateList.length;
+            
+            if (candidateList.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">尚無候選餐廳</div>';
+                return;
+            }
+
+            container.innerHTML = candidateList.map((restaurant, index) => `
+                <div class="candidate-item">
+                    <div>
+                        <div class="candidate-name">${restaurant.name}</div>
+                        <div style="font-size: 0.9em; color: #666;">${restaurant.vicinity}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFromCandidate(${index})">移除</button>
+                </div>
+            `).join('');
+        }
+
+        // 控制函數
+        function nextSlide() {
+            console.log('⏭️ 嘗試下一張滑動，當前索引:', currentSlideIndex);
+            if (sliderInstance && !isSpinning) {
+                console.log('✅ 執行 sliderInstance.next()');
+                sliderInstance.next();
+            } else if (!sliderInstance) {
+                console.error('❌ sliderInstance 未初始化');
+            } else if (isSpinning) {
+                console.log('⚠️ 正在轉動中，無法切換');
+            }
+        }
+
+        function previousSlide() {
+            console.log('⏮️ 嘗試上一張滑動，當前索引:', currentSlideIndex);
+            if (sliderInstance && !isSpinning) {
+                console.log('✅ 執行 sliderInstance.prev()');
+                sliderInstance.prev();
+            } else if (!sliderInstance) {
+                console.error('❌ sliderInstance 未初始化');
+            } else if (isSpinning) {
+                console.log('⚠️ 正在轉動中，無法切換');
+            }
+        }
+
+        function startSpinning() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            updateUI();
+            
+            // 模擬轉動動畫
+            const spinCount = 3 + Math.floor(Math.random() * 5); // 3-7次轉動
+            let currentSpin = 0;
+            
+            const spinInterval = setInterval(() => {
+                nextSlide();
+                currentSpin++;
+                
+                if (currentSpin >= spinCount) {
+                    clearInterval(spinInterval);
+                    isSpinning = false;
+                    updateUI();
+                    console.log('🎰 轉動完成！當前餐廳:', mockRestaurants[currentSlideIndex].name);
+                }
+            }, 300);
+        }
+
+        function addToCandidate(restaurant) {
+            if (candidateList.length >= 9 || candidateList.some(c => c.place_id === restaurant.place_id)) {
+                return;
+            }
+            
+            candidateList.push(restaurant);
+            updateUI();
+            console.log('➕ 已加入候選:', restaurant.name);
+        }
+
+        function removeFromCandidate(index) {
+            const removedRestaurant = candidateList.splice(index, 1)[0];
+            updateUI();
+            console.log('➖ 已移除候選:', removedRestaurant.name);
+        }
+
+        function clearCandidates() {
+            candidateList = [];
+            updateUI();
+            console.log('🗑️ 已清空候選列表');
+        }
+
+        // 鍵盤快捷鍵支持
+        function setupKeyboardHandlers() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && !isSpinning) {
+                    previousSlide();
+                }
+                if (e.key === 'ArrowRight' && !isSpinning) {
+                    nextSlide();
+                }
+                if (e.key === 'Enter' && mockRestaurants[currentSlideIndex] && !isSpinning) {
+                    addToCandidate(mockRestaurants[currentSlideIndex]);
+                }
+                if (e.key === ' ') { // 空白鍵
+                    e.preventDefault();
+                    startSpinning();
+                }
+            });
+        }
+
+        // 觸控手勢支持 
+        function setupTouchHandlers() {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            const slider = document.getElementById('keenSlider');
+            if (!slider) return;
+            
+            slider.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            slider.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleGesture();
+            });
+            
+            function handleGesture() {
+                const threshold = 50; // 最小滑動距離
+                const difference = touchStartX - touchEndX;
+                
+                if (Math.abs(difference) > threshold && !isSpinning) {
+                    if (difference > 0) {
+                        nextSlide(); // 向左滑動，顯示下一張
+                    } else {
+                        previousSlide(); // 向右滑動，顯示上一張
+                    }
+                }
+            }
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 完整版 Keen Slider 測試開始');
+            
+            // 延遲初始化，確保所有依賴都已載入
+            setTimeout(() => {
+                initKeenSlider();
+                setupKeyboardHandlers();
+                setupTouchHandlers();
+                
+                console.log('⌨️ 鍵盤快捷鍵已啟用: ← → Enter Space');
+                console.log('👆 觸控手勢已啟用: 左右滑動');
+            }, 100);
+        });
+
+        // 暴露全域函數
+        window.nextSlide = nextSlide;
+        window.previousSlide = previousSlide;
+        window.startSpinning = startSpinning;
+        window.clearCandidates = clearCandidates;
+        window.removeFromCandidate = removeFromCandidate;
+        window.changeLanguage = changeLanguage;
+        window.changeMealTime = changeMealTime;
+        window.changeRadius = changeRadius;
+    </script>
+</body>
+</html>
