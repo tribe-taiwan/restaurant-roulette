@@ -204,8 +204,12 @@ function createAdvancedPreloader({ selectedMealTime, userLocation }) {
         }
 
         // RR_UI_072: 預載入池狀態更新
+        const successfullyLoadedCount = Array.from(newPool.values())
+          .filter(item => item.isLoaded)
+          .length;
         window.RRLog?.debug('RR_UI_UPDATE', '界面更新: 預載入池狀態更新', {
           預載入池大小: newPool.size,
+          有效快取餐廳: successfullyLoadedCount,
           搜尋範圍: maxRange,
           半徑範圍: halfRange,
           剩餘可用餐廳: availableFutureRestaurants,
@@ -213,8 +217,8 @@ function createAdvancedPreloader({ selectedMealTime, userLocation }) {
           跳過負索引: skippedNegativeCount
         });
 
-        // 🎯 更新可用餐廳數量狀態
-        setAvailableRestaurantsCount(availableFutureRestaurants);
+        // 🎯 更新預載入池中有效的餐廳數量
+        setAvailableRestaurantsCount(newPool.size);
 
         return newPool;
       });
