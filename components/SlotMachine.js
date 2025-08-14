@@ -694,26 +694,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             <h2 className="text-2xl font-bold text-white drop-shadow-lg text-center">
               {translations.slotMachineTitle}
             </h2>
-            {/* Moved Preload Status Indicator */}
-            {finalRestaurant && finalRestaurant.image && (
-              <div className="absolute top-0 right-0 pointer-events-none">
-                {preloadPool.has(finalRestaurant.image) ? (
-                  preloadPool.get(finalRestaurant.image).isLoaded ? (
-                    <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-                      ✓ Preloaded
-                    </div>
-                  ) : (
-                    <div className="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium">
-                      Loading...
-                    </div>
-                  )
-                ) : (
-                  <div className="bg-gray-500 text-white px-2 py-1 rounded text-xs font-medium">
-                    Not in pool
-                  </div>
-                )}
+            {/* 🎯 使用現有的 availableRestaurantsCount 顯示快取數量 */}
+            <div className="absolute top-2 right-0 pointer-events-none">
+              <div className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium">
+                📦 {availableRestaurantsCount} 家快取
               </div>
-            )}
+            </div>
           </div>
 
           {/* Keen Slider Container - Basic Architecture with Touch Integration */}
