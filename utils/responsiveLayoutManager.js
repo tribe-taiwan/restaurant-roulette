@@ -22,6 +22,7 @@ class ResponsiveLayoutManager {
     
     this.resizeObserver = null;
     this.mutationObserver = null;
+    this.orientationChangeTimeout = null;
     
     this.init();
   }
@@ -174,9 +175,9 @@ class ResponsiveLayoutManager {
       this.handleBreakpointChange(oldBreakpoint, this.currentBreakpoint);
     }
     
-    // 方向變化
+    // 方向變化 - 只在實際變化時處理
     if (oldOrientation !== this.orientation) {
-      this.handleOrientationChange();
+      this.handleOrientationChangeInternal(oldOrientation);
     }
     
     // 更新所有響應式元素
@@ -210,21 +211,40 @@ class ResponsiveLayoutManager {
     this.optimizeLayoutForBreakpoint(newBreakpoint);
   }
   
-  // 處理方向變化
+  // 處理方向變化 - 內部使用，帶防重複觸發
+  handleOrientationChangeInternal(oldOrientation) {
+    // 添加防抖機制，避免重複觸發
+    if (this.orientationChangeTimeout) {
+      clearTimeout(this.orientationChangeTimeout);
+    }
+    
+    this.orientationChangeTimeout = setTimeout(() => {
+      console.log(`🔄 方向變化: ${oldOrientation} → ${this.orientation}`);
+      
+      // 更新body類別
+      document.body.classList.remove('portrait', 'landscape');
+      document.body.classList.add(this.orientation);
+      
+      // 觸發方向變化回調
+      this.callbacks.orientationChange.forEach(callback => {
+        callback(this.orientation);
+      });
+      
+      // 優化方向布局
+      this.optimizeLayoutForOrientation(this.orientation);
+      
+      this.orientationChangeTimeout = null;
+    }, 50); // 50ms 防抖
+  }
+
+  // 處理方向變化 - 外部調用
   handleOrientationChange() {
-    console.log(`🔄 方向變化: ${this.orientation}`);
+    const oldOrientation = this.orientation;
+    this.orientation = this.getOrientation();
     
-    // 更新body類別
-    document.body.classList.remove('portrait', 'landscape');
-    document.body.classList.add(this.orientation);
-    
-    // 觸發方向變化回調
-    this.callbacks.orientationChange.forEach(callback => {
-      callback(this.orientation);
-    });
-    
-    // 優化方向布局
-    this.optimizeLayoutForOrientation(this.orientation);
+    if (oldOrientation !== this.orientation) {
+      this.handleOrientationChangeInternal(oldOrientation);
+    }
   }
   
   // 處理元素尺寸變化
@@ -621,6 +641,11 @@ class ResponsiveLayoutManager {
     
     if (this.mutationObserver) {
       this.mutationObserver.disconnect();
+    }
+    
+    // 清理防抖計時器
+    if (this.orientationChangeTimeout) {
+      clearTimeout(this.orientationChangeTimeout);
     }
     
     // 清理事件監聽器

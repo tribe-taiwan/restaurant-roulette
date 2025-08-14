@@ -121,6 +121,31 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return keyboardHandler.setupKeyboardListeners();
     }, [keyboardHandler]);
 
+    // 設置原生觸控事件監聽器避免 passive 問題
+    React.useEffect(() => {
+      const candidateElements = document.querySelectorAll('[data-swipe-index]');
+      
+      const handlers = [];
+      candidateElements.forEach((element, domIndex) => {
+        const swipeIndex = parseInt(element.getAttribute('data-swipe-index'));
+        
+        const moveHandler = (e) => {
+          if (touchHandlers) {
+            touchHandlers.handleTouchMove(e, swipeIndex);
+          }
+        };
+        
+        element.addEventListener('touchmove', moveHandler, { passive: false });
+        handlers.push({ element, handler: moveHandler });
+      });
+      
+      return () => {
+        handlers.forEach(({ element, handler }) => {
+          element.removeEventListener('touchmove', handler);
+        });
+      };
+    }, [candidateList, touchHandlers]);
+
     // 已經在上面定義過了，移除重複
 
     // 當候選清單被清空時重置按鈕狀態
@@ -981,8 +1006,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     <div
                       key={index}
                       className="relative overflow-hidden h-24"
+                      data-swipe-index={index}
                       onTouchStart={(e) => touchHandlers.handleTouchStart(e, index)}
-                      onTouchMove={(e) => touchHandlers.handleTouchMove(e, index)}
                       onTouchEnd={(e) => touchHandlers.handleTouchEnd(e, index)}
                     >
                       {/* 左滑時顯示的刪除背景 */}

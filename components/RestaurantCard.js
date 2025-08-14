@@ -110,7 +110,7 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
                   <div className="icon-globe text-lg"></div>
                 </a>
               )}
-              <div className="text-md font-medium break-words">
+              <div className="text-md font-medium break-words leading-[1.6rem]">  {/* 新增行高 */}
                 {restaurant.address}
               </div>
             </div>

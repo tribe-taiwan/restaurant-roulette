@@ -62,7 +62,10 @@ const createTouchHandlers = (params) => {
 
     // 判斷是否為水平滑動（左滑）
     if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0 && Math.abs(deltaX) > 15) {
-      e.preventDefault(); // 防止頁面滾動
+      // 只在事件可取消時才阻止預設行為
+      if (e.cancelable) {
+        e.preventDefault(); // 防止頁面滾動
+      }
 
       const maxOffset = -100; // 最大滑動距離
       const offsetX = Math.max(deltaX, maxOffset);
@@ -79,7 +82,9 @@ const createTouchHandlers = (params) => {
     }
     // 如果已經是左滑狀態，繼續阻止頁面滾動
     else if (swipeStates[index].isSwiping && swipeStates[index].offsetX < 0) {
-      e.preventDefault();
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     }
   };
 
