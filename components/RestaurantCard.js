@@ -104,15 +104,15 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
           {/* 地址顯示 - 與其他區塊統一風格 */}
           <div className="text-center mb-4">
-            <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="flex items-baseline justify-center gap-2">
               {restaurant.website && (
                 <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                  <div className="icon-globe text-lg"></div>
+                  <div className="icon-globe text-lg leading-none"></div>
                 </a>
               )}
-              <div className="text-md font-medium break-words leading-[1.6rem]">  {/* 新增行高 */}
+              <span className="text-lg font-medium break-words">
                 {restaurant.address}
-              </div>
+              </span>
             </div>
           </div>
         {/* Restaurant Header - 暫時註解掉 */}
