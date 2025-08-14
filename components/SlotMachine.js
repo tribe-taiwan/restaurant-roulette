@@ -852,15 +852,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               />
             )}
 
-            {/* 內容覆蓋層 */}
-            <div
-              className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${isSpinning ? animationController.getAnimationClass() : ''
-                }`}
-              style={{
-                willChange: isSpinning ? 'transform' : 'auto'
-              }}
-            >
-              {isSpinning ? (
+            {/* 內容覆蓋層 - 滑動時隱藏避免閃爍 */}
+            {!isSliding && (
+              <div
+                className={`flex flex-row items-center justify-center transition-transform duration-2000 ease-out pointer-events-none ${isSpinning ? animationController.getAnimationClass() : ''
+                  }`}
+                style={{
+                  willChange: isSpinning ? 'transform' : 'auto'
+                }}
+              >
+                {isSpinning ? (
                 scrollingNames.map((imageSrc, index) => {
                   const isRestaurantImage = finalRestaurant && finalRestaurant.image && imageSrc === finalRestaurant.image;
 
@@ -939,7 +940,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            )}
 
             {/* 簡單轉圈Loading覆蓋層 - 只在轉盤時顯示 */}
             {isSpinning && (
@@ -949,7 +951,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             )}
 
             {/* Price Label - 完全獨立的絕對定位 */}
-            {finalRestaurant && !isSpinning && finalRestaurant.priceLevel && (
+            {finalRestaurant && !isSpinning && !isSliding && finalRestaurant.priceLevel && (
               <div className="absolute bottom-10 left-4 pointer-events-none">
                 <div className="bg-[var(--accent-color)] text-black px-3 py-1 rounded-full font-semibold">
                   {priceLabels[language]?.[finalRestaurant.priceLevel] || priceLabels.en[finalRestaurant.priceLevel]}
@@ -958,7 +960,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             )}
 
             {/* Rating and Type Tags - 獨立的絕對定位 */}
-            {finalRestaurant && !isSpinning && (
+            {finalRestaurant && !isSpinning && !isSliding && (
               <div className="absolute bottom-2 left-4 pointer-events-none">
                 <div className="flex items-center gap-2">
                   {/* Rating Label - 只包含星號和評分 */}
