@@ -102,22 +102,51 @@ const createTouchHandlers = (params) => {
       e.stopPropagation();
     }
 
-    // 如果滑動距離超過閾值且不是快速點擊，則刪除
+    // 如果滑動距離超過閾值且不是快速點擊，則執行刪除動畫
     if (offsetX < threshold && duration > 100) {
-      if (onRemoveCandidate) {
-        onRemoveCandidate(index);
-      }
-    }
+      // 先設置刪除動畫狀態
+      setSwipeStates(prev => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          isDeleting: true,
+          offsetX: -120, // 完全滑出
+          isSwiping: false
+        }
+      }));
 
-    // 重置滑動狀態
-    setSwipeStates(prev => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        offsetX: 0,
-        isSwiping: false
-      }
-    }));
+      // 延遲執行實際刪除，讓動畫播放完成
+      setTimeout(() => {
+        if (onRemoveCandidate) {
+          onRemoveCandidate(index);
+        }
+        // 清理狀態
+        setSwipeStates(prev => {
+          const newState = { ...prev };
+          delete newState[index];
+          return newState;
+        });
+      }, 250); // 250ms 動畫時間
+    } else {
+      // 滑動不足，彈回原位
+      setSwipeStates(prev => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          offsetX: 0,
+          isSwiping: false
+        }
+      }));
+      
+      // 300ms 後清理狀態
+      setTimeout(() => {
+        setSwipeStates(prev => {
+          const newState = { ...prev };
+          delete newState[index];
+          return newState;
+        });
+      }, 300);
+    }
   };
 
   // 圖片觸控滑動 - 觸控開始

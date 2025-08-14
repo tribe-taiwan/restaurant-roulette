@@ -1033,8 +1033,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                             'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
-                          transform: `translateX(${swipeStates[index]?.offsetX || 0}px)`,
-                          transition: swipeStates[index]?.isSwiping ? 'none' : 'transform 0.3s ease-out'
+                          transform: swipeStates[index]?.isDeleting 
+                            ? `translateX(${swipeStates[index].offsetX}px) translateY(-100%)` 
+                            : `translateX(${swipeStates[index]?.offsetX || 0}px)`,
+                          transition: swipeStates[index]?.isSwiping 
+                            ? 'none' 
+                            : swipeStates[index]?.isDeleting 
+                              ? 'transform 0.25s ease-out' 
+                              : 'transform 0.3s ease-out',
+                          opacity: swipeStates[index]?.isDeleting ? 0 : 1
                         }}
                       >
                         {/* Left Info Panel with Golden Ratio Width - Frosted Glass Effect */}
