@@ -18,13 +18,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;S:/OneDrive/Dokumente/GitHub/restaurant-roulette/test-scroll-snap-fixed.html&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "S:/OneDrive/Dokumente/GitHub/restaurant-roulette/components/Translations.js",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RunAnythingCache">
     <option name="myCommands">
       <command value="我以為我的代碼邏輯是 資料不夠時 API一補充就是幾十筆, 所以不太可能連續出現&quot;幕後餐廳補充完成&quot;, 你覺得呢" />

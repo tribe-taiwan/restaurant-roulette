@@ -658,11 +658,31 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     return (
       <div className="w-full max-w-2xl mx-auto glow-container rounded-t-lg" data-name="slot-machine" data-file="components/SlotMachine.js">
         <div className="text-center">
-          {/* Slot Machine Title */}
-          <div className="mb-4 px-4">
+          {/* Slot Machine Title with Preload Indicator */}
+          <div className="mb-4 px-4 relative">
             <h2 className="text-2xl font-bold text-white drop-shadow-lg text-center">
               {translations.slotMachineTitle}
             </h2>
+            {/* Moved Preload Status Indicator */}
+            {finalRestaurant && finalRestaurant.image && (
+              <div className="absolute top-0 right-0 pointer-events-none">
+                {preloadPool.has(finalRestaurant.image) ? (
+                  preloadPool.get(finalRestaurant.image).isLoaded ? (
+                    <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      ✓ Preloaded
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium">
+                      Loading...
+                    </div>
+                  )
+                ) : (
+                  <div className="bg-gray-500 text-white px-2 py-1 rounded text-xs font-medium">
+                    Not in pool
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Keen Slider Container - Basic Architecture with Touch Integration */}
@@ -810,22 +830,64 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     </>
                   )}
 
-                  {/* Preload Status Indicator (for debugging) */}
-                  {restaurant.image && (
-                    <div className="absolute top-2 right-2 pointer-events-none">
-                      {preloadPool.has(restaurant.image) ? (
-                        preloadPool.get(restaurant.image).isLoaded ? (
-                          <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-                            ✓ Preloaded
-                          </div>
-                        ) : (
-                          <div className="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium">
-                            Loading...
-                          </div>
-                        )
+                  {/* Copy Google Maps Link Button - Top Right Corner (from old version) */}
+                  {finalRestaurant && !(isSpinning || spinningState.isActive) && (
+                    <div
+                      className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm z-30 ${
+                        shareButtonState === 'copying' ? 'bg-blue-500 bg-opacity-80 scale-110' :
+                        shareButtonState === 'success' ? 'bg-green-500 bg-opacity-80 scale-110' :
+                        shareButtonState === 'error' ? 'bg-red-500 bg-opacity-80 scale-110' :
+                        'bg-black bg-opacity-50 hover:bg-opacity-70'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (shareButtonState === 'normal') {
+                          shareButtonLogic.handleShareClick(finalRestaurant);
+                        }
+                      }}
+                      title={
+                        shareButtonState === 'copying' ? '複製中...' :
+                        shareButtonState === 'success' ? '已複製！' :
+                        shareButtonState === 'error' ? '複製失敗' :
+                        '複製 Google Maps 連結'
+                      }
+                    >
+                      {shareButtonState === 'copying' ? (
+                        // 載入動畫
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : shareButtonState === 'success' ? (
+                        // 成功勾勾
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      ) : shareButtonState === 'error' ? (
+                        // 錯誤 X
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
                       ) : (
-                        <div className="bg-gray-500 text-white px-2 py-1 rounded text-xs font-medium">
-                          Not in pool
+                        // 正常的複製圖標
+                        <div
+                          className="w-5 h-5 relative"
+                          style={{
+                            background: 'transparent',
+                            border: '1.5px solid white',
+                            borderRadius: '2px'
+                          }}
+                        >
+                          {/* Copy icon overlay */}
+                          <div
+                            className="absolute -top-1 -right-1 w-4 h-4"
+                            style={{
+                              background: 'white',
+                              border: '1.5px solid white',
+                              borderRadius: '2px'
+                            }}
+                          ></div>
                         </div>
                       )}
                     </div>
@@ -863,83 +925,38 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               style={{
                 background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
                 borderColor: 'var(--theme-primary)',
-                margin: '0'
+                touchAction: 'manipulation',
+                transition: 'none',
+                margin: 0
               }}
-              disabled={isSpinning || spinningState.isActive}
             >
-              <div className="text-lg font-bold">
-                {(isSpinning || spinningState.isActive) ? '🎰' : '🔍'}
-              </div>
-              <div className="text-xs font-medium">
-                {(isSpinning || spinningState.isActive) ? translations.spinning : translations.searchNext}
-              </div>
+              {isSpinning ? (
+                <div className="text-xl font-bold text-center">
+                  點擊停止
+                </div>
+              ) : (
+                <div className="text-xl font-bold text-center">
+                  {translations.spinButton}
+                </div>
+              )}
             </button>
 
             {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
             <button
               onClick={buttonLogic.isAddButtonDisabled() ? null : buttonLogic.handleAddCandidateClick}
-              className="min-h-[72px] p-3 rounded-lg border-2 
-                         flex flex-col items-center justify-center text-white shadow-lg"
-              style={{
-                background: buttonLogic.getAddButtonStyle().background,
-                borderColor: buttonLogic.getAddButtonStyle().borderColor,
-                margin: '0'
-              }}
               disabled={buttonLogic.isAddButtonDisabled()}
+              className="min-h-[72px] p-3 rounded-lg border-2
+                         flex flex-col items-center justify-center text-white shadow-lg"
+              style={buttonLogic.getAddButtonStyle()}
+              title={buttonLogic.getAddButtonTitle()}
             >
-              <div className="text-lg font-bold">
-                {buttonLogic.getAddButtonIcon()}
-              </div>
-              <div className="text-xs font-medium text-center leading-tight">
-                {buttonLogic.getAddButtonText()}
+              <div className="text-xl font-bold text-center">
+                {buttonLogic.getAddCandidateButtonText()}
               </div>
             </button>
           </div>
 
-          {/* Share and Navigation Buttons */}
-          <div className="grid grid-cols-2 gap-3 px-4 mt-3">
-            {/* Share Button */}
-            <button
-              onClick={() => shareButtonLogic.handleShareClick(finalRestaurant)}
-              className="min-h-[48px] p-2 rounded-lg border-2 
-                         flex items-center justify-center text-white shadow-lg"
-              style={{
-                background: shareButtonLogic.getShareButtonStyle().background,
-                borderColor: shareButtonLogic.getShareButtonStyle().borderColor
-              }}
-              disabled={!finalRestaurant || isSpinning || spinningState.isActive}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold">
-                  {shareButtonLogic.getShareButtonIcon()}
-                </span>
-                <span className="text-xs font-medium">
-                  {shareButtonLogic.getShareButtonText()}
-                </span>
-              </div>
-            </button>
-
-            {/* Navigation Button */}
-            <button
-              onClick={() => finalRestaurant && window.open(getDirectionsUrl(finalRestaurant), '_blank')}
-              className="min-h-[48px] p-2 rounded-lg border-2 
-                         flex items-center justify-center text-white shadow-lg"
-              style={{
-                background: finalRestaurant && !(isSpinning || spinningState.isActive)
-                  ? 'linear-gradient(135deg, #10b981, #059669)' 
-                  : 'linear-gradient(135deg, #6b7280, #4b5563)',
-                borderColor: finalRestaurant && !(isSpinning || spinningState.isActive) ? '#10b981' : '#6b7280'
-              }}
-              disabled={!finalRestaurant || isSpinning || spinningState.isActive}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold">🗺️</span>
-                <span className="text-xs font-medium">
-                  {translations.navigate || '導航'}
-                </span>
-              </div>
-            </button>
-          </div>
+          {/* 刪除分享和導航按鈕區塊，合併上下區塊 */}
 
           {/* Candidate List Display */}
           {candidateList && candidateList.length > 0 && (
