@@ -14,6 +14,8 @@
  * @param {boolean} params.isSpinning - 是否正在轉動
  * @param {Function} params.onSpin - 轉動回調函數
  * @param {Function} params.onPreviousRestaurant - 上一家餐廳回調函數
+ * @param {Function} params.nextSlide - Keen Slider 下一張函數
+ * @param {Function} params.previousSlide - Keen Slider 上一張函數
  * @returns {Object} 觸控事件處理器對象
  */
 const createTouchHandlers = (params) => {
@@ -27,7 +29,9 @@ const createTouchHandlers = (params) => {
     touchEnd,
     isSpinning,
     onSpin,
-    onPreviousRestaurant
+    onPreviousRestaurant,
+    nextSlide,
+    previousSlide
   } = params;
 
   // 候選列表左滑刪除 - 觸控開始
@@ -120,20 +124,32 @@ const createTouchHandlers = (params) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  // 圖片觸控滑動 - 觸控結束
+  // 圖片觸控滑動 - 觸控結束 (整合 Keen Slider 導航控制)
   const handleImageTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50; // 左滑距離超過50px（搜尋下一家）
-    const isRightSwipe = distance < -50; // 右滑距離超過50px（回到上一家）
+    const isLeftSwipe = distance > 50; // 左滑距離超過50px（下一張）
+    const isRightSwipe = distance < -50; // 右滑距離超過50px（上一張）
 
     if (isLeftSwipe && !isSpinning) {
-      // 左滑：搜尋下一家餐廳
-      onSpin(false);
-    } else if (isRightSwipe && !isSpinning && onPreviousRestaurant) {
-      // 右滑：回到上一家餐廳
-      onPreviousRestaurant();
+      // 左滑：使用 Keen Slider 的 nextSlide 函數
+      if (nextSlide && typeof nextSlide === 'function') {
+        nextSlide();
+        console.log('👆 觸控左滑 - 下一張');
+      } else {
+        // 回退到原有邏輯
+        onSpin(false);
+      }
+    } else if (isRightSwipe && !isSpinning) {
+      // 右滑：使用 Keen Slider 的 previousSlide 函數
+      if (previousSlide && typeof previousSlide === 'function') {
+        previousSlide();
+        console.log('👆 觸控右滑 - 上一張');
+      } else if (onPreviousRestaurant) {
+        // 回退到原有邏輯
+        onPreviousRestaurant();
+      }
     }
   };
 

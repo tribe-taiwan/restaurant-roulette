@@ -17,11 +17,11 @@ const STATIC_ASSETS = [
   '/components/LanguageSelector.js',
   '/components/SlotMachineAnimationConfig.js',
   '/components/SlotMachineUtils.js',
-  '/components/SlotMachineSlotAnimation.js',
+  // '/components/SlotMachineSlotAnimation.js', // Removed - complex animation logic eliminated
   '/components/SlotMachineTouchHandler.js',
   '/components/SlotMachineButtonLogic.js',
   '/components/SlotMachineKeyboardHandler.js',
-  '/components/SlotMachineAnimationController.js',
+  // '/components/SlotMachineAnimationController.js', // Removed - complex animation logic eliminated
   '/components/SlotMachine.js',
   '/components/RestaurantCard.js',
   '/components/LocationManager.js',

@@ -69,10 +69,20 @@ const createButtonLogic = (params) => {
     }
   };
 
-  // 處理輪盤按鈕點擊（重置加入按鈕狀態）
+  // 處理輪盤按鈕點擊（重置加入按鈕狀態）- updated for simple spinning
   const handleSpinClick = () => {
     setButtonClickState('normal');
-    onSpin(false);
+    
+    // Check if we have simple spinning functions available
+    if (params.startSimpleSpinning && params.sliderRestaurants && params.sliderRestaurants.length > 0) {
+      // Use simple spinning logic if available
+      console.log('🎰 使用簡單轉動邏輯');
+      params.startSimpleSpinning();
+    } else {
+      // Fallback to external spinning logic
+      console.log('🎰 使用外部轉動邏輯');
+      onSpin(false);
+    }
   };
 
   // 檢查按鈕是否應該被禁用
@@ -109,8 +119,33 @@ const createButtonLogic = (params) => {
     return '';
   };
 
+  // 獲取加入候選按鈕圖標
+  const getAddButtonIcon = () => {
+    if (!finalRestaurant) return '➕';
+    
+    // 檢查營業狀態
+    if (!isRestaurantOperational(finalRestaurant)) return '🚫';
+    
+    // 檢查候選列表是否已滿
+    if (candidateList.length >= 9) return '📋';
+    
+    // 根據按鈕狀態顯示不同圖標
+    if (buttonClickState === 'added') return '✅';
+    if (buttonClickState === 'exists') return '📋';
+    
+    // 默認狀態
+    return '➕';
+  };
+
+  // 獲取加入候選按鈕文字
+  const getAddButtonText = () => {
+    return getAddCandidateButtonText();
+  };
+
   return {
     getAddCandidateButtonText,
+    getAddButtonText,
+    getAddButtonIcon,
     handleAddCandidateClick,
     handleSpinClick,
     isAddButtonDisabled,
@@ -187,8 +222,35 @@ const createShareButtonLogic = (params) => {
     }
   };
 
+  // 處理分享按鈕點擊
+  const handleShareClick = (restaurant) => {
+    copyGoogleMapsLink(restaurant);
+  };
+
+  // 獲取分享按鈕樣式
+  const getShareButtonStyle = () => {
+    return {
+      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+      borderColor: '#3b82f6'
+    };
+  };
+
+  // 獲取分享按鈕圖標
+  const getShareButtonIcon = () => {
+    return '📋';
+  };
+
+  // 獲取分享按鈕文字
+  const getShareButtonText = () => {
+    return '複製連結';
+  };
+
   return {
-    copyGoogleMapsLink
+    copyGoogleMapsLink,
+    handleShareClick,
+    getShareButtonStyle,
+    getShareButtonIcon,
+    getShareButtonText
   };
 };
 

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預載入池整合測試</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/keen-slider@6.8.6/keen-slider.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/keen-slider@6.8.6/keen-slider.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --theme-primary: #3b82f6;
+            --theme-accent: #10b981;
+            --accent-color: #fbbf24;
+            --image-overlay-opacity: 0.3;
+        }
+        
+        .keen-slider {
+            position: relative;
+        }
+        
+        .keen-slider__slide {
+            min-height: 256px;
+        }
+        
+        .restaurant-card {
+            transition: all 0.3s ease;
+        }
+        
+        .glow-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-6">預載入池整合測試</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- SlotMachine Component -->
+            <div>
+                <h2 class="text-xl font-bold mb-4">老虎機組件</h2>
+                <div id="slot-machine-container"></div>
+            </div>
+            
+            <!-- Test Controls -->
+            <div>
+                <h2 class="text-xl font-bold mb-4">測試控制</h2>
+                <div class="space-y-4">
+                    <button class="btn bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded" onclick="loadTestRestaurant()">載入測試餐廳</button>
+                    <button class="btn bg-green-600 hover:bg-green-700 px-4 py-2 rounded" onclick="triggerPreloadPool()">觸發預載入池</button>
+                    <button class="btn bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded" onclick="checkPreloadStatus()">檢查預載入狀態</button>
+                    <button class="btn bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded" onclick="simulateBackgroundRefill()">模擬幕後補充</button>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">測試狀態</h3>
+                    <div id="test-status" class="bg-gray-800 p-4 rounded text-sm font-mono"></div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">預載入池狀態</h3>
+                    <div id="preload-status" class="bg-gray-800 p-4 rounded text-sm font-mono"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock global functions for testing
+        window.getAvailableRestaurantsFromCache = function(selectedMealTime) {
+            return Promise.resolve([
+                {
+                    id: 'test-1',
+                    name: '測試餐廳 1',
+                    name_zh: '測試餐廳 1',
+                    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400',
+                    rating: 4.5,
+                    distance: '0.5',
+                    place_id: 'test-place-1'
+                },
+                {
+                    id: 'test-2',
+                    name: '測試餐廳 2',
+                    name_zh: '測試餐廳 2',
+                    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
+                    rating: 4.2,
+                    distance: '0.8',
+                    place_id: 'test-place-2'
+                },
+                {
+                    id: 'test-3',
+                    name: '測試餐廳 3',
+                    name_zh: '測試餐廳 3',
+                    image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400',
+                    rating: 4.8,
+                    distance: '1.2',
+                    place_id: 'test-place-3'
+                }
+            ]);
+        };
+
+        window.getRestaurantHistory = function() {
+            return [];
+        };
+
+        window.getRandomRestaurant = function(userLocation, selectedMealTime, config) {
+            console.log('🔍 模擬幕後補充餐廳', config);
+            return Promise.resolve({
+                id: 'background-' + Date.now(),
+                name: '幕後補充餐廳',
+                name_zh: '幕後補充餐廳',
+                image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400',
+                rating: 4.0,
+                distance: '2.0',
+                place_id: 'background-place-' + Date.now()
+            });
+        };
+
+        // Mock utility functions
+        window.createTouchHandlers = () => ({});
+        window.createButtonLogic = () => ({
+            handleSpinClick: () => console.log('Spin clicked'),
+            isAddButtonDisabled: () => false,
+            handleAddCandidateClick: () => console.log('Add candidate clicked'),
+            getAddButtonStyle: () => ({ background: 'blue', borderColor: 'blue' }),
+            getAddButtonIcon: () => '➕',
+            getAddButtonText: () => '加入候選'
+        });
+        window.createShareButtonLogic = () => ({
+            handleShareClick: () => console.log('Share clicked'),
+            getShareButtonStyle: () => ({ background: 'green', borderColor: 'green' }),
+            getShareButtonIcon: () => '📤',
+            getShareButtonText: () => '分享'
+        });
+        window.createKeyboardHandler = () => ({
+            setupKeyboardListeners: () => () => {}
+        });
+        window.getPriceLabels = () => ({ zh: {}, en: {} });
+        window.renderStars = () => [];
+        window.getDirectionsUrl = () => '#';
+
+        // Test data
+        let currentRestaurant = {
+            id: 'current-test',
+            name: '當前測試餐廳',
+            name_zh: '當前測試餐廳',
+            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400',
+            rating: 4.3,
+            distance: '0.3',
+            place_id: 'current-place-test'
+        };
+
+        let slotMachineInstance = null;
+
+        // Test functions
+        function loadTestRestaurant() {
+            updateStatus('載入測試餐廳...');
+            
+            // Update current restaurant
+            currentRestaurant = {
+                ...currentRestaurant,
+                id: 'test-' + Date.now(),
+                name: '新測試餐廳 ' + new Date().toLocaleTimeString(),
+                name_zh: '新測試餐廳 ' + new Date().toLocaleTimeString(),
+                place_id: 'new-place-' + Date.now()
+            };
+            
+            renderSlotMachine();
+            updateStatus('✅ 測試餐廳已載入');
+        }
+
+        function triggerPreloadPool() {
+            updateStatus('觸發預載入池管理...');
+            
+            if (slotMachineInstance && slotMachineInstance.managePreloadPool) {
+                slotMachineInstance.managePreloadPool(currentRestaurant);
+                updateStatus('✅ 預載入池已觸發');
+            } else {
+                updateStatus('❌ 預載入池功能不可用');
+            }
+        }
+
+        function checkPreloadStatus() {
+            if (slotMachineInstance) {
+                const status = {
+                    preloadPoolSize: slotMachineInstance.preloadPoolSize || 0,
+                    backgroundRestaurantsCount: slotMachineInstance.backgroundRestaurantsCount || 0,
+                    totalSlides: slotMachineInstance.totalSlides || 0,
+                    currentSlideIndex: slotMachineInstance.currentSlideIndex || 0
+                };
+                
+                document.getElementById('preload-status').innerHTML = `
+                    預載入池大小: ${status.preloadPoolSize}<br>
+                    背景餐廳數量: ${status.backgroundRestaurantsCount}<br>
+                    總滑動頁數: ${status.totalSlides}<br>
+                    當前頁面索引: ${status.currentSlideIndex}<br>
+                    更新時間: ${new Date().toLocaleTimeString()}
+                `;
+                
+                updateStatus('✅ 預載入狀態已更新');
+            } else {
+                updateStatus('❌ 無法獲取預載入狀態');
+            }
+        }
+
+        function simulateBackgroundRefill() {
+            updateStatus('模擬幕後補充...');
+            
+            // Simulate low restaurant count to trigger background refill
+            window.getAvailableRestaurantsFromCache = function() {
+                return Promise.resolve([
+                    {
+                        id: 'low-count-1',
+                        name: '剩餘餐廳 1',
+                        name_zh: '剩餘餐廳 1',
+                        image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400',
+                        rating: 4.1,
+                        distance: '1.5',
+                        place_id: 'low-place-1'
+                    }
+                ]);
+            };
+            
+            triggerPreloadPool();
+            updateStatus('✅ 幕後補充已模擬');
+        }
+
+        function updateStatus(message) {
+            const statusEl = document.getElementById('test-status');
+            const timestamp = new Date().toLocaleTimeString();
+            statusEl.innerHTML = `[${timestamp}] ${message}<br>` + statusEl.innerHTML;
+        }
+
+        function renderSlotMachine() {
+            const translations = {
+                slotMachineTitle: '餐廳老虎機',
+                spinning: '轉動中...',
+                searchNext: '搜尋下一家',
+                navigate: '導航'
+            };
+
+            const element = React.createElement(window.SlotMachine, {
+                isSpinning: false,
+                onSpin: () => console.log('Spin triggered'),
+                onAddCandidate: () => console.log('Add candidate'),
+                translations: translations,
+                finalRestaurant: currentRestaurant,
+                candidateList: [],
+                language: 'zh',
+                onClearList: () => {},
+                onRemoveCandidate: () => {},
+                onImageClick: () => {},
+                userLocation: { lat: 25.033, lng: 121.5654 },
+                userAddress: '測試地址',
+                onPreviousRestaurant: () => {},
+                onTriggerSlideTransition: (instance) => {
+                    slotMachineInstance = instance;
+                    console.log('SlotMachine instance ready:', instance);
+                },
+                restaurantHistory: [],
+                selectedMealTime: 'current'
+            });
+
+            ReactDOM.render(element, document.getElementById('slot-machine-container'));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('初始化測試環境...');
+            renderSlotMachine();
+            updateStatus('✅ 測試環境已準備就緒');
+        });
+    </script>
+
+    <!-- Load SlotMachine component -->
+    <script src="../components/SlotMachine.js"></script>
+</body>
+</html>
