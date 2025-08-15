@@ -1032,7 +1032,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     background: 'white',
                     borderColor: '#e5e7eb',
                     touchAction: 'manipulation',
-                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1
+                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
+                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto'
+                  }}
+                  onClick={(e) => {
+                    if (isSpinning || spinningState.isActive) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
                   }}
                 >
                   <div className={`text-lg font-semibold text-center leading-tight ${

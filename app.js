@@ -341,7 +341,7 @@ function App() {
           // 移除啟動輪盤搜索日誌
           // 啟動輪盤動畫，搜索新餐廳
           setIsSpinning(true);
-          setCurrentRestaurant(null);
+          // setCurrentRestaurant(null); // 註解掉避免版面變化
           
           // 創建中止控制器
           const abortController = new AbortController();
