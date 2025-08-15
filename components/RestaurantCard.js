@@ -89,19 +89,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
             </div>
           )}
 
-          {/* 地址顯示 - 與其他區塊統一風格 */}
-          <div className="text-center mb-4">
-            <div className="flex items-baseline justify-center gap-2">
-              {restaurant.website && (
-                <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                  <div className="icon-globe text-lg leading-none"></div>
-                </a>
-              )}
-              <span className="text-lg font-medium break-words">
-                {restaurant.address}
-              </span>
-            </div>
-          </div>
         {/* Restaurant Header - 暫時註解掉 */}
         {/* 
         <div className="mb-6">
@@ -125,65 +112,6 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
 
         {/* Restaurant Info */}
         <div>
-            {/* 按鈕區塊 - 與其他區塊統一風格 */}
-            <div className="flex gap-3 mb-6">
-              {/* 導航按鈕 - 左邊 */}
-              <a
-                href={getDirectionsUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
-                           flex flex-col items-center justify-center text-white shadow-lg"
-                style={{
-                  background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                  borderColor: 'var(--theme-primary)'
-                }}
-              >
-                <div className="text-lg font-semibold text-center leading-tight">
-                  {getTranslation('viewRoute')}
-                </div>
-                <div className="text-lg mt-1 text-white opacity-90">
-                  <div className="icon-navigation"></div>
-                </div>
-              </a>
-
-              {/* 營業狀態按鈕 - 右邊 */}
-              <div
-                className="flex-1 min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
-                           flex flex-col items-center justify-center shadow-lg"
-                style={{
-                  background: 'white',
-                  borderColor: '#e5e7eb'
-                }}
-              >
-                <div className={`text-lg font-semibold text-center leading-tight ${
-                  restaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-gray-800'
-                }`}>
-                  {restaurant.operatingStatus?.status === 'open' 
-                    ? getTranslation('openNow') || '營業中'
-                    : restaurant.operatingStatus?.status === 'closed'
-                      ? getTranslation('closed') || '已打烊'
-                      : getTranslation('hoursUnknown') || '營業中'
-                  }
-                </div>
-                <div className="text-sm mt-1 flex items-center gap-1">
-                  {restaurant.phone && (
-                    <>
-                      <div className={`icon-phone w-4 h-4 ${
-                        restaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-red-600'
-                      }`}></div>
-                      <span className={`${
-                        restaurant.operatingStatus?.status === 'open' 
-                          ? 'text-green-600' 
-                          : 'text-red-600 line-through'
-                      }`}>
-                        {restaurant.phone}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
 
             {/* 營業時間 - 單欄顯示 */}
             <div className="space-y-3 mb-6">

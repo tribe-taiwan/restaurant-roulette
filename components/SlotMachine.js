@@ -946,8 +946,88 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             )}
           </div>
 
-          {/* Button Container - 固定兩欄布局 */}
-          <div className="grid grid-cols-[1fr_120px] gap-3 px-4 slot-machine-buttons">
+          {/* Button Container - 整合所有按鈕和資訊 */}
+          <div className="px-4 slot-machine-buttons">
+            {/* 地址顯示 - 整合到按鈕容器中 */}
+            {finalRestaurant && !(isSpinning || spinningState.isActive) && (
+              <div className="text-center mb-3">
+                <div className="flex items-baseline justify-center gap-2">
+                  {finalRestaurant.website && (
+                    <a href={finalRestaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                      <div className="icon-globe text-lg leading-none"></div>
+                    </a>
+                  )}
+                  <span className="text-lg font-medium break-words text-white">
+                    {finalRestaurant.address}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* 導航和營業狀態按鈕區塊 */}
+            {finalRestaurant && !(isSpinning || spinningState.isActive) && (
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                {/* 導航按鈕 - 左邊 */}
+                <a
+                  href={getDirectionsUrl(finalRestaurant)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                             flex flex-col items-center justify-center text-white shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                    borderColor: 'var(--theme-primary)'
+                  }}
+                >
+                  <div className="text-lg font-semibold text-center leading-tight">
+                    {translations.viewRoute || '查看路線'}
+                  </div>
+                  <div className="text-lg mt-1 text-white opacity-90">
+                    <div className="icon-navigation"></div>
+                  </div>
+                </a>
+
+                {/* 營業狀態按鈕 - 右邊 */}
+                <div
+                  className="min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                             flex flex-col items-center justify-center shadow-lg"
+                  style={{
+                    background: 'white',
+                    borderColor: '#e5e7eb'
+                  }}
+                >
+                  <div className={`text-lg font-semibold text-center leading-tight ${
+                    finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-gray-800'
+                  }`}>
+                    {finalRestaurant.operatingStatus?.status === 'open' 
+                      ? translations.openNow || '營業中'
+                      : finalRestaurant.operatingStatus?.status === 'closed'
+                        ? translations.closed || '已打烊'
+                        : translations.hoursUnknown || '營業中'
+                    }
+                  </div>
+                  <div className="text-sm mt-1 flex items-center gap-1">
+                    {finalRestaurant.phone && (
+                      <>
+                        <div className={`icon-phone w-4 h-4 ${
+                          finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-red-600'
+                        }`}></div>
+                        <span className={`${
+                          finalRestaurant.operatingStatus?.status === 'open' 
+                            ? 'text-green-600' 
+                            : 'text-red-600 line-through'
+                        }`}>
+                          {finalRestaurant.phone}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 主要操作按鈕 - 下一個和保留 */}
+            <div className="grid grid-cols-[1fr_120px] gap-3">
             {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
             <button
               onClick={() => buttonLogic.handleSpinClick()}
@@ -985,6 +1065,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 {buttonLogic.getAddCandidateButtonText()}
               </div>
             </button>
+            </div>
           </div>
 
           {/* 刪除分享和導航按鈕區塊，合併上下區塊 */}
