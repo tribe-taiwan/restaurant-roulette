@@ -147,6 +147,36 @@ function App() {
       }
     }, [userLocation, locationStatus, isInitialLoad, currentRestaurant, isSpinning]);
     
+    // 位置改變時自動搜尋新位置資料
+    React.useEffect(() => {
+      if (userLocation && locationStatus === 'success' && !isInitialLoad) {
+        console.log('🔄 位置已改變，清除舊快取並自動搜尋新位置的餐廳資料');
+        console.log('🔍 當前狀態 - isSpinning:', isSpinning, 'locationStatus:', locationStatus);
+        
+        // 清除舊位置的餐廳快取
+        if (window.clearRestaurantHistory) {
+          window.clearRestaurantHistory();
+        }
+        
+        // 如果正在轉動，先停止再重新開始
+        if (isSpinning) {
+          console.log('⏹️ 正在轉動中，先停止搜尋');
+          if (searchAbortController) {
+            searchAbortController.abort();
+          }
+          setIsSpinning(false);
+          
+          // 短暫延遲後重新搜尋
+          setTimeout(() => {
+            handleSpin(true);
+          }, 100);
+        } else {
+          // 直接搜尋新位置的資料
+          handleSpin(true);
+        }
+      }
+    }, [userLocation]);
+    
     // ===========================================
     // 工具函數區塊 (純函數，不依賴狀態)
     // ===========================================
