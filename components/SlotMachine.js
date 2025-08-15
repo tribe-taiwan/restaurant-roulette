@@ -75,6 +75,32 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     }, [userLocation, userAddress, language]);
 
+    // 生成優化的 Google Maps 查看URL（四層 fallback 策略）
+    const getOptimizedMapsUrl = React.useCallback((restaurant) => {
+      if (restaurant.id) {
+        // 第一優先：place_id（最精確，直接找到原餐廳）
+        return `https://www.google.com/maps/search/?api=1&query_place_id=${restaurant.id}`;
+      } else if (restaurant.name) {
+        // 第二優先：城市+餐廳名稱（縮小同名餐廳問題，避免 place_id 錯誤）
+        let searchQuery = restaurant.name;
+        if (restaurant.address) {
+          // 從地址提取城市資訊（通常在地址後段）
+          const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
+          if (cityMatch) {
+            searchQuery = `${restaurant.name} ${cityMatch[0]}`;
+          }
+        }
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+      } else if (restaurant.address) {
+        // 第三優先：地址（輔助定位）
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`;
+      } else if (restaurant.lat && restaurant.lng) {
+        // 最後備案：座標（可能定位不準，指向無關店家）
+        return `https://www.google.com/maps/search/?api=1&query=${restaurant.lat},${restaurant.lng}`;
+      }
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name || 'unknown')}`;
+    }, []);
+
     // 檢查當前餐廳是否已在候選清單中
     const isRestaurantInCandidates = React.useMemo(() => {
       return finalRestaurant && candidateList.some(candidate =>
@@ -1022,7 +1048,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
                       {/* 原本的餐廳卡片 */}
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`}
+                        href={getOptimizedMapsUrl(restaurant)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block overflow-hidden transition-all duration-200 hover:shadow-lg relative h-24 z-10"

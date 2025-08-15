@@ -47,26 +47,52 @@ window.renderStars = function(rating) {
   return stars;
 };
 
-// 導航URL生成函數 - 統一的導航URL生成邏輯
+// 導航URL生成函數 - 統一的導航URL生成邏輯，採用四層 fallback 目標地址策略
 window.getDirectionsUrl = function(restaurant, userLocation, userAddress, language = 'zh') {
+  // 生成優化的目標地址（四層 fallback 策略）
+  const getOptimizedDestination = () => {
+    if (restaurant.id) {
+      // 第一優先：place_id（最精確，直接找到原餐廳）
+      return `place_id:${restaurant.id}`;
+    } else if (restaurant.name) {
+      // 第二優先：城市+餐廳名稱（縮小同名餐廳問題，避免 place_id 錯誤）
+      let searchQuery = restaurant.name;
+      if (restaurant.address) {
+        // 從地址提取城市資訊（通常在地址後段）
+        const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
+        if (cityMatch) {
+          searchQuery = `${restaurant.name} ${cityMatch[0]}`;
+        }
+      }
+      return searchQuery;
+    } else if (restaurant.address) {
+      // 第三優先：地址（輔助定位）
+      return restaurant.address;
+    } else if (restaurant.lat && restaurant.lng) {
+      // 最後備案：座標（可能定位不準，指向無關店家）
+      return `${restaurant.lat},${restaurant.lng}`;
+    }
+    return restaurant.name || 'unknown';
+  };
+
   // 優先使用userAddress作為起點地址
-  if (userAddress && restaurant.address) {
+  if (userAddress) {
     const origin = encodeURIComponent(userAddress);
-    const destination = encodeURIComponent(restaurant.address);
+    const destination = encodeURIComponent(getOptimizedDestination());
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
     return finalUrl;
   }
 
   // 回退到座標（如果有userLocation但沒有userAddress）
-  if (userLocation && restaurant.address) {
+  if (userLocation) {
     const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
-    const destination = encodeURIComponent(restaurant.address);
+    const destination = encodeURIComponent(getOptimizedDestination());
     const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
     return finalUrl;
   }
 
   // 回退選項：直接導航到餐廳位置
-  return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ',' + restaurant.address)}`;
+  return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getOptimizedDestination())}`;
 };
 
 // 格式化營業時間 - 統一的營業時間格式化邏輯（已移至檔案末尾避免重複）

@@ -40,8 +40,8 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
       return formattedHours;
     };
 
-    const handleImageClick = () => {
-      // 點擊照片跳轉到Google Maps相片功能
+    const openRestaurantInMaps = () => {
+      // 在 Google Maps 中打開餐廳位置和相片功能
       let url;
       if (restaurant.id) {
         // 第一優先：place_id（最精確，直接找到原餐廳）

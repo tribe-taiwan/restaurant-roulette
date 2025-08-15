@@ -466,8 +466,8 @@ function App() {
       setCandidateList(prevList => prevList.filter((_, index) => index !== indexToRemove));
     };
 
-    // 處理圖片點擊跳轉到 Google Maps 相片功能
-    const handleImageClick = () => {
+    // 在 Google Maps 中打開餐廳位置和相片
+    const openRestaurantInMaps = () => {
       if (currentRestaurant) {
         let url;
         if (currentRestaurant.id) {
@@ -632,7 +632,7 @@ function App() {
                 language={selectedLanguage}
                 onClearList={handleClearList}
                 onRemoveCandidate={handleRemoveCandidate}
-                onImageClick={handleImageClick}
+                onImageClick={openRestaurantInMaps}
                 userLocation={userLocation}
                 userAddress={userAddress}
                 onPreviousRestaurant={handlePreviousClick}
