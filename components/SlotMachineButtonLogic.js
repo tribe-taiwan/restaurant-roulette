@@ -93,19 +93,40 @@ const createButtonLogic = (params) => {
            !isRestaurantOperational(finalRestaurant);
   };
 
-  // 獲取按鈕樣式
-  const getAddButtonStyle = () => {
-    return {
-      background: !isRestaurantOperational(finalRestaurant) ?
-        'linear-gradient(135deg, #9CA3AF, #6B7280)' : // 灰色漸層表示暫停營業
-        'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-      borderColor: !isRestaurantOperational(finalRestaurant) ? '#6B7280' : 'var(--theme-primary)',
+  // 獲取按鈕樣式 - 支援自定義顏色
+  const getAddButtonStyle = (customBackground = null, customTextColor = null, ignoreOperationalStatus = false) => {
+    let background, borderColor;
+    
+    if (customBackground) {
+      // 使用自定義背景色
+      background = customBackground;
+      borderColor = customBackground;
+    } else if (!ignoreOperationalStatus && !isRestaurantOperational(finalRestaurant)) {
+      // 灰色漸層表示暫停營業（除非被忽略）
+      background = 'linear-gradient(135deg, #9CA3AF, #6B7280)';
+      borderColor = '#6B7280';
+    } else {
+      // 預設主題色
+      background = 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))';
+      borderColor = 'var(--theme-primary)';
+    }
+
+    const style = {
+      background,
+      borderColor,
       touchAction: 'manipulation',
       transition: 'none',
       margin: 0,
-      opacity: (!finalRestaurant || candidateList.length >= 9 || !isRestaurantOperational(finalRestaurant)) ? 0.3 : (isSpinning ? 0.5 : 1),
-      cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning || !isRestaurantOperational(finalRestaurant)) ? 'not-allowed' : 'pointer'
+      opacity: (!finalRestaurant || candidateList.length >= 9 || (!ignoreOperationalStatus && !isRestaurantOperational(finalRestaurant))) ? 0.3 : (isSpinning ? 0.5 : 1),
+      cursor: (!finalRestaurant || candidateList.length >= 9 || isSpinning || (!ignoreOperationalStatus && !isRestaurantOperational(finalRestaurant))) ? 'not-allowed' : 'pointer'
     };
+
+    // 如果有自定義文字顏色，加入樣式
+    if (customTextColor) {
+      style.color = customTextColor;
+    }
+
+    return style;
   };
 
   // 獲取按鈕標題

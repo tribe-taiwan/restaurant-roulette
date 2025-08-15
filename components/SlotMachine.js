@@ -1002,15 +1002,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   rel="noopener noreferrer"
                   className="h-[72px] p-3 rounded-lg border-2 
                              flex flex-col items-center justify-center text-white shadow-lg"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                    borderColor: 'var(--theme-primary)',
-                    touchAction: 'manipulation',
-                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
-                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto',
-                    transition: 'none',
-                    margin: 0
-                  }}
+                  style={buttonLogic.getAddButtonStyle()}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
                       e.preventDefault();
@@ -1027,15 +1019,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                 <div
                   className="h-[72px] p-3 rounded-lg border-2 
                              flex flex-col items-center justify-center shadow-lg"
-                  style={{
-                    background: 'white',
-                    borderColor: '#e5e7eb',
-                    touchAction: 'manipulation',
-                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
-                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto',
-                    transition: 'none',
-                    margin: 0
-                  }}
+                  style={buttonLogic.getAddButtonStyle(
+                    finalRestaurant.operatingStatus?.status === 'open' ? '#22c55e' : '#9ca3af',
+                    'white'
+                  )}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
                       e.preventDefault();
@@ -1043,9 +1030,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     }
                   }}
                 >
-                  <div className={`text-lg font-bold text-center ${
-                    finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-gray-800'
-                  }`}>
+                  <div className="text-lg font-bold text-center">
                     {finalRestaurant.operatingStatus?.status === 'open' 
                       ? translations.openNow || '營業中'
                       : finalRestaurant.operatingStatus?.status === 'closed'
@@ -1055,11 +1040,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   </div>
                   <div className="text-xs mt-1 flex items-center gap-1">
                     {finalRestaurant.phone && (
-                      <span className={`${
-                        finalRestaurant.operatingStatus?.status === 'open' 
-                          ? 'text-green-600' 
-                          : 'text-red-600 line-through'
-                      }`}>
+                      <span className={finalRestaurant.operatingStatus?.status === 'open' ? '' : 'line-through'}>
                         {finalRestaurant.phone}
                       </span>
                     )}
@@ -1075,13 +1056,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               onClick={() => buttonLogic.handleSpinClick()}
               className="h-[72px] p-3 rounded-lg border-2 
                          flex flex-col items-center justify-center text-white shadow-lg"
-              style={{
-                background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                borderColor: 'var(--theme-primary)',
-                touchAction: 'manipulation',
-                transition: 'none',
-                margin: 0
-              }}
+              style={buttonLogic.getAddButtonStyle(null, null, true)}
             >
               {isSpinning ? (
                 <div className="text-lg font-bold text-center">
@@ -1100,19 +1075,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               disabled={buttonLogic.isAddButtonDisabled()}
               className="h-[72px] p-3 rounded-lg border-2
                          flex flex-col items-center justify-center text-white shadow-lg"
-              style={{
-                background: buttonLogic.isAddButtonDisabled() 
-                  ? 'rgba(156, 163, 175, 0.5)' 
-                  : 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                borderColor: buttonLogic.isAddButtonDisabled() 
-                  ? 'rgba(156, 163, 175, 0.5)' 
-                  : 'var(--theme-primary)',
-                touchAction: 'manipulation',
-                transition: 'none',
-                margin: 0,
-                opacity: buttonLogic.isAddButtonDisabled() ? 0.5 : 1,
-                pointerEvents: buttonLogic.isAddButtonDisabled() ? 'none' : 'auto'
-              }}
+              style={buttonLogic.getAddButtonStyle()}
               title={buttonLogic.getAddButtonTitle()}
             >
               <div className="text-lg font-bold text-center">
