@@ -29,7 +29,7 @@ function createTranslations(brandSubtitle) {
   return {
     en: {
       title: themeTranslations.en,
-      slotMachineTitle: "Restaurant Roulette",
+      slotMachineTitle: "What Should We Eat?",
       spinButton: "Skip",
       addCandidate: "Keep",
       candidateAdded: "Added",
@@ -179,7 +179,7 @@ function createTranslations(brandSubtitle) {
     },
     ja: {
       title: themeTranslations.ja,
-      slotMachineTitle: "レストランルーレット",
+      slotMachineTitle: "何を食べようかな？",
       spinButton: "スキップ",
       addCandidate: "保持",
       candidateAdded: "追加済み",
@@ -246,7 +246,7 @@ function createTranslations(brandSubtitle) {
     },
     ko: {
       title: themeTranslations.ko,
-      slotMachineTitle: "레스토랑 룰렛",
+      slotMachineTitle: "뭐 먹을까요?",
       spinButton: "건너뛰기",
       addCandidate: "보관",
       candidateAdded: "추가됨",
@@ -313,7 +313,7 @@ function createTranslations(brandSubtitle) {
     },
     vi: {
       title: themeTranslations.vi,
-      slotMachineTitle: "Vòng quay nhà hàng",
+      slotMachineTitle: "Ăn gì bây giờ?",
       spinButton: "Bỏ qua",
       addCandidate: "Giữ lại",
       candidateAdded: "Đã thêm",
@@ -380,7 +380,7 @@ function createTranslations(brandSubtitle) {
     },
     ms: {
       title: themeTranslations.ms,
-      slotMachineTitle: "Roulette Restoran",
+      slotMachineTitle: "Nak makan apa?",
       spinButton: "Langkau",
       addCandidate: "Simpan",
       candidateAdded: "Sudah ditambah",
