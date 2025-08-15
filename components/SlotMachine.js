@@ -929,6 +929,25 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       )}
                     </div>
                   )}
+
+                  {/* Website Button - Bottom Right Corner */}
+                  {finalRestaurant && !(isSpinning || spinningState.isActive) && finalRestaurant.website && (
+                    <a
+                      href={finalRestaurant.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm z-30 bg-blue-600 bg-opacity-80 hover:bg-opacity-100"
+                      style={{ touchAction: 'manipulation' }}
+                      title="前往官方網站"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(finalRestaurant.website, '_blank');
+                      }}
+                    >
+                      <div className="icon-globe text-white text-lg"></div>
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
@@ -954,57 +973,47 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           {/* Button Container - 整合所有按鈕和資訊 */}
           <div className="px-4 slot-machine-buttons">
-            {/* 地址顯示 - 使用 table 避免佈局跳動 */}
-            {finalRestaurant && !(isSpinning || spinningState.isActive) && (
-              <div className="mb-3 flex justify-center">
-                <table className="inline-block" style={{ lineHeight: '1.5' }}>
-                  <tr style={{ height: '28px' }}>
-                    <td className="w-6 text-center" style={{ verticalAlign: 'top', lineHeight: '28px', position: 'relative' }}>
-                      {finalRestaurant.website && (
-                        <a href={finalRestaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                          <div className="icon-globe text-lg" style={{ 
-                            lineHeight: '1', 
-                            display: 'inline-block', 
-                            position: 'relative',
-                            top: '2px'
-                          }}></div>
-                        </a>
-                      )}
-                    </td>
-                    <td className="pl-2" style={{ verticalAlign: 'top', lineHeight: '28px' }}>
-                      <span 
-                        className="text-lg font-medium text-white whitespace-nowrap" 
-                        style={{ 
-                          maxWidth: '280px', 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis',
-                          display: 'inline-block',
-                          lineHeight: '1.5'
-                        }}
-                        title={finalRestaurant.address}
-                      >
-                        {finalRestaurant.address}
-                      </span>
-                    </td>
-                  </tr>
-                </table>
+            {/* 地址顯示 - 簡化為單行不換行 */}
+            {finalRestaurant && (
+              <div className="mb-3 text-center px-4">
+                <div 
+                  className="text-lg font-medium text-white"
+                  style={{ 
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                    lineHeight: '28px'
+                  }}
+                  title={finalRestaurant.address}
+                >
+                  {finalRestaurant.address}
+                </div>
               </div>
             )}
 
             {/* 導航和營業狀態按鈕區塊 */}
-            {finalRestaurant && !(isSpinning || spinningState.isActive) && (
+            {finalRestaurant && (
               <div className="grid grid-cols-2 gap-3 mb-3">
                 {/* 導航按鈕 - 左邊 */}
                 <a
-                  href={getDirectionsUrl(finalRestaurant)}
-                  target="_blank"
+                  href={(isSpinning || spinningState.isActive) ? '#' : getDirectionsUrl(finalRestaurant)}
+                  target={(isSpinning || spinningState.isActive) ? '_self' : '_blank'}
                   rel="noopener noreferrer"
                   className="min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
                              flex flex-col items-center justify-center text-white shadow-lg"
                   style={{
                     background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
                     borderColor: 'var(--theme-primary)',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
+                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto'
+                  }}
+                  onClick={(e) => {
+                    if (isSpinning || spinningState.isActive) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
                   }}
                 >
                   <div className="text-lg font-semibold text-center leading-tight">
@@ -1022,7 +1031,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   style={{
                     background: 'white',
                     borderColor: '#e5e7eb',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1
                   }}
                 >
                   <div className={`text-lg font-semibold text-center leading-tight ${
