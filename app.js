@@ -726,30 +726,20 @@ function App() {
 
           {/* Footer - 左右到底設計 */}
           <footer
-            className="mt-16 py-8"
+            className="mt-16"
             style={{
               background: 'rgba(0, 0, 0, 0.4)', // 加深背景
               borderTop: '1px solid rgba(255, 255, 255, 0.08)',
               margin: '0', // 左右到底，不留間隔
-              borderRadius: '0' // 直角設計
+              borderRadius: '0', // 直角設計
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '64px' // 固定高度確保垂直居中
             }}
           >
-            <div className="max-w-6xl mx-auto text-center">
-              <div className="flex items-baseline justify-center gap-2 text-[var(--text-secondary)] leading-none">
-                <span className="leading-none">© 2025</span>
-                <a
-                  href="https://tribe.org.tw"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--primary-color)] hover:text-[var(--secondary-color)] transition-colors duration-200 font-medium leading-none"
-                >
-                  tribe.org.tw
-                </a>
-                <span className="leading-none">All rights reserved.</span>
-              </div>
-              <div className="mt-2 text-sm text-gray-500">
-                Restaurant Roulette - Discover amazing food near you
-              </div>
+            <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)] leading-none">
+              <span className="leading-none">© 2025 tribe.org.tw All rights reserved.</span>
             </div>
           </footer>
         </div>

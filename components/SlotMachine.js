@@ -992,22 +992,24 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               </div>
             )}
 
-            {/* 導航和營業狀態按鈕區塊 */}
+            {/* 統一4個按鈕區塊 */}
             {finalRestaurant && (
               <div className="grid grid-cols-2 gap-3 mb-3">
-                {/* 導航按鈕 - 左邊 */}
+                {/* 導航按鈕 - 左上 */}
                 <a
                   href={(isSpinning || spinningState.isActive) ? '#' : getDirectionsUrl(finalRestaurant)}
                   target={(isSpinning || spinningState.isActive) ? '_self' : '_blank'}
                   rel="noopener noreferrer"
-                  className="min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                  className="h-[72px] p-3 rounded-lg border-2 
                              flex flex-col items-center justify-center text-white shadow-lg"
                   style={{
                     background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
                     borderColor: 'var(--theme-primary)',
                     touchAction: 'manipulation',
                     opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
-                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto'
+                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto',
+                    transition: 'none',
+                    margin: 0
                   }}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
@@ -1016,24 +1018,23 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     }
                   }}
                 >
-                  <div className="text-lg font-semibold text-center leading-tight">
+                  <div className="text-lg font-bold text-center">
                     {translations.viewRoute || '查看路線'}
-                  </div>
-                  <div className="text-lg mt-1 text-white opacity-90">
-                    <div className="icon-navigation"></div>
                   </div>
                 </a>
 
-                {/* 營業狀態按鈕 - 右邊 */}
+                {/* 營業狀態按鈕 - 右上 */}
                 <div
-                  className="min-h-[72px] p-3 rounded-lg border-2 transition-all duration-200 
+                  className="h-[72px] p-3 rounded-lg border-2 
                              flex flex-col items-center justify-center shadow-lg"
                   style={{
                     background: 'white',
                     borderColor: '#e5e7eb',
                     touchAction: 'manipulation',
                     opacity: (isSpinning || spinningState.isActive) ? 0.5 : 1,
-                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto'
+                    pointerEvents: (isSpinning || spinningState.isActive) ? 'none' : 'auto',
+                    transition: 'none',
+                    margin: 0
                   }}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
@@ -1042,7 +1043,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                     }
                   }}
                 >
-                  <div className={`text-lg font-semibold text-center leading-tight ${
+                  <div className={`text-lg font-bold text-center ${
                     finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-gray-800'
                   }`}>
                     {finalRestaurant.operatingStatus?.status === 'open' 
@@ -1052,32 +1053,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         : translations.hoursUnknown || '營業中'
                     }
                   </div>
-                  <div className="text-sm mt-1 flex items-center gap-1">
+                  <div className="text-xs mt-1 flex items-center gap-1">
                     {finalRestaurant.phone && (
-                      <>
-                        <div className={`${
-                          finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-red-600'
-                        }`}></div>
-                        <span className={`${
-                          finalRestaurant.operatingStatus?.status === 'open' 
-                            ? 'text-green-600' 
-                            : 'text-red-600 line-through'
-                        }`}>
-                          {finalRestaurant.phone}
-                        </span>
-                      </>
+                      <span className={`${
+                        finalRestaurant.operatingStatus?.status === 'open' 
+                          ? 'text-green-600' 
+                          : 'text-red-600 line-through'
+                      }`}>
+                        {finalRestaurant.phone}
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 主要操作按鈕 - 下一個和保留 */}
-            <div className="grid grid-cols-[1fr_120px] gap-3">
-            {/* Search Next Button - 主按鈕佔剩餘空間，第一個按鈕為了統一也加上 margin: 0 */}
+            {/* 主要操作按鈕 - 下排 */}
+            <div className="grid grid-cols-2 gap-3">
+            {/* Search Next Button - 左下 */}
             <button
               onClick={() => buttonLogic.handleSpinClick()}
-              className="min-h-[72px] p-3 rounded-lg border-2 
+              className="h-[72px] p-3 rounded-lg border-2 
                          flex flex-col items-center justify-center text-white shadow-lg"
               style={{
                 background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
@@ -1088,26 +1084,38 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               }}
             >
               {isSpinning ? (
-                <div className="text-xl font-bold text-center">
+                <div className="text-lg font-bold text-center">
                   點擊停止
                 </div>
               ) : (
-                <div className="text-xl font-bold text-center">
+                <div className="text-lg font-bold text-center">
                   {translations.spinButton}
                 </div>
               )}
             </button>
 
-            {/* Add to Candidate Button - 固定 120px 寬度空間，非第一個按鈕需要 margin: 0 來避免上方多出間隔 */}
+            {/* Add to Candidate Button - 右下 */}
             <button
               onClick={buttonLogic.isAddButtonDisabled() ? null : buttonLogic.handleAddCandidateClick}
               disabled={buttonLogic.isAddButtonDisabled()}
-              className="min-h-[72px] p-3 rounded-lg border-2
+              className="h-[72px] p-3 rounded-lg border-2
                          flex flex-col items-center justify-center text-white shadow-lg"
-              style={buttonLogic.getAddButtonStyle()}
+              style={{
+                background: buttonLogic.isAddButtonDisabled() 
+                  ? 'rgba(156, 163, 175, 0.5)' 
+                  : 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                borderColor: buttonLogic.isAddButtonDisabled() 
+                  ? 'rgba(156, 163, 175, 0.5)' 
+                  : 'var(--theme-primary)',
+                touchAction: 'manipulation',
+                transition: 'none',
+                margin: 0,
+                opacity: buttonLogic.isAddButtonDisabled() ? 0.5 : 1,
+                pointerEvents: buttonLogic.isAddButtonDisabled() ? 'none' : 'auto'
+              }}
               title={buttonLogic.getAddButtonTitle()}
             >
-              <div className="text-xl font-bold text-center">
+              <div className="text-lg font-bold text-center">
                 {buttonLogic.getAddCandidateButtonText()}
               </div>
             </button>
