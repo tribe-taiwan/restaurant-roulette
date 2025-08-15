@@ -75,30 +75,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       return window.getDirectionsUrl(restaurant, userLocation, userAddress, language);
     }, [userLocation, userAddress, language]);
 
-    // 生成優化的 Google Maps 查看URL（四層 fallback 策略，避免 place_id 錯誤）
+    // 生成優化的 Google Maps 查看URL（使用共用的四層 fallback 策略）
     const getOptimizedMapsUrl = React.useCallback((restaurant) => {
-      if (restaurant.name) {
-        // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
-        let searchQuery = restaurant.name;
-        if (restaurant.address) {
-          // 從地址提取城市資訊（通常在地址後段）
-          const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
-          if (cityMatch) {
-            searchQuery = `${restaurant.name} ${cityMatch[0]}`;
-          }
-        }
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
-      } else if (restaurant.address) {
-        // 第二優先：地址（輔助定位）
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`;
-      } else if (restaurant.lat && restaurant.lng) {
-        // 第三優先：座標（可能定位不準，指向無關店家）
-        return `https://www.google.com/maps/search/?api=1&query=${restaurant.lat},${restaurant.lng}`;
-      } else if (restaurant.id) {
-        // 最後備案：place_id（經常出錯，顯示空白地圖）
+      const optimized = window.getOptimizedRestaurantQuery(restaurant);
+      
+      if (optimized.type === 'place_id') {
         return `https://www.google.com/maps/search/?api=1&query_place_id=${restaurant.id}`;
+      } else {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(optimized.query)}`;
       }
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name || 'unknown')}`;
     }, []);
 
     // 檢查當前餐廳是否已在候選清單中

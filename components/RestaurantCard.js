@@ -41,29 +41,16 @@ function RestaurantCard({ restaurant, language, userLocation, userAddress }) {
     };
 
     const openRestaurantInMaps = () => {
-      // 在 Google Maps 中打開餐廳位置和相片功能
+      // 在 Google Maps 中打開餐廳位置和相片功能（使用共用的四層 fallback 策略）
+      const optimized = window.getOptimizedRestaurantQuery(restaurant);
       let url;
-      if (restaurant.name) {
-        // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
-        let searchQuery = restaurant.name;
-        if (restaurant.address) {
-          // 從地址提取城市資訊（通常在地址後段）
-          const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
-          if (cityMatch) {
-            searchQuery = `${restaurant.name} ${cityMatch[0]}`;
-          }
-        }
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
-      } else if (restaurant.address) {
-        // 第二優先：地址（輔助定位）
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`;
-      } else if (restaurant.lat && restaurant.lng) {
-        // 第三優先：座標（可能定位不準，指向無關店家）
-        url = `https://www.google.com/maps/search/?api=1&query=${restaurant.lat},${restaurant.lng}`;
-      } else if (restaurant.id) {
-        // 最後備案：place_id（經常出錯，顯示空白地圖）
+      
+      if (optimized.type === 'place_id') {
         url = `https://www.google.com/maps/search/?api=1&query_place_id=${restaurant.id}`;
+      } else {
+        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(optimized.query)}`;
       }
+      
       window.open(url, '_blank');
     };
 

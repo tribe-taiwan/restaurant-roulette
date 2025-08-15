@@ -1,6 +1,32 @@
 // 共用工具函數 - 避免組件間代碼重複
 // 移除import，使用全域函數
 
+// 優化餐廳搜尋查詢字串生成函數 - 四層 fallback 策略
+window.getOptimizedRestaurantQuery = function(restaurant) {
+  if (restaurant.name) {
+    // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
+    let searchQuery = restaurant.name;
+    if (restaurant.address) {
+      // 從地址提取城市資訊（通常在地址後段）
+      const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
+      if (cityMatch) {
+        searchQuery = `${restaurant.name} ${cityMatch[0]}`;
+      }
+    }
+    return { type: 'name_city', query: searchQuery };
+  } else if (restaurant.address) {
+    // 第二優先：地址（輔助定位）
+    return { type: 'address', query: restaurant.address };
+  } else if (restaurant.lat && restaurant.lng) {
+    // 第三優先：座標（可能定位不準，指向無關店家）
+    return { type: 'coordinates', query: `${restaurant.lat},${restaurant.lng}` };
+  } else if (restaurant.id) {
+    // 最後備案：place_id（經常出錯，顯示空白地圖）
+    return { type: 'place_id', query: `place_id:${restaurant.id}` };
+  }
+  return { type: 'fallback', query: restaurant.name || 'unknown' };
+};
+
 // 價位標籤資料 - 統一管理所有語言的價位標籤
 window.getPriceLabels = function() {
   return {
@@ -47,52 +73,30 @@ window.renderStars = function(rating) {
   return stars;
 };
 
-// 導航URL生成函數 - 統一的導航URL生成邏輯，採用四層 fallback 目標地址策略
+// 導航URL生成函數 - 統一的導航URL生成邏輯，使用共用的四層 fallback 策略
 window.getDirectionsUrl = function(restaurant, userLocation, userAddress, language = 'zh') {
-  // 生成優化的目標地址（四層 fallback 策略，避免 place_id 錯誤）
-  const getOptimizedDestination = () => {
-    if (restaurant.name) {
-      // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
-      let searchQuery = restaurant.name;
-      if (restaurant.address) {
-        // 從地址提取城市資訊（通常在地址後段）
-        const cityMatch = restaurant.address.match(/[市區縣]\s*$|[市區縣][^\s]*$/);
-        if (cityMatch) {
-          searchQuery = `${restaurant.name} ${cityMatch[0]}`;
-        }
-      }
-      return searchQuery;
-    } else if (restaurant.address) {
-      // 第二優先：地址（輔助定位）
-      return restaurant.address;
-    } else if (restaurant.lat && restaurant.lng) {
-      // 第三優先：座標（可能定位不準，指向無關店家）
-      return `${restaurant.lat},${restaurant.lng}`;
-    } else if (restaurant.id) {
-      // 最後備案：place_id（經常出錯，顯示空白地圖）
-      return `place_id:${restaurant.id}`;
-    }
-    return restaurant.name || 'unknown';
-  };
+  // 使用共用的優化查詢函數
+  const optimized = window.getOptimizedRestaurantQuery(restaurant);
+  const destination = optimized.query;
 
   // 優先使用userAddress作為起點地址
   if (userAddress) {
     const origin = encodeURIComponent(userAddress);
-    const destination = encodeURIComponent(getOptimizedDestination());
-    const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+    const encodedDestination = encodeURIComponent(destination);
+    const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodedDestination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
     return finalUrl;
   }
 
   // 回退到座標（如果有userLocation但沒有userAddress）
   if (userLocation) {
     const origin = encodeURIComponent(`${userLocation.lat},${userLocation.lng}`);
-    const destination = encodeURIComponent(getOptimizedDestination());
-    const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
+    const encodedDestination = encodeURIComponent(destination);
+    const finalUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodedDestination}&hl=${language === 'zh' ? 'zh-TW' : 'en'}`;
     return finalUrl;
   }
 
   // 回退選項：直接導航到餐廳位置
-  return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getOptimizedDestination())}`;
+  return restaurant.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
 };
 
 // 格式化營業時間 - 統一的營業時間格式化邏輯（已移至檔案末尾避免重複）
