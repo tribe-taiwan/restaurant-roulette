@@ -936,7 +936,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       href={finalRestaurant.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm z-30 bg-blue-600 bg-opacity-80 hover:bg-opacity-100"
+                      className="absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm z-30 bg-black-300 bg-opacity-20 hover:bg-opacity-50"
                       style={{ touchAction: 'manipulation' }}
                       title="前往官方網站"
                       onClick={(e) => {
@@ -945,7 +945,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         window.open(finalRestaurant.website, '_blank');
                       }}
                     >
-                      <div className="icon-globe text-white text-lg"></div>
+                      <div className="icon-globe text-blue-600 text-3xl"></div>
                     </a>
                   )}
                 </div>
@@ -1048,7 +1048,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   <div className="text-sm mt-1 flex items-center gap-1">
                     {finalRestaurant.phone && (
                       <>
-                        <div className={`icon-phone w-4 h-4 ${
+                        <div className={`${
                           finalRestaurant.operatingStatus?.status === 'open' ? 'text-green-600' : 'text-red-600'
                         }`}></div>
                         <span className={`${
