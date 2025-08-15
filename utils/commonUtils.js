@@ -49,13 +49,10 @@ window.renderStars = function(rating) {
 
 // 導航URL生成函數 - 統一的導航URL生成邏輯，採用四層 fallback 目標地址策略
 window.getDirectionsUrl = function(restaurant, userLocation, userAddress, language = 'zh') {
-  // 生成優化的目標地址（四層 fallback 策略）
+  // 生成優化的目標地址（四層 fallback 策略，避免 place_id 錯誤）
   const getOptimizedDestination = () => {
-    if (restaurant.id) {
-      // 第一優先：place_id（最精確，直接找到原餐廳）
-      return `place_id:${restaurant.id}`;
-    } else if (restaurant.name) {
-      // 第二優先：城市+餐廳名稱（縮小同名餐廳問題，避免 place_id 錯誤）
+    if (restaurant.name) {
+      // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
       let searchQuery = restaurant.name;
       if (restaurant.address) {
         // 從地址提取城市資訊（通常在地址後段）
@@ -66,11 +63,14 @@ window.getDirectionsUrl = function(restaurant, userLocation, userAddress, langua
       }
       return searchQuery;
     } else if (restaurant.address) {
-      // 第三優先：地址（輔助定位）
+      // 第二優先：地址（輔助定位）
       return restaurant.address;
     } else if (restaurant.lat && restaurant.lng) {
-      // 最後備案：座標（可能定位不準，指向無關店家）
+      // 第三優先：座標（可能定位不準，指向無關店家）
       return `${restaurant.lat},${restaurant.lng}`;
+    } else if (restaurant.id) {
+      // 最後備案：place_id（經常出錯，顯示空白地圖）
+      return `place_id:${restaurant.id}`;
     }
     return restaurant.name || 'unknown';
   };

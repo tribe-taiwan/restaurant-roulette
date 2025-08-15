@@ -470,11 +470,8 @@ function App() {
     const openRestaurantInMaps = () => {
       if (currentRestaurant) {
         let url;
-        if (currentRestaurant.id) {
-          // 第一優先：place_id（最精確，直接找到原餐廳）
-          url = `https://www.google.com/maps/search/?api=1&query_place_id=${currentRestaurant.id}`;
-        } else if (currentRestaurant.name) {
-          // 第二優先：城市+餐廳名稱（縮小同名餐廳問題，避免 place_id 錯誤）
+        if (currentRestaurant.name) {
+          // 第一優先：城市+餐廳名稱（最可靠，避免 place_id 錯誤）
           let searchQuery = currentRestaurant.name;
           if (currentRestaurant.address) {
             // 從地址提取城市資訊（通常在地址後段）
@@ -485,11 +482,14 @@ function App() {
           }
           url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
         } else if (currentRestaurant.address) {
-          // 第三優先：地址（輔助定位）
+          // 第二優先：地址（輔助定位）
           url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentRestaurant.address)}`;
         } else if (currentRestaurant.lat && currentRestaurant.lng) {
-          // 最後備案：座標（可能定位不準，指向無關店家）
+          // 第三優先：座標（可能定位不準，指向無關店家）
           url = `https://www.google.com/maps/search/?api=1&query=${currentRestaurant.lat},${currentRestaurant.lng}`;
+        } else if (currentRestaurant.id) {
+          // 最後備案：place_id（經常出錯，顯示空白地圖）
+          url = `https://www.google.com/maps/search/?api=1&query_place_id=${currentRestaurant.id}`;
         } else {
           // 最終回退
           url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentRestaurant.name || 'unknown')}`;
