@@ -838,9 +838,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       <button
                         className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-all duration-200 z-20"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           onPreviousRestaurant && onPreviousRestaurant();
                         }}
+                        style={{ touchAction: 'manipulation' }}
                         title="回到上一家餐廳"
                       >
                         <div className="icon-chevron-left text-white text-xl"></div>
@@ -850,10 +852,12 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                       <button
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-all duration-200 z-20"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           console.log('🔜 右箭頭被點擊，使用輪盤按鈕邏輯');
                           buttonLogic.handleSpinClick();
                         }}
+                        style={{ touchAction: 'manipulation' }}
                         title="搜尋下一家餐廳"
                       >
                         <div className="icon-chevron-right text-white text-xl"></div>
@@ -871,11 +875,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                         'bg-black bg-opacity-50 hover:bg-opacity-70'
                       }`}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         if (shareButtonState === 'normal') {
                           shareButtonLogic.handleShareClick(finalRestaurant);
                         }
                       }}
+                      style={{ touchAction: 'manipulation' }}
                       title={
                         shareButtonState === 'copying' ? '複製中...' :
                         shareButtonState === 'success' ? '已複製！' :
@@ -948,19 +954,40 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
           {/* Button Container - 整合所有按鈕和資訊 */}
           <div className="px-4 slot-machine-buttons">
-            {/* 地址顯示 - 整合到按鈕容器中 */}
+            {/* 地址顯示 - 使用 table 避免佈局跳動 */}
             {finalRestaurant && !(isSpinning || spinningState.isActive) && (
-              <div className="text-center mb-3">
-                <div className="flex items-baseline justify-center gap-2">
-                  {finalRestaurant.website && (
-                    <a href={finalRestaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
-                      <div className="icon-globe text-lg leading-none"></div>
-                    </a>
-                  )}
-                  <span className="text-lg font-medium break-words text-white">
-                    {finalRestaurant.address}
-                  </span>
-                </div>
+              <div className="mb-3 flex justify-center">
+                <table className="inline-block" style={{ lineHeight: '1.5' }}>
+                  <tr style={{ height: '28px' }}>
+                    <td className="w-6 text-center" style={{ verticalAlign: 'top', lineHeight: '28px', position: 'relative' }}>
+                      {finalRestaurant.website && (
+                        <a href={finalRestaurant.website} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                          <div className="icon-globe text-lg" style={{ 
+                            lineHeight: '1', 
+                            display: 'inline-block', 
+                            position: 'relative',
+                            top: '2px'
+                          }}></div>
+                        </a>
+                      )}
+                    </td>
+                    <td className="pl-2" style={{ verticalAlign: 'top', lineHeight: '28px' }}>
+                      <span 
+                        className="text-lg font-medium text-white whitespace-nowrap" 
+                        style={{ 
+                          maxWidth: '280px', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          display: 'inline-block',
+                          lineHeight: '1.5'
+                        }}
+                        title={finalRestaurant.address}
+                      >
+                        {finalRestaurant.address}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
               </div>
             )}
 
@@ -976,7 +1003,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                              flex flex-col items-center justify-center text-white shadow-lg"
                   style={{
                     background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
-                    borderColor: 'var(--theme-primary)'
+                    borderColor: 'var(--theme-primary)',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <div className="text-lg font-semibold text-center leading-tight">
@@ -993,7 +1021,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                              flex flex-col items-center justify-center shadow-lg"
                   style={{
                     background: 'white',
-                    borderColor: '#e5e7eb'
+                    borderColor: '#e5e7eb',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <div className={`text-lg font-semibold text-center leading-tight ${
