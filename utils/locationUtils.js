@@ -1173,8 +1173,8 @@ window.getRestaurantHistory = function() {
     const data = JSON.parse(history);
     const now = Date.now();
 
-    // 檢查是否超過5分鐘
-    if (now - data.timestamp > 5 * 60 * 1000) {
+    // 檢查是否超過10分鐘
+    if (now - data.timestamp > 10 * 60 * 1000) {
       localStorage.removeItem('restaurant_history');
       return null;
     }
