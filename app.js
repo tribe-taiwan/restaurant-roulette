@@ -44,7 +44,8 @@ function App() {
 
     // 額外的位置變更清除邏輯 - 使用 useUpdateEffect 避免初始渲染衝突
     window.useUpdateEffect(() => {
-      if (window.clearRestaurantHistory && userLocation) {
+      // 🎯 修復：防止幕後補充時誤觸發快取清除
+      if (window.clearRestaurantHistory && userLocation && !window.backgroundRefillInProgress) {
         const actualRadius = baseUnit * unitMultiplier;
         console.log('🔄 搜索條件變化，清除餐廳歷史記錄:', { selectedMealTime, baseUnit, unitMultiplier, actualRadius, userLocation });
         window.clearRestaurantHistory();
@@ -150,7 +151,7 @@ function App() {
     
     // 位置改變時自動搜尋新位置資料
     React.useEffect(() => {
-      if (userLocation && locationStatus === 'success' && !isInitialLoad) {
+      if (userLocation && locationStatus === 'success' && !isInitialLoad && !window.backgroundRefillInProgress) {
         console.log('🔄 位置已改變，清除舊快取並自動搜尋新位置的餐廳資料');
         console.log('🔍 當前狀態 - isSpinning:', isSpinning, 'locationStatus:', locationStatus);
         

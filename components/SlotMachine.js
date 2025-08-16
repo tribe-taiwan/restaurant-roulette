@@ -750,8 +750,8 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
               {translations.slotMachineTitle}
             </h2>
             {/* 顯示快取數量和搜尋範圍 */}
-            <div className="absolute top-2 right-0 pointer-events-none">
-              <div className="text-black text-xs font-medium px-1">
+            <div className="absolute top-7 right-0 pointer-events-none">
+              <div className="text-black text-xs font-bold px-1">
                 {availableRestaurantsCount.available}／{availableRestaurantsCount.total}（{(currentSearchRadius / 1000).toFixed(1)} km）
               </div>
             </div>

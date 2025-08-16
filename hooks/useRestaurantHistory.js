@@ -10,7 +10,7 @@ function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
 
   // 只有用餐時段變化時才清除餐廳歷史記錄（搜尋半徑變化不清除）
   React.useEffect(() => {
-    if (window.clearRestaurantHistory && !isInitialLoad) {
+    if (window.clearRestaurantHistory && !isInitialLoad && !window.backgroundRefillInProgress) {
       console.log(`🔄 用餐時段變化，清除餐廳歷史記錄 (${selectedMealTime})`);
       window.clearRestaurantHistory();
       // 同時清除本地餐廳歷史記錄
@@ -42,7 +42,7 @@ function useRestaurantHistory(currentRestaurant, searchParams, isInitialLoad) {
         }
       }
 
-      if (shouldClear) {
+      if (shouldClear && !window.backgroundRefillInProgress) {
         console.log(`🔄 ${reason}，清除餐廳歷史記錄`);
         if (window.clearRestaurantHistory) {
           window.clearRestaurantHistory();
