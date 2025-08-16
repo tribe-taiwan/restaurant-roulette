@@ -100,7 +100,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "Swipe left to remove candidate",
       // 分享按鈕相關
       copyLink: "Copy Link",
-      navigate: "Navigate"
+      navigate: "Navigate",
+      viewRoute: "Route & Navigation"
     },
     zh: {
       title: themeTranslations.zh,
@@ -175,7 +176,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "左滑可移除候選餐廳",
       // 分享按鈕相關
       copyLink: "複製連結",
-      navigate: "導航"
+      navigate: "導航",
+      viewRoute: "路線與導航"
     },
     ja: {
       title: themeTranslations.ja,
@@ -242,7 +244,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "左スワイプで候補を削除",
       // 分享按鈕相關
       copyLink: "リンクコピー",
-      navigate: "ナビ"
+      navigate: "ナビ",
+      viewRoute: "ルートとナビゲーション"
     },
     ko: {
       title: themeTranslations.ko,
@@ -309,7 +312,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "왼쪽으로 스와이프하여 후보 제거",
       // 分享按鈕相關
       copyLink: "링크 복사",
-      navigate: "내비게이션"
+      navigate: "내비게이션",
+      viewRoute: "경로 및 내비게이션"
     },
     vi: {
       title: themeTranslations.vi,
@@ -376,7 +380,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "Vuốt trái để xóa ứng viên",
       // 分享按鈕相關
       copyLink: "Sao chép liên kết",
-      navigate: "Điều hướng"
+      navigate: "Điều hướng",
+      viewRoute: "Lộ trình và Điều hướng"
     },
     ms: {
       title: themeTranslations.ms,
@@ -443,7 +448,8 @@ function createTranslations(brandSubtitle) {
       swipeToRemove: "Leret ke kiri untuk buang calon",
       // 分享按鈕相關
       copyLink: "Salin Pautan",
-      navigate: "Navigasi"
+      navigate: "Navigasi",
+      viewRoute: "Laluan dan Navigasi"
     }
   };
 }
