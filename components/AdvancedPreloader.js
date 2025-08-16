@@ -69,13 +69,16 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
           歷史餐廳ID: allRestaurants.map(r => r.place_id || r.id)
         });
 
-        // 計算總可用餐廳數量（統一使用 place_id 比對）
+        // 🎯 修復：計算總可用餐廳數量 - 使用與 getAvailableRestaurantsFromCache 相同的邏輯
+        // 從快取中篩選出營業中且未出現過的餐廳
+        const history = window.getRestaurantHistory ? window.getRestaurantHistory() : null;
+        const shownRestaurants = history?.shown_restaurants || [];
+
         const totalAvailableCount = cachedRestaurants.filter(cached => {
-          const cachedId = cached.place_id || cached.id;
-          return !allRestaurants.some(existing => {
-            const existingId = existing.place_id || existing.id;
-            return existingId === cachedId;
-          });
+          const isOpen = window.isRestaurantOpenInTimeSlot ?
+            window.isRestaurantOpenInTimeSlot(cached, selectedMealTime, true) : true;
+          const notShown = !shownRestaurants.includes(cached.id);
+          return isOpen && notShown;
         }).length;
 
         // 動態計算預載入範圍：智能調整
@@ -96,21 +99,20 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
         }
         const halfRange = Math.floor(maxRange / 2);
 
-        // 🎯 關鍵：計算快取中所有可用餐廳數量（不限於預載入範圍）
-        // 統一使用 place_id 比對，確保識別準確性
+        // 🎯 修復：使用與 getAvailableRestaurantsFromCache 相同的邏輯計算可用餐廳
+        // 直接使用已修復的 totalAvailableCount
         const availableCandidates = cachedRestaurants.filter(cached => {
-          const cachedId = cached.place_id || cached.id;
-          return !allRestaurants.some(existing => {
-            const existingId = existing.place_id || existing.id;
-            return existingId === cachedId;
-          });
+          const isOpen = window.isRestaurantOpenInTimeSlot ?
+            window.isRestaurantOpenInTimeSlot(cached, selectedMealTime, true) : true;
+          const notShown = !shownRestaurants.includes(cached.id);
+          return isOpen && notShown;
         });
-        let availableFutureRestaurants = availableCandidates.length; // 總可用餐廳數量
+        let availableFutureRestaurants = totalAvailableCount; // 使用修復後的總可用餐廳數量
 
         // 🎯 調試監控：可用餐廳過濾統計
         console.log('🔍 可用餐廳過濾統計:', {
           快取總數: cachedRestaurants.length,
-          歷史總數: allRestaurants.length,
+          已顯示餐廳數: shownRestaurants.length,
           過濾前候選: cachedRestaurants.length,
           過濾後可用: availableCandidates.length,
           最終可用數: availableFutureRestaurants,
@@ -119,15 +121,14 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
             id: r.place_id || r.id
           })),
           被排除餐廳範例: cachedRestaurants.filter(cached => {
-            const cachedId = cached.place_id || cached.id;
-            return allRestaurants.some(existing => {
-              const existingId = existing.place_id || existing.id;
-              return existingId === cachedId;
-            });
+            const isOpen = window.isRestaurantOpenInTimeSlot ?
+              window.isRestaurantOpenInTimeSlot(cached, selectedMealTime, true) : true;
+            const notShown = !shownRestaurants.includes(cached.id);
+            return !isOpen || !notShown;
           }).slice(0, 3).map(r => ({
             name: r.name || r.name_zh,
             id: r.place_id || r.id,
-            原因: '已在歷史記錄中'
+            原因: shownRestaurants.includes(r.id) ? '已顯示過' : '非營業時間'
           }))
         });
 
