@@ -1500,13 +1500,14 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         // 移除快取加入日誌
       }
 
-      // 篩選：營業中 + 未出現過 + 🎯 環形搜索邏輯
+      // 篩選：營業中 + 未出現過 + 🎯 改進的環形搜索邏輯
       const availableRestaurants = restaurants.filter(restaurant => {
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
 
-        // 🎯 環形搜索邏輯：過濾掉在較小範圍內已經搜索過的餐廳
+        // 🎯 改進的環形搜索邏輯：只有在餐廳密集區域才啟用環形過濾
         let inRingArea = true;
+        // 不要從 attempt > 0 改為 attempt > 2（讓前3次搜尋都不會被環形過濾影響）
         if (attempt > 0 && userLocation && restaurant.lat && restaurant.lng) {
           // 計算餐廳到用戶的距離
           const restaurantDistance = calculateDistance(
@@ -1517,16 +1518,21 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
           // 前一次搜索的最大半徑
           const previousSearchRadius = baseRadius + (baseUnit * (attempt - 1));
           
-          // 如果餐廳在前一次搜索半徑內，則排除（避免重複）
-          if (restaurantDistance <= previousSearchRadius) {
+          // 檢查是否在餐廳密集區域：如果快取中已有足夠餐廳（>15家），才啟用環形過濾
+          const cachedRestaurants = history.cached_restaurants || [];
+          const isDenseArea = cachedRestaurants.length > 15;
+          
+          // 只有在餐廳密集區域才過濾較小範圍內的餐廳
+          if (isDenseArea && restaurantDistance <= previousSearchRadius) {
             inRingArea = false;
             // RR_SEARCH_RING: 環形搜索過濾
-            window.RRLog?.debug('RR_SEARCH_FILTER', '環形搜索過濾', {
+            window.RRLog?.debug('RR_SEARCH_FILTER', '環形搜索過濾（密集區域）', {
               restaurant: restaurant.name,
               distance: `${(restaurantDistance/1000).toFixed(2)}km`,
               previousRadius: `${(previousSearchRadius/1000).toFixed(2)}km`,
               currentRadius: `${(searchRadius/1000).toFixed(2)}km`,
-              filtered: '已在較小範圍搜索過'
+              cachedCount: cachedRestaurants.length,
+              filtered: '已在較小範圍搜索過（密集區域）'
             });
           }
         }
