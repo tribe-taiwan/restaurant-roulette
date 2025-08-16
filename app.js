@@ -401,10 +401,22 @@ function App() {
           const abortController = new AbortController();
           setSearchAbortController(abortController);
           
-          // 計算實際搜索半徑並更新搜索設定
-          const actualRadius = baseUnit * unitMultiplier;
-          if (window.updateSearchRadius) {
-            window.updateSearchRadius(actualRadius);
+          // 🎯 修復：只在位置變更時重置搜索半徑，其他時候保持擴大狀態
+          // 位置變更時會清除餐廳歷史，此時才重置搜索半徑
+          const shouldResetRadius = !window.previousSearchLocation || 
+                                  (window.previousSearchLocation.lat !== userLocation.lat || 
+                                   window.previousSearchLocation.lng !== userLocation.lng);
+          
+          if (shouldResetRadius) {
+            const actualRadius = baseUnit * unitMultiplier;
+            if (window.updateSearchRadius) {
+              window.updateSearchRadius(actualRadius);
+              console.log(`📍 位置變更，重置搜索半徑: ${(actualRadius/1000).toFixed(1)}km`);
+            }
+            // 記錄當前搜索位置
+            window.previousSearchLocation = { lat: userLocation.lat, lng: userLocation.lng };
+          } else {
+            console.log(`📍 相同位置，保持當前搜索半徑擴大狀態`);
           }
           
           try {
