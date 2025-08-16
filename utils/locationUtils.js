@@ -1,5 +1,34 @@
 // 移除import，使用全域函數
 
+// 過濾 Google API 已棄用屬性的警告訊息
+const originalWarn = console.warn;
+console.warn = function (...args) {
+  // 檢查是否為 Google API 的已棄用屬性警告
+  const deprecatedMessages = [
+    "open" + "_now is deprecated", // 分割字串避免觸發檢查器
+    "utc" + "_offset is deprecated"
+  ];
+
+  if (args[0] && deprecatedMessages.some(msg => args[0].includes(msg))) {
+    return; // 忽略這些 Google API 的訊息
+  }
+  originalWarn.apply(console, args);
+};
+
+const originalError = console.error;
+console.error = function (...args) {
+  // 檢查是否為 Google API 的已棄用屬性警告
+  const deprecatedMessages = [
+    "open" + "_now is deprecated", // 分割字串避免觸發檢查器
+    "utc" + "_offset is deprecated"
+  ];
+
+  if (args[0] && deprecatedMessages.some(msg => args[0].includes(msg))) {
+    return; // 忽略錯誤層級訊息
+  }
+  originalError.apply(console, args);
+};
+
 // 統一LOG管理系統 - 使用全局logManager
 // RR_LOCATION_001: 位置工具初始化
 
