@@ -17,21 +17,7 @@ function QuickLocationButtons({
     const hasAddressInput = addressInput.trim().length > 0;
     const shouldShowActiveState = hasAddressInput || isInputFocused;
     
-    // 獲取按鈕樣式
-    const getLocationButtonStyle = (locationType) => {
-      const hasLocation = locationType === 'home' ? hasHomeLocation : hasOfficeLocation;
 
-      if (shouldShowActiveState) {
-        // 藍色狀態 - 有輸入或聚焦就顯示可儲存狀態
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
-      } else if (hasLocation) {
-        // 綠色狀態 - 已儲存
-        return 'bg-[var(--success-color)] hover:bg-green-600';
-      } else {
-        // 灰色狀態 - 未設定
-        return 'bg-gray-500 hover:bg-gray-600';
-      }
-    };
 
     // 獲取按鈕提示文字
     const getLocationButtonTip = (locationType) => {
@@ -64,15 +50,24 @@ function QuickLocationButtons({
 
     return (
       <div className="quick-buttons-container">
-        {/* 住家按鈕 - 第一個按鈕，為了統一也加上 margin: 0 */}
+        {/* 住家按鈕 */}
         <button
           onClick={() => onLocationButton('home')}
-          className={`quick-location-btn ${getLocationButtonStyle('home')}`}
+          className={`quick-location-btn ${window.ButtonStylesManager ? 
+            window.ButtonStylesManager.getButtonClasses('primary', 'standard') : 
+            'h-[72px] p-3 rounded-lg border-2 flex flex-col items-center justify-center shadow-lg transition-all duration-200'
+          }`}
           title={getLocationButtonTip('home')}
           data-touch-optimized="true"
           data-important-action={shouldShowActiveState ? "true" : "false"}
           aria-label={getLocationButtonTip('home')}
-          style={{ margin: 0 }}
+          style={window.ButtonStylesManager ? 
+            window.ButtonStylesManager.getButtonStyle({
+              variant: shouldShowActiveState ? 'primary' : 
+                       hasHomeLocation ? 'success' : 'secondary',
+              state: 'normal'
+            }) : { margin: 0, touchAction: 'manipulation' }
+          }
         >
           <div className="quick-btn-icon quick-btn-icon--home"></div>
           <div className="quick-btn-text">
@@ -80,15 +75,24 @@ function QuickLocationButtons({
           </div>
         </button>
 
-        {/* 公司按鈕 - 非第一個按鈕，需要 margin: 0 來避免上方多出間隔 */}
+        {/* 公司按鈕 */}
         <button
           onClick={() => onLocationButton('office')}
-          className={`quick-location-btn ${getLocationButtonStyle('office')}`}
+          className={`quick-location-btn ${window.ButtonStylesManager ? 
+            window.ButtonStylesManager.getButtonClasses('primary', 'standard') : 
+            'h-[72px] p-3 rounded-lg border-2 flex flex-col items-center justify-center shadow-lg transition-all duration-200'
+          }`}
           title={getLocationButtonTip('office')}
           data-touch-optimized="true"
           data-important-action={shouldShowActiveState ? "true" : "false"}
           aria-label={getLocationButtonTip('office')}
-          style={{ margin: 0 }}
+          style={window.ButtonStylesManager ? 
+            window.ButtonStylesManager.getButtonStyle({
+              variant: shouldShowActiveState ? 'primary' : 
+                       hasOfficeLocation ? 'success' : 'secondary',
+              state: 'normal'
+            }) : { margin: 0, touchAction: 'manipulation' }
+          }
         >
           <div className="quick-btn-icon quick-btn-icon--briefcase"></div>
           <div className="quick-btn-text">

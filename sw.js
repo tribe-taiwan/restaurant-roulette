@@ -211,7 +211,17 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .catch(() => {
-        return caches.match(request);
+        return caches.match(request).then(response => {
+          if (response) {
+            return response;
+          }
+          // 如果快取中也沒有，返回一個基本的錯誤響應
+          return new Response('File not found', { 
+            status: 404, 
+            statusText: 'Not Found',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        });
       })
   );
 });

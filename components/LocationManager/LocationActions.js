@@ -19,18 +19,7 @@ function LocationActions({
     const hasAddressInput = addressInput.trim().length > 0;
     const shouldShowActiveState = hasAddressInput || isInputFocused;
     
-    // 獲取手動定位按鈕樣式 - 使用簡單背景色，不使用漸層
-    const getManualLocationButtonStyle = () => {
-      if (!addressInput.trim() && !isInputFocused) {
-        return 'btn-disabled';
-      } else if (manualLocationState === 'success') {
-        return 'btn-success-solid';
-      } else if (shouldShowActiveState) {
-        return 'btn-blue-solid';
-      } else {
-        return 'btn-gray-solid';
-      }
-    };
+
     
     // 獲取手動定位按鈕文字
     const getManualLocationButtonText = () => {
@@ -50,25 +39,25 @@ function LocationActions({
     return (
       <div className="location-actions">
         <div className="location-actions-container">
-          {/* 自動定位按鈕 - 第一個按鈕，為了統一也加上 margin: 0 */}
+          {/* 自動定位按鈕 */}
           <button
             onClick={onRelocate}
             disabled={isRelocating}
-            className={`location-action-btn auto-location-btn ${
-              isRelocating 
-                ? 'btn-loading' 
-                : locationStatus === 'success'
-                  ? 'btn-success'
-                  : locationStatus === 'error'
-                    ? 'btn-warning'
-                    : 'btn-primary'
+            className={`location-action-btn auto-location-btn ${window.ButtonStylesManager ? 
+              window.ButtonStylesManager.getButtonClasses('primary', 'standard') : 
+              'h-[72px] p-3 rounded-lg border-2 flex flex-col items-center justify-center shadow-lg transition-all duration-200'
             }`}
             title={t.autoLocationTip}
             data-touch-optimized="true"
             data-important-action="true"
             aria-label={isRelocating ? `${t.autoLocation} - ${t.loading}` : t.autoLocationTip}
             aria-busy={isRelocating}
-            style={{ margin: 0 }}
+            style={window.ButtonStylesManager ? 
+              window.ButtonStylesManager.getButtonStyle({
+                variant: locationStatus === 'success' ? 'success' : 'primary',
+                state: isRelocating ? 'loading' : 'normal'
+              }) : { margin: 0, touchAction: 'manipulation' }
+            }
           >
             <div className="location-btn-content">
               {isRelocating ? (
@@ -89,17 +78,26 @@ function LocationActions({
             </div>
           </button>
           
-          {/* 手動定位按鈕 - 非第一個按鈕，需要 margin: 0 來避免上方多出間隔 */}
+          {/* 手動定位按鈕 */}
           <button
             onClick={handleManualLocation}
             disabled={!addressInput.trim() || isGeocodingAddress}
-            className={`location-action-btn manual-location-btn ${getManualLocationButtonStyle()}`}
+            className={`location-action-btn manual-location-btn ${window.ButtonStylesManager ? 
+              window.ButtonStylesManager.getButtonClasses('secondary', 'standard') : 
+              'h-[72px] p-3 rounded-lg border-2 flex flex-col items-center justify-center shadow-lg transition-all duration-200'
+            }`}
             title={t.manualLocationTip}
             data-touch-optimized="true"
             data-important-action={shouldShowActiveState ? "true" : "false"}
             aria-label={isGeocodingAddress ? `${t.locateHere} - ${t.loading}` : t.manualLocationTip}
             aria-busy={isGeocodingAddress}
-            style={{ margin: 0 }}
+            style={window.ButtonStylesManager ? 
+              window.ButtonStylesManager.getButtonStyle({
+                variant: manualLocationState === 'success' ? 'success' : 
+                         shouldShowActiveState ? 'primary' : 'secondary',
+                state: (!addressInput.trim() || isGeocodingAddress) ? 'disabled' : 'normal'
+              }) : { margin: 0, touchAction: 'manipulation' }
+            }
           >
             <div className="location-btn-content">
               {isGeocodingAddress ? (

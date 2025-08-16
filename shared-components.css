@@ -1,0 +1,21 @@
+/* Shared Components CSS */
+/* This file imports all shared component styles */
+
+/* Import shared component styles */
+@import url('./components/shared/ButtonStylesManager.css');
+@import url('./components/shared/TouchOptimizer.css');
+@import url('./components/shared/LargeButton.css');
+@import url('./components/shared/MobileCard.css');
+@import url('./components/shared/StatusIndicator.css');
+
+/* Base shared component styles */
+.shared-component {
+  box-sizing: border-box;
+}
+
+/* Common button fixes applied by ButtonStylesManager */
+.button-styles-managed {
+  margin: 0;
+  touch-action: manipulation;
+  transition: all 0.2s ease;
+}

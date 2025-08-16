@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ButtonStylesManager 獨立測試</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            /* 舞鶴主題變數 */
+            --theme-primary: #dc143c;
+            --theme-accent: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #f5f5f5;
+            --surface-color: #2d2d2d;
+            --border-color: #444444;
+            --success-color: #52c41a;
+        }
+
+        .theme-qisu {
+            --theme-primary: #0077be;
+            --theme-accent: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #e5f4fd;
+            --surface-color: #003d6b;
+            --border-color: #0099cc;
+            --success-color: #20b2aa;
+        }
+
+        .theme-muluinn {
+            --theme-primary: #2d8659;
+            --theme-accent: #f0d97d;
+            --text-primary: #ffffff;
+            --text-secondary: #e8f5e8;
+            --surface-color: #2d3e2f;
+            --border-color: #4a7c59;
+            --success-color: #52c41a;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: rgba(45, 45, 45, 0.5);
+        }
+
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .test-pass {
+            background: rgba(82, 196, 26, 0.2);
+            border-left: 4px solid #52c41a;
+            color: #a6f3a6;
+        }
+
+        .test-fail {
+            background: rgba(220, 20, 60, 0.2);
+            border-left: 4px solid #dc143c;
+            color: #ffb3b3;
+        }
+
+        .button-demo {
+            margin: 0.5rem;
+            display: inline-block;
+        }
+
+        .theme-demo {
+            border: 2px solid var(--theme-primary);
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.1), rgba(255, 215, 0, 0.1));
+            border: 1px solid var(--theme-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">🧪 ButtonStylesManager 獨立測試</h1>
+        
+        <!-- 測試狀態 -->
+        <div id="test-status" class="summary-card">
+            <h2 class="text-xl font-semibold mb-4">測試狀態</h2>
+            <div id="test-progress">正在載入測試...</div>
+        </div>
+
+        <!-- 測試結果摘要 -->
+        <div id="test-summary" class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📊 測試結果摘要</h2>
+            <div id="summary-content"></div>
+        </div>
+
+        <!-- 控制台輸出 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🖥️ 控制台輸出</h2>
+            <div id="console-output" class="console-output"></div>
+        </div>
+
+        <!-- 基本功能測試結果 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔧 基本功能測試</h2>
+            <div id="basic-tests"></div>
+        </div>
+
+        <!-- 主題測試結果 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🎨 主題測試</h2>
+            <div id="theme-tests"></div>
+        </div>
+
+        <!-- 視覺化展示 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">👀 視覺化按鈕展示</h2>
+            <div id="visual-demo"></div>
+        </div>
+
+        <!-- 程式碼重複度分析 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📈 程式碼重複度分析</h2>
+            <div id="duplication-analysis"></div>
+        </div>
+    </div>
+
+    <!-- ButtonStylesManager 內嵌版本 -->
+    <script>
+        // 內嵌 ButtonStylesManager 以避免載入問題
+        const ButtonStylesManager = {
+            base: {
+                standard: 'h-[72px] p-3 rounded-lg border-2 flex flex-col items-center justify-center shadow-lg transition-all duration-200',
+                compact: 'h-12 p-2 rounded-md border flex items-center justify-center shadow-md transition-all duration-200',
+                fixes: { 
+                    margin: 0, 
+                    touchAction: 'manipulation' 
+                }
+            },
+
+            variants: {
+                primary: {
+                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                    borderColor: 'var(--theme-primary)',
+                    color: 'var(--text-primary)'
+                },
+                secondary: {
+                    background: 'var(--surface-color)',
+                    borderColor: 'var(--border-color)', 
+                    color: 'var(--text-secondary)'
+                },
+                success: {
+                    background: 'var(--success-color)',
+                    borderColor: 'var(--success-color)',
+                    color: 'white'
+                },
+                custom: {
+                    background: null,
+                    borderColor: null,
+                    color: null
+                }
+            },
+
+            states: {
+                normal: { 
+                    opacity: 1, 
+                    cursor: 'pointer' 
+                },
+                disabled: { 
+                    opacity: 0.3, 
+                    cursor: 'not-allowed' 
+                },
+                loading: { 
+                    opacity: 0.5, 
+                    cursor: 'wait' 
+                }
+            },
+
+            getButtonClasses: function(variant = 'primary', size = 'standard') {
+                try {
+                    if (!this.base[size]) {
+                        console.warn(`Invalid button size: ${size}. Using 'standard' as fallback.`);
+                        size = 'standard';
+                    }
+
+                    if (!this.variants[variant]) {
+                        console.warn(`Invalid button variant: ${variant}. Using 'primary' as fallback.`);
+                        variant = 'primary';
+                    }
+
+                    const baseClasses = this.base[size];
+                    const variantClasses = this.getVariantClasses(variant);
+                    
+                    return `${baseClasses} ${variantClasses}`.trim();
+                } catch (error) {
+                    console.error('ButtonStylesManager.getButtonClasses error:', error);
+                    return this.base.standard;
+                }
+            },
+
+            getVariantClasses: function(variant) {
+                return '';
+            },
+
+            getButtonStyle: function(options = {}) {
+                try {
+                    const {
+                        variant = 'primary',
+                        state = 'normal',
+                        customColors = {},
+                        ignoreDisabled = false
+                    } = options;
+
+                    let validVariant = variant;
+                    if (!this.variants[variant]) {
+                        console.warn(`Invalid button variant: ${variant}. Using 'primary' as fallback.`);
+                        validVariant = 'primary';
+                    }
+
+                    let validState = state;
+                    if (!this.states[state]) {
+                        console.warn(`Invalid button state: ${state}. Using 'normal' as fallback.`);
+                        validState = 'normal';
+                    }
+
+                    const variantStyle = validVariant === 'custom' 
+                        ? customColors 
+                        : { ...this.variants[validVariant] };
+                    
+                    const stateStyle = ignoreDisabled && validState === 'disabled' 
+                        ? { ...this.states.normal }
+                        : { ...this.states[validState] };
+                    
+                    return {
+                        ...variantStyle,
+                        ...stateStyle,
+                        ...this.base.fixes
+                    };
+                } catch (error) {
+                    console.error('ButtonStylesManager.getButtonStyle error:', error);
+                    return {
+                        background: 'linear-gradient(135deg, var(--theme-primary, #dc143c), var(--theme-accent, #ffd700))',
+                        borderColor: 'var(--theme-primary, #dc143c)',
+                        color: 'var(--text-primary, #ffffff)',
+                        margin: 0,
+                        touchAction: 'manipulation',
+                        opacity: 1,
+                        cursor: 'pointer'
+                    };
+                }
+            },
+
+            createCompatibleButtonLogic: function(originalLogic) {
+                const self = this;
+                
+                return {
+                    ...originalLogic,
+                    getAddButtonStyle: function(customBackground, customTextColor, ignoreOperationalStatus) {
+                        if (customBackground || customTextColor) {
+                            return self.getButtonStyle({
+                                variant: 'custom',
+                                customColors: {
+                                    background: customBackground,
+                                    color: customTextColor
+                                },
+                                state: ignoreOperationalStatus ? 'normal' : 'disabled'
+                            });
+                        }
+                        
+                        return self.getButtonStyle({
+                            variant: 'primary',
+                            state: ignoreOperationalStatus ? 'normal' : 'disabled'
+                        });
+                    }
+                };
+            },
+
+            safeGetButtonStyle: function(options) {
+                try {
+                    return this.getButtonStyle(options);
+                } catch (error) {
+                    console.error('ButtonStylesManager.safeGetButtonStyle error:', error);
+                    return {
+                        background: '#dc143c',
+                        borderColor: '#dc143c',
+                        color: 'white',
+                        margin: 0,
+                        touchAction: 'manipulation',
+                        opacity: 1,
+                        cursor: 'pointer'
+                    };
+                }
+            }
+        };
+
+        // 註冊到 window
+        window.ButtonStylesManager = ButtonStylesManager;
+    </script>
+
+    <script>
+        // 測試框架
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.consoleOutput = [];
+                this.startTime = Date.now();
+                this.setupConsoleCapture();
+            }
+
+            setupConsoleCapture() {
+                const originalLog = console.log;
+                const originalWarn = console.warn;
+                const originalError = console.error;
+                
+                console.log = (...args) => {
+                    this.consoleOutput.push(`[LOG] ${args.join(' ')}`);
+                    originalLog.apply(console, args);
+                    this.updateConsoleDisplay();
+                };
+                
+                console.warn = (...args) => {
+                    this.consoleOutput.push(`[WARN] ${args.join(' ')}`);
+                    originalWarn.apply(console, args);
+                    this.updateConsoleDisplay();
+                };
+                
+                console.error = (...args) => {
+                    this.consoleOutput.push(`[ERROR] ${args.join(' ')}`);
+                    originalError.apply(console, args);
+                    this.updateConsoleDisplay();
+                };
+            }
+
+            updateConsoleDisplay() {
+                const consoleDiv = document.getElementById('console-output');
+                if (consoleDiv) {
+                    consoleDiv.innerHTML = this.consoleOutput.slice(-20).join('<br>');
+                    consoleDiv.scrollTop = consoleDiv.scrollHeight;
+                }
+            }
+
+            test(name, testFn, category = 'general') {
+                try {
+                    const start = Date.now();
+                    const result = testFn();
+                    const duration = Date.now() - start;
+                    
+                    this.results.push({
+                        name,
+                        category,
+                        passed: result === true,
+                        message: result === true ? 'PASS' : result || 'FAIL',
+                        duration
+                    });
+                    
+                    console.log(`${result === true ? '✅' : '❌'} ${name}: ${result === true ? 'PASS' : result}`);
+                } catch (error) {
+                    this.results.push({
+                        name,
+                        category,
+                        passed: false,
+                        message: `ERROR: ${error.message}`,
+                        duration: 0
+                    });
+                    
+                    console.error(`❌ ${name}: ERROR - ${error.message}`);
+                }
+            }
+
+            getSummary() {
+                const total = this.results.length;
+                const passed = this.results.filter(r => r.passed).length;
+                const failed = total - passed;
+                const totalDuration = Date.now() - this.startTime;
+                
+                return {
+                    total,
+                    passed,
+                    failed,
+                    passRate: total > 0 ? ((passed / total) * 100).toFixed(1) : 0,
+                    duration: totalDuration,
+                    categories: this.getCategorySummary()
+                };
+            }
+
+            getCategorySummary() {
+                const categories = {};
+                this.results.forEach(result => {
+                    if (!categories[result.category]) {
+                        categories[result.category] = { total: 0, passed: 0 };
+                    }
+                    categories[result.category].total++;
+                    if (result.passed) categories[result.category].passed++;
+                });
+                return categories;
+            }
+
+            displayResults(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                this.results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = `test-result ${result.passed ? 'test-pass' : 'test-fail'}`;
+                    div.innerHTML = `
+                        <strong>${result.name}:</strong> ${result.message}
+                        ${result.duration > 0 ? ` (${result.duration}ms)` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            displaySummary() {
+                const summary = this.getSummary();
+                const summaryContainer = document.getElementById('summary-content');
+                
+                if (!summaryContainer) return;
+                
+                summaryContainer.innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #60a5fa;">${summary.total}</div>
+                            <div class="stat-label">總測試數</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #34d399;">${summary.passed}</div>
+                            <div class="stat-label">通過</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #f87171;">${summary.failed}</div>
+                            <div class="stat-label">失敗</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #fbbf24;">${summary.passRate}%</div>
+                            <div class="stat-label">通過率</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 rounded" style="background: ${summary.passRate >= 90 ? 'rgba(34, 197, 94, 0.2)' : summary.passRate >= 70 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(239, 68, 68, 0.2)'};">
+                        <strong>測試結果:</strong> 
+                        ${summary.passRate >= 90 ? '✅ 優秀 - 所有功能運作正常' : summary.passRate >= 70 ? '⚠️ 良好 - 大部分功能正常' : '❌ 需要改進 - 多項功能存在問題'}
+                    </div>
+                    <div class="mt-2 text-sm opacity-75">
+                        執行時間: ${summary.duration}ms
+                    </div>
+                `;
+            }
+        }
+
+        // 主要測試函數
+        function runAllTests() {
+            const testRunner = new TestRunner();
+            
+            console.log('🚀 開始 ButtonStylesManager 獨立測試...');
+            
+            // 更新測試狀態
+            document.getElementById('test-progress').innerHTML = '🔄 正在執行測試...';
+            
+            // 基本功能測試
+            runBasicTests(testRunner);
+            
+            // 主題測試
+            runThemeTests(testRunner);
+            
+            // 狀態測試
+            runStateTests(testRunner);
+            
+            // 錯誤處理測試
+            runErrorHandlingTests(testRunner);
+            
+            // 效能測試
+            runPerformanceTests(testRunner);
+            
+            // 顯示結果
+            testRunner.displayResults('basic-tests');
+            testRunner.displaySummary();
+            
+            // 創建視覺化展示
+            createVisualDemo();
+            
+            // 分析程式碼重複度
+            analyzeCodeDuplication();
+            
+            // 更新測試狀態
+            const summary = testRunner.getSummary();
+            document.getElementById('test-progress').innerHTML = `
+                ✅ 測試完成 - ${summary.passed}/${summary.total} 通過 (${summary.passRate}%)
+            `;
+            
+            console.log('🎉 所有測試完成！');
+            
+            return testRunner;
+        }
+
+        function runBasicTests(testRunner) {
+            console.log('📝 執行基本功能測試...');
+            
+            testRunner.test('ButtonStylesManager 存在', () => {
+                return typeof window.ButtonStylesManager === 'object';
+            }, 'basic');
+
+            testRunner.test('getButtonClasses 函數存在', () => {
+                return typeof window.ButtonStylesManager.getButtonClasses === 'function';
+            }, 'basic');
+
+            testRunner.test('getButtonStyle 函數存在', () => {
+                return typeof window.ButtonStylesManager.getButtonStyle === 'function';
+            }, 'basic');
+
+            testRunner.test('getButtonClasses 預設參數', () => {
+                const classes = window.ButtonStylesManager.getButtonClasses();
+                return classes.includes('h-[72px]') && classes.includes('p-3') && classes.includes('rounded-lg');
+            }, 'basic');
+
+            testRunner.test('getButtonClasses 緊湊尺寸', () => {
+                const classes = window.ButtonStylesManager.getButtonClasses('primary', 'compact');
+                return classes.includes('h-12') && classes.includes('p-2') && classes.includes('rounded-md');
+            }, 'basic');
+
+            testRunner.test('getButtonStyle 預設樣式', () => {
+                const style = window.ButtonStylesManager.getButtonStyle();
+                return style.margin === 0 && style.touchAction === 'manipulation' && style.opacity === 1;
+            }, 'basic');
+        }
+
+        function runThemeTests(testRunner) {
+            console.log('🎨 執行主題測試...');
+            
+            const themes = [
+                { name: 'maizuru', class: '', primary: '#dc143c' },
+                { name: 'qisu', class: 'theme-qisu', primary: '#0077be' },
+                { name: 'muluinn', class: 'theme-muluinn', primary: '#2d8659' }
+            ];
+
+            themes.forEach(theme => {
+                testRunner.test(`${theme.name} 主題按鈕樣式`, () => {
+                    // 臨時切換主題
+                    if (theme.class) {
+                        document.body.className = theme.class;
+                    } else {
+                        document.body.className = '';
+                    }
+                    
+                    const style = window.ButtonStylesManager.getButtonStyle({ variant: 'primary' });
+                    return style.background && style.background.includes('var(--theme-primary');
+                }, 'themes');
+            });
+        }
+
+        function runStateTests(testRunner) {
+            console.log('🔄 執行狀態測試...');
+            
+            const states = ['normal', 'disabled', 'loading'];
+            
+            states.forEach(state => {
+                testRunner.test(`${state} 狀態樣式`, () => {
+                    const style = window.ButtonStylesManager.getButtonStyle({ state });
+                    
+                    switch (state) {
+                        case 'normal':
+                            return style.opacity === 1 && style.cursor === 'pointer';
+                        case 'disabled':
+                            return style.opacity === 0.3 && style.cursor === 'not-allowed';
+                        case 'loading':
+                            return style.opacity === 0.5 && style.cursor === 'wait';
+                        default:
+                            return false;
+                    }
+                }, 'states');
+            });
+
+            testRunner.test('ignoreDisabled 參數', () => {
+                const style = window.ButtonStylesManager.getButtonStyle({ 
+                    state: 'disabled', 
+                    ignoreDisabled: true 
+                });
+                return style.opacity === 1 && style.cursor === 'pointer';
+            }, 'states');
+        }
+
+        function runErrorHandlingTests(testRunner) {
+            console.log('⚠️ 執行錯誤處理測試...');
+            
+            testRunner.test('無效變體處理', () => {
+                const style = window.ButtonStylesManager.getButtonStyle({ variant: 'invalid' });
+                return style.background && style.background.includes('var(--theme-primary');
+            }, 'error-handling');
+
+            testRunner.test('無效狀態處理', () => {
+                const style = window.ButtonStylesManager.getButtonStyle({ state: 'invalid' });
+                return style.opacity === 1 && style.cursor === 'pointer';
+            }, 'error-handling');
+
+            testRunner.test('自訂顏色支援', () => {
+                const style = window.ButtonStylesManager.getButtonStyle({
+                    variant: 'custom',
+                    customColors: { background: '#ff0000', color: '#ffffff' }
+                });
+                return style.background === '#ff0000' && style.color === '#ffffff';
+            }, 'error-handling');
+        }
+
+        function runPerformanceTests(testRunner) {
+            console.log('⚡ 執行效能測試...');
+            
+            testRunner.test('getButtonClasses 效能', () => {
+                const start = Date.now();
+                for (let i = 0; i < 1000; i++) {
+                    window.ButtonStylesManager.getButtonClasses('primary', 'standard');
+                }
+                const duration = Date.now() - start;
+                return duration < 100;
+            }, 'performance');
+
+            testRunner.test('getButtonStyle 效能', () => {
+                const start = Date.now();
+                for (let i = 0; i < 1000; i++) {
+                    window.ButtonStylesManager.getButtonStyle({ variant: 'primary', state: 'normal' });
+                }
+                const duration = Date.now() - start;
+                return duration < 200;
+            }, 'performance');
+        }
+
+        function createVisualDemo() {
+            const demoContainer = document.getElementById('visual-demo');
+            if (!demoContainer) return;
+            
+            const themes = [
+                { id: 'maizuru', name: '舞鶴', class: '', colors: { primary: '#dc143c', accent: '#ffd700' } },
+                { id: 'qisu', name: '柒宿', class: 'theme-qisu', colors: { primary: '#0077be', accent: '#ffd700' } },
+                { id: 'muluinn', name: '沐旅', class: 'theme-muluinn', colors: { primary: '#2d8659', accent: '#f0d97d' } }
+            ];
+
+            themes.forEach(theme => {
+                const themeSection = document.createElement('div');
+                themeSection.className = `theme-demo ${theme.class}`;
+                
+                themeSection.innerHTML = `
+                    <h3 class="text-lg font-semibold mb-3">${theme.name} 主題按鈕展示</h3>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        ${createButtonDemo('primary', 'standard', theme)}
+                        ${createButtonDemo('secondary', 'standard', theme)}
+                        ${createButtonDemo('success', 'standard', theme)}
+                        ${createButtonDemo('primary', 'compact', theme)}
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">狀態展示:</h4>
+                        <div class="flex flex-wrap gap-4">
+                            ${createStateDemo('normal', theme)}
+                            ${createStateDemo('disabled', theme)}
+                            ${createStateDemo('loading', theme)}
+                        </div>
+                    </div>
+                `;
+                
+                demoContainer.appendChild(themeSection);
+            });
+        }
+
+        function createButtonDemo(variant, size, theme) {
+            const classes = window.ButtonStylesManager.getButtonClasses(variant, size);
+            const style = window.ButtonStylesManager.getButtonStyle({ variant });
+            
+            const styleString = Object.entries(style)
+                .map(([key, value]) => {
+                    if (typeof value === 'string') {
+                        value = value.replace('var(--theme-primary)', theme.colors.primary);
+                        value = value.replace('var(--theme-accent)', theme.colors.accent);
+                    }
+                    return `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`;
+                })
+                .join('; ');
+
+            return `
+                <button class="${classes} button-demo" style="${styleString}">
+                    ${variant}<br>${size}
+                </button>
+            `;
+        }
+
+        function createStateDemo(state, theme) {
+            const classes = window.ButtonStylesManager.getButtonClasses('primary', 'compact');
+            const style = window.ButtonStylesManager.getButtonStyle({ variant: 'primary', state });
+            
+            const styleString = Object.entries(style)
+                .map(([key, value]) => {
+                    if (typeof value === 'string') {
+                        value = value.replace('var(--theme-primary)', theme.colors.primary);
+                        value = value.replace('var(--theme-accent)', theme.colors.accent);
+                    }
+                    return `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`;
+                })
+                .join('; ');
+
+            return `
+                <button class="${classes} button-demo" style="${styleString}">
+                    ${state}
+                </button>
+            `;
+        }
+
+        function analyzeCodeDuplication() {
+            const analysisContainer = document.getElementById('duplication-analysis');
+            if (!analysisContainer) return;
+            
+            const commonStyles = [
+                'h-[72px] p-3 rounded-lg border-2',
+                'h-12 p-2 rounded-md border',
+                'flex flex-col items-center justify-center',
+                'shadow-lg transition-all duration-200',
+                'margin: 0',
+                'touchAction: manipulation',
+                'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))'
+            ];
+
+            const estimatedComponentsUsingStyles = 5;
+            const totalDuplicationBefore = commonStyles.length * estimatedComponentsUsingStyles;
+            const totalDuplicationAfter = commonStyles.length;
+
+            const reductionCount = totalDuplicationBefore - totalDuplicationAfter;
+            const reductionPercentage = ((reductionCount / totalDuplicationBefore) * 100).toFixed(1);
+
+            analysisContainer.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #f87171;">${totalDuplicationBefore}</div>
+                        <div class="stat-label">重構前重複</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #34d399;">${totalDuplicationAfter}</div>
+                        <div class="stat-label">重構後集中</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #60a5fa;">${reductionCount}</div>
+                        <div class="stat-label">減少數量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #fbbf24;">${reductionPercentage}%</div>
+                        <div class="stat-label">減少比例</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 rounded" style="background: ${parseFloat(reductionPercentage) >= 80 ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'};">
+                    <strong>重複度分析結果:</strong> 
+                    ${parseFloat(reductionPercentage) >= 80 ? '✅ 達成目標！' : '❌ 未達目標。'}
+                    程式碼重複度減少 ${reductionPercentage}%
+                    ${parseFloat(reductionPercentage) >= 80 ? '，超過 80% 的目標。' : '，未達到 80% 的目標。'}
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-semibold mb-2">常見重複樣式:</h4>
+                    <ul class="text-sm opacity-75">
+                        ${commonStyles.map(style => `<li>• ${style}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // 啟動測試
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

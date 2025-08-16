@@ -1,266 +1,28 @@
-/* MobileCard 組件樣式 */
+/* MobileCard CSS */
+/* Styles for mobile card components */
+
 .mobile-card {
-    /* 基礎樣式 */
-    background: var(--surface-color);
-    position: relative;
-    overflow: hidden;
-    transition: all var(--transition-normal);
-    
-    /* 預設居中 */
-    margin: 0 auto;
+  background: var(--surface-color, #ffffff);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-/* 全寬變體 */
-.mobile-card--full-width {
-    width: 100%;
-}
-
-/* 內邊距變體 */
-.mobile-card--padding-compact {
-    --card-padding: var(--spacing-md);
-}
-
-.mobile-card--padding-normal {
-    --card-padding: var(--spacing-xl);
-}
-
-.mobile-card--padding-spacious {
-    --card-padding: var(--spacing-2xl);
-}
-
-/* 陰影變體 */
-.mobile-card--shadow-none {
-    box-shadow: none;
-}
-
-.mobile-card--shadow-subtle {
-    box-shadow: var(--shadow-sm);
-}
-
-.mobile-card--shadow-normal {
-    box-shadow: var(--shadow-md);
-}
-
-.mobile-card--shadow-elevated {
-    box-shadow: var(--shadow-lg);
-}
-
-/* 圓角變體 */
-.mobile-card--rounded-none {
-    border-radius: 0;
-}
-
-.mobile-card--rounded-small {
-    border-radius: var(--border-radius-small);
-}
-
-.mobile-card--rounded-normal {
-    border-radius: var(--border-radius-medium);
-}
-
-.mobile-card--rounded-large {
-    border-radius: var(--border-radius-large);
-}
-
-/* 邊框變體 */
-.mobile-card--bordered {
-    border: 1px solid var(--border-color);
-}
-
-/* 標題區域 */
-.mobile-card__header {
-    padding: var(--card-padding) var(--card-padding) 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-lg);
-}
-
-.mobile-card__header:empty {
-    display: none;
-}
-
-.mobile-card__title {
-    margin: 0 0 var(--spacing-xs) 0;
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    line-height: 1.4;
-}
-
-.mobile-card__subtitle {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    line-height: 1.5;
-}
-
-/* 內容區域 */
-.mobile-card__content {
-    padding: var(--card-padding);
-    flex: 1;
-    min-height: 0; /* 允許內容收縮 */
-}
-
-.mobile-card__header + .mobile-card__content {
-    padding-top: 0;
-}
-
-/* 底部區域 */
-.mobile-card__footer {
-    padding: 0 var(--card-padding) var(--card-padding);
-    border-top: 1px solid var(--border-color);
-    margin-top: var(--spacing-lg);
-    background: var(--surface-secondary);
-}
-
-.mobile-card__footer:empty {
-    display: none !important;
-}
-
-/* 載入狀態 */
-.mobile-card--loading {
-    position: relative;
-    pointer-events: none;
-}
-
-.mobile-card--loading::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: color-mix(in srgb, var(--surface-color) 80%, transparent);
-    z-index: 10;
-}
-
-.mobile-card__loader {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 11;
-}
-
-.mobile-card__spinner {
-    width: 40px;
-    height: 40px;
-    color: var(--primary-color);
-}
-
-.mobile-card__spinner-svg {
-    width: 100%;
-    height: 100%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* 懸停效果 */
 .mobile-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
-.mobile-card--shadow-none:hover {
-    box-shadow: var(--shadow-sm);
+.mobile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-    .mobile-card {
-        margin: 0 var(--spacing-md);
-        max-width: calc(100vw - var(--spacing-2xl));
-    }
-    
-    .mobile-card--full-width {
-        margin: 0;
-        max-width: 100%;
-        border-radius: 0;
-    }
-    
-    /* 在小螢幕上減少內邊距 */
-    .mobile-card--padding-spacious {
-        --card-padding: var(--spacing-lg);
-    }
-    
-    .mobile-card--padding-normal {
-        --card-padding: var(--spacing-md);
-    }
-    
-    .mobile-card--padding-compact {
-        --card-padding: var(--spacing-sm);
-    }
-}
-
-@media (max-width: 480px) {
-    .mobile-card__title {
-        font-size: var(--font-size-base);
-    }
-    
-    .mobile-card__subtitle {
-        font-size: var(--font-size-sm);
-    }
-}
-
-/* 高對比度模式 */
-@media (prefers-contrast: high) {
-    .mobile-card--bordered {
-        border-width: 2px;
-    }
-    
-    .mobile-card__header {
-        border-bottom-width: 2px;
-    }
-    
-    .mobile-card__footer {
-        border-top-width: 2px;
-    }
-}
-
-/* 減少動畫偏好 */
-@media (prefers-reduced-motion: reduce) {
-    .mobile-card {
-        transition: none;
-    }
-    
-    .mobile-card:hover {
-        transform: none;
-    }
-    
-    .mobile-card__spinner-svg {
-        animation: none;
-    }
-}
-
-/* 深色模式優化 */
-@media (prefers-color-scheme: dark) {
-    .mobile-card__footer {
-        background: color-mix(in srgb, var(--surface-color) 95%, black);
-    }
-}
-
-/* 列表中的卡片 */
-.mobile-card + .mobile-card {
-    margin-top: var(--spacing-lg);
-}
-
-/* 卡片網格布局 */
-.mobile-card-grid {
-    display: grid;
-    gap: var(--spacing-lg);
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-@media (max-width: 768px) {
-    .mobile-card-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-md);
-    }
+.mobile-card-content {
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.5;
 }

@@ -53,28 +53,33 @@ function DistanceControl({
 
         {/* 單位切換器 */}
         <div className="flex gap-2">
-          {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config], index) => (
-            <button
-              key={value}
-              onClick={() => handleUnitSwitch(Number(value))}
-              className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 min-h-[48px] ${
-                baseUnit === Number(value)
-                  ? 'text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-              }`}
-              style={{
-                ...(baseUnit === Number(value) ? {
-                  background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))'
-                } : {}),
-                // 第一個按鈕為了統一也加上 margin: 0，非第一個按鈕需要 margin: 0 來避免上方多出間隔
-                margin: 0
-              }}
-              aria-label={`切換到${config.fullLabel}`}
-              aria-pressed={baseUnit === Number(value)}
-            >
-              {config.label}
-            </button>
-          ))}
+          {Object.entries(DISTANCE_CONFIG.baseUnits).map(([value, config], index) => {
+            const isActive = baseUnit === Number(value);
+            const buttonStyle = window.ButtonStylesManager ? 
+              window.ButtonStylesManager.getButtonStyle({
+                variant: isActive ? 'primary' : 'secondary',
+                state: 'normal'
+              }) : {
+                background: isActive ? 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))' : 'var(--surface-color)',
+                borderColor: isActive ? 'var(--theme-primary)' : 'var(--border-color)',
+                color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                margin: 0,
+                touchAction: 'manipulation'
+              };
+
+            return (
+              <button
+                key={value}
+                onClick={() => handleUnitSwitch(Number(value))}
+                className="flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 min-h-[48px] border-2 shadow-md"
+                style={buttonStyle}
+                aria-label={`切換到${config.fullLabel}`}
+                aria-pressed={isActive}
+              >
+                {config.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* 距離滑軌 */}

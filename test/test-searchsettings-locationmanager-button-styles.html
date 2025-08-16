@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchSettings & LocationManager 按鈕樣式測試</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- 主題樣式 -->
+    <style>
+        :root {
+            --theme-primary: #dc143c;
+            --theme-accent: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #374151;
+            --surface-color: #f9fafb;
+            --border-color: #d1d5db;
+            --success-color: #10b981;
+        }
+        
+        [data-theme="maizuru"] {
+            --theme-primary: #dc143c;
+            --theme-accent: #ffd700;
+        }
+        
+        [data-theme="qisu"] {
+            --theme-primary: #8b5cf6;
+            --theme-accent: #06b6d4;
+        }
+        
+        [data-theme="muluInn"] {
+            --theme-primary: #059669;
+            --theme-accent: #f59e0b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .theme-switcher button {
+            margin: 0 4px;
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .theme-switcher button:hover {
+            background: #f0f0f0;
+        }
+        
+        .theme-switcher button.active {
+            background: var(--theme-primary);
+            color: white;
+            border-color: var(--theme-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switcher">
+        <button onclick="switchTheme('maizuru')" id="theme-maizuru" class="active">舞鶴</button>
+        <button onclick="switchTheme('qisu')" id="theme-qisu">柒宿</button>
+        <button onclick="switchTheme('muluInn')" id="theme-muluInn">沐旅</button>
+    </div>
+
+    <div class="container mx-auto max-w-4xl">
+        <h1 class="text-3xl font-bold text-white text-center mb-8">
+            SearchSettings & LocationManager 按鈕樣式測試
+        </h1>
+        
+        <!-- DistanceControl 按鈕測試 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">DistanceControl 按鈕樣式</h2>
+            <p class="text-gray-600 mb-4">測試距離控制按鈕的主要和次要狀態</p>
+            
+            <div class="button-grid">
+                <div>
+                    <h3 class="font-medium mb-2">主要狀態 (選中)</h3>
+                    <button id="distance-primary" class="w-full">200m</button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">次要狀態 (未選中)</h3>
+                    <button id="distance-secondary" class="w-full">1km</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LocationActions 按鈕測試 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">LocationActions 按鈕樣式</h2>
+            <p class="text-gray-600 mb-4">測試自動和手動定位按鈕的不同狀態</p>
+            
+            <div class="button-grid">
+                <div>
+                    <h3 class="font-medium mb-2">自動定位 (正常)</h3>
+                    <button id="auto-location-normal" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>📍</div>
+                            <div>自動定位</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">自動定位 (載入中)</h3>
+                    <button id="auto-location-loading" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>⏳</div>
+                            <div>定位中...</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">手動定位 (啟用)</h3>
+                    <button id="manual-location-enabled" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>🕐</div>
+                            <div>定位到這裡</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">手動定位 (停用)</h3>
+                    <button id="manual-location-disabled" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>🕐</div>
+                            <div>定位到這裡</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- QuickLocationButtons 按鈕測試 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">QuickLocationButtons 按鈕樣式</h2>
+            <p class="text-gray-600 mb-4">測試住家和公司快速按鈕的不同狀態</p>
+            
+            <div class="button-grid">
+                <div>
+                    <h3 class="font-medium mb-2">住家 (未設定)</h3>
+                    <button id="home-unset" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>🏠</div>
+                            <div>住家未設定</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">住家 (已設定)</h3>
+                    <button id="home-set" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>🏠</div>
+                            <div>住家</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">公司 (可儲存)</h3>
+                    <button id="office-save" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>💼</div>
+                            <div>儲存公司</div>
+                        </div>
+                    </button>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">公司 (已設定)</h3>
+                    <button id="office-set" class="w-full">
+                        <div class="flex flex-col items-center">
+                            <div>💼</div>
+                            <div>公司</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 測試結果 -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">自動測試結果</h2>
+            <div id="test-results" class="bg-gray-100 p-4 rounded-lg">
+                <p class="text-gray-600">載入測試中...</p>
+            </div>
+            <button onclick="runManualTest()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                重新執行測試
+            </button>
+        </div>
+    </div>
+
+    <!-- 載入 ButtonStylesManager -->
+    <script src="../components/shared/ButtonStylesManager.js"></script>
+    
+    <!-- 載入測試腳本 -->
+    <script src="validate-searchsettings-locationmanager-button-styles.js"></script>
+    
+    <script>
+        let currentTheme = 'maizuru';
+        
+        // 主題切換函數
+        function switchTheme(theme) {
+            currentTheme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // 更新主題按鈕狀態
+            document.querySelectorAll('.theme-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`theme-${theme}`).classList.add('active');
+            
+            // 重新應用按鈕樣式
+            applyButtonStyles();
+        }
+        
+        // 應用按鈕樣式
+        function applyButtonStyles() {
+            if (!window.ButtonStylesManager) {
+                console.error('ButtonStylesManager 未載入');
+                return;
+            }
+            
+            // DistanceControl 按鈕
+            const distancePrimary = document.getElementById('distance-primary');
+            const distanceSecondary = document.getElementById('distance-secondary');
+            
+            if (distancePrimary) {
+                distancePrimary.className = 'w-full flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 min-h-[48px] border-2 shadow-md';
+                Object.assign(distancePrimary.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+            }
+            
+            if (distanceSecondary) {
+                distanceSecondary.className = 'w-full flex-1 px-4 py-3 rounded-lg font-semibold transition-all duration-200 min-h-[48px] border-2 shadow-md';
+                Object.assign(distanceSecondary.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'secondary',
+                    state: 'normal'
+                }));
+            }
+            
+            // LocationActions 按鈕
+            const autoNormal = document.getElementById('auto-location-normal');
+            const autoLoading = document.getElementById('auto-location-loading');
+            const manualEnabled = document.getElementById('manual-location-enabled');
+            const manualDisabled = document.getElementById('manual-location-disabled');
+            
+            [autoNormal, autoLoading, manualEnabled, manualDisabled].forEach(btn => {
+                if (btn) {
+                    btn.className = `w-full ${window.ButtonStylesManager.getButtonClasses('primary', 'standard')}`;
+                }
+            });
+            
+            if (autoNormal) {
+                Object.assign(autoNormal.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+            }
+            
+            if (autoLoading) {
+                Object.assign(autoLoading.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'loading'
+                }));
+            }
+            
+            if (manualEnabled) {
+                Object.assign(manualEnabled.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'secondary',
+                    state: 'normal'
+                }));
+            }
+            
+            if (manualDisabled) {
+                Object.assign(manualDisabled.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'secondary',
+                    state: 'disabled'
+                }));
+            }
+            
+            // QuickLocationButtons 按鈕
+            const homeUnset = document.getElementById('home-unset');
+            const homeSet = document.getElementById('home-set');
+            const officeSave = document.getElementById('office-save');
+            const officeSet = document.getElementById('office-set');
+            
+            [homeUnset, homeSet, officeSave, officeSet].forEach(btn => {
+                if (btn) {
+                    btn.className = `w-full ${window.ButtonStylesManager.getButtonClasses('primary', 'standard')}`;
+                }
+            });
+            
+            if (homeUnset) {
+                Object.assign(homeUnset.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'secondary',
+                    state: 'normal'
+                }));
+            }
+            
+            if (homeSet) {
+                Object.assign(homeSet.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'success',
+                    state: 'normal'
+                }));
+            }
+            
+            if (officeSave) {
+                Object.assign(officeSave.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+            }
+            
+            if (officeSet) {
+                Object.assign(officeSet.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'success',
+                    state: 'normal'
+                }));
+            }
+        }
+        
+        // 手動執行測試
+        function runManualTest() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p class="text-blue-600">執行測試中...</p>';
+            
+            if (window.runButtonStylesTests) {
+                // 重定向 console.log 到結果區域
+                const originalLog = console.log;
+                const logs = [];
+                
+                console.log = function(...args) {
+                    logs.push(args.join(' '));
+                    originalLog.apply(console, args);
+                };
+                
+                // 執行測試
+                window.runButtonStylesTests().then(() => {
+                    // 恢復 console.log
+                    console.log = originalLog;
+                    
+                    // 顯示結果
+                    resultsDiv.innerHTML = `
+                        <div class="space-y-2">
+                            ${logs.map(log => `<p class="text-sm ${log.includes('✅') ? 'text-green-600' : log.includes('❌') ? 'text-red-600' : 'text-gray-700'}">${log}</p>`).join('')}
+                        </div>
+                    `;
+                }).catch(error => {
+                    console.log = originalLog;
+                    resultsDiv.innerHTML = `<p class="text-red-600">測試執行失敗: ${error.message}</p>`;
+                });
+            } else {
+                resultsDiv.innerHTML = '<p class="text-red-600">測試函數未載入</p>';
+            }
+        }
+        
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 等待 ButtonStylesManager 載入
+            setTimeout(() => {
+                applyButtonStyles();
+                runManualTest();
+            }, 500);
+        });
+        
+        // 監聽 ButtonStylesManager 載入事件
+        window.addEventListener('buttonStylesManagerLoaded', function() {
+            applyButtonStyles();
+        });
+    </script>
+</body>
+</html>

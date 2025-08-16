@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MealTimeSelector ButtonStylesManager 測試</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            /* 舞鶴主題變數 */
+            --theme-primary: #dc143c;
+            --theme-accent: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #374151;
+            --surface-color: #f9fafb;
+            --border-color: #d1d5db;
+            --success-color: #10b981;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-switcher {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .theme-button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .theme-button.active {
+            background: var(--theme-primary);
+            color: white;
+            border-color: var(--theme-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; margin-bottom: 30px; color: #1f2937;">
+            MealTimeSelector ButtonStylesManager 測試
+        </h1>
+        
+        <div class="theme-switcher">
+            <button class="theme-button active" onclick="switchTheme('maizuru')">舞鶴主題</button>
+            <button class="theme-button" onclick="switchTheme('qisu')">柒宿主題</button>
+            <button class="theme-button" onclick="switchTheme('muluInn')">沐旅主題</button>
+        </div>
+        
+        <div id="meal-time-selector-container"></div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f9fafb; border-radius: 8px;">
+            <h3>測試狀態:</h3>
+            <div id="test-status">
+                <p>✅ ButtonStylesManager 載入: <span id="manager-status">檢查中...</span></p>
+                <p>✅ 選中的用餐時段: <span id="selected-meal">無</span></p>
+                <p>✅ 主題切換: <span id="theme-status">舞鶴主題</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入 ButtonStylesManager -->
+    <script src="../components/shared/ButtonStylesManager.js"></script>
+    
+    <!-- 載入 MealTimeSelector -->
+    <script src="../components/SearchSettings/MealTimeSelector.js"></script>
+    
+    <!-- 用餐時段配置 -->
+    <script>
+        // 模擬用餐時段配置
+        window.getMealTimeConfig = () => ({
+            breakfast: { start: 5, end: 10, displayTime: '5-10', icon: '🌅' },
+            lunch: { start: 10, end: 16, displayTime: '10-16', icon: '☀️' },
+            dinner: { start: 16, end: 24, displayTime: '16-24', icon: '🌃' }
+        });
+        
+        // 主題切換功能
+        const themes = {
+            maizuru: {
+                '--theme-primary': '#dc143c',
+                '--theme-accent': '#ffd700',
+                '--text-primary': '#ffffff',
+                '--text-secondary': '#374151',
+                '--surface-color': '#f9fafb',
+                '--border-color': '#d1d5db',
+                '--success-color': '#10b981'
+            },
+            qisu: {
+                '--theme-primary': '#2563eb',
+                '--theme-accent': '#06b6d4',
+                '--text-primary': '#ffffff',
+                '--text-secondary': '#374151',
+                '--surface-color': '#f9fafb',
+                '--border-color': '#d1d5db',
+                '--success-color': '#10b981'
+            },
+            muluInn: {
+                '--theme-primary': '#059669',
+                '--theme-accent': '#34d399',
+                '--text-primary': '#ffffff',
+                '--text-secondary': '#374151',
+                '--surface-color': '#f9fafb',
+                '--border-color': '#d1d5db',
+                '--success-color': '#10b981'
+            }
+        };
+        
+        function switchTheme(themeName) {
+            const theme = themes[themeName];
+            const root = document.documentElement;
+            
+            Object.entries(theme).forEach(([property, value]) => {
+                root.style.setProperty(property, value);
+            });
+            
+            // 更新主題按鈕狀態
+            document.querySelectorAll('.theme-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新狀態顯示
+            document.getElementById('theme-status').textContent = 
+                themeName === 'maizuru' ? '舞鶴主題' :
+                themeName === 'qisu' ? '柒宿主題' : '沐旅主題';
+        }
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        // 模擬翻譯
+        const translations = {
+            openNowFilter: '營業中',
+            anyTime: '任何時段',
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐'
+        };
+        
+        function TestApp() {
+            const [selectedMealTime, setSelectedMealTime] = useState('current');
+            
+            useEffect(() => {
+                // 檢查 ButtonStylesManager 是否載入
+                const managerStatus = window.ButtonStylesManager ? '已載入' : '未載入';
+                document.getElementById('manager-status').textContent = managerStatus;
+                
+                // 更新選中狀態
+                const mealTimeNames = {
+                    current: '營業中',
+                    all: '任何時段',
+                    breakfast: '早餐',
+                    lunch: '午餐',
+                    dinner: '晚餐'
+                };
+                document.getElementById('selected-meal').textContent = mealTimeNames[selectedMealTime] || selectedMealTime;
+            }, [selectedMealTime]);
+            
+            return (
+                <div>
+                    <h2 style={{marginBottom: '20px', color: '#374151'}}>用餐時段選擇器</h2>
+                    <MealTimeSelector
+                        selectedMealTime={selectedMealTime}
+                        setSelectedMealTime={setSelectedMealTime}
+                        translations={translations}
+                    />
+                </div>
+            );
+        }
+        
+        // 渲染應用
+        ReactDOM.render(<TestApp />, document.getElementById('meal-time-selector-container'));
+    </script>
+</body>
+</html>

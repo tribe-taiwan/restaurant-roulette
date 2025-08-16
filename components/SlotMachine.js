@@ -1000,9 +1000,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
                   href={(isSpinning || spinningState.isActive) ? '#' : getDirectionsUrl(finalRestaurant)}
                   target={(isSpinning || spinningState.isActive) ? '_self' : '_blank'}
                   rel="noopener noreferrer"
-                  className="h-[72px] p-3 rounded-lg border-2 
-                             flex flex-col items-center justify-center text-white shadow-lg"
-                  style={buttonLogic.getAddButtonStyle()}
+                  className={window.ButtonStylesManager.getButtonClasses('primary', 'standard')}
+                  style={window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: (isSpinning || spinningState.isActive) ? 'disabled' : 'normal'
+                  })}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
                       e.preventDefault();
@@ -1017,12 +1019,16 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
                 {/* 營業狀態按鈕 - 右上 */}
                 <div
-                  className="h-[72px] p-3 rounded-lg border-2 
-                             flex flex-col items-center justify-center shadow-lg"
-                  style={buttonLogic.getAddButtonStyle(
-                    finalRestaurant.operatingStatus?.status === 'open' ? '#22c55e' : '#9ca3af',
-                    'white'
-                  )}
+                  className={window.ButtonStylesManager.getButtonClasses('custom', 'standard')}
+                  style={window.ButtonStylesManager.getButtonStyle({
+                    variant: 'custom',
+                    customColors: {
+                      background: finalRestaurant.operatingStatus?.status === 'open' ? '#22c55e' : '#9ca3af',
+                      borderColor: finalRestaurant.operatingStatus?.status === 'open' ? '#22c55e' : '#9ca3af',
+                      color: 'white'
+                    },
+                    state: (isSpinning || spinningState.isActive) ? 'disabled' : 'normal'
+                  })}
                   onClick={(e) => {
                     if (isSpinning || spinningState.isActive) {
                       e.preventDefault();
@@ -1054,9 +1060,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             {/* Search Next Button - 左下 */}
             <button
               onClick={() => buttonLogic.handleSpinClick()}
-              className="h-[72px] p-3 rounded-lg border-2 
-                         flex flex-col items-center justify-center text-white shadow-lg"
-              style={buttonLogic.getAddButtonStyle(null, null, true)}
+              className={window.ButtonStylesManager.getButtonClasses('primary', 'standard')}
+              style={window.ButtonStylesManager.getButtonStyle({
+                variant: 'primary',
+                state: 'normal'
+              })}
             >
               {isSpinning ? (
                 <div className="text-lg font-bold text-center">
@@ -1073,9 +1081,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             <button
               onClick={buttonLogic.isAddButtonDisabled() ? null : buttonLogic.handleAddCandidateClick}
               disabled={buttonLogic.isAddButtonDisabled()}
-              className="h-[72px] p-3 rounded-lg border-2
-                         flex flex-col items-center justify-center text-white shadow-lg"
-              style={buttonLogic.getAddButtonStyle()}
+              className={window.ButtonStylesManager.getButtonClasses('primary', 'standard')}
+              style={window.ButtonStylesManager.getButtonStyle({
+                variant: 'primary',
+                state: buttonLogic.isAddButtonDisabled() ? 'disabled' : 'normal'
+              })}
               title={buttonLogic.getAddButtonTitle()}
             >
               <div className="text-lg font-bold text-center">

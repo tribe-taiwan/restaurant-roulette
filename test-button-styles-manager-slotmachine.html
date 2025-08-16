@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ButtonStylesManager SlotMachine Integration Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --theme-primary: #dc143c;
+            --theme-accent: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #374151;
+            --surface-color: #f3f4f6;
+            --border-color: #d1d5db;
+            --success-color: #22c55e;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">ButtonStylesManager SlotMachine Integration Test</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-lg font-semibold mb-4">SlotMachine Button Styles</h2>
+            
+            <!-- Test the 4 button layout like in SlotMachine -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <!-- Navigation Button - Top Left -->
+                <a
+                    href="#"
+                    id="nav-button"
+                    class="text-white"
+                >
+                    <div class="text-lg font-bold text-center">
+                        查看路線
+                    </div>
+                </a>
+
+                <!-- Operating Status Button - Top Right -->
+                <div
+                    id="status-button"
+                >
+                    <div class="text-lg font-bold text-center">
+                        營業中
+                    </div>
+                    <div class="text-xs mt-1 flex items-center gap-1">
+                        <span>02-1234-5678</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Action Buttons - Bottom Row -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Spin Button - Bottom Left -->
+                <button
+                    id="spin-button"
+                    class="text-white"
+                >
+                    <div class="text-lg font-bold text-center">
+                        尋找餐廳
+                    </div>
+                </button>
+
+                <!-- Add Candidate Button - Bottom Right -->
+                <button
+                    id="add-button"
+                    class="text-white"
+                >
+                    <div class="text-lg font-bold text-center">
+                        加入候選
+                    </div>
+                </button>
+            </div>
+
+            <!-- Test Controls -->
+            <div class="mt-6 p-4 bg-gray-50 rounded">
+                <h3 class="font-semibold mb-2">Test Controls</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="testNormalState()" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+                        Normal State
+                    </button>
+                    <button onclick="testDisabledState()" class="px-3 py-1 bg-gray-500 text-white rounded text-sm">
+                        Disabled State
+                    </button>
+                    <button onclick="testLoadingState()" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+                        Loading State
+                    </button>
+                    <button onclick="testClosedStatus()" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+                        Closed Status
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Results -->
+            <div id="test-results" class="mt-4 p-4 bg-gray-50 rounded">
+                <h3 class="font-semibold mb-2">Test Results</h3>
+                <div id="results-content">Ready to test...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load ButtonStylesManager -->
+    <script src="components/shared/ButtonStylesManager.js"></script>
+
+    <script>
+        // Test functions
+        function updateResults(message) {
+            document.getElementById('results-content').innerHTML += '<div>' + message + '</div>';
+        }
+
+        function clearResults() {
+            document.getElementById('results-content').innerHTML = 'Ready to test...';
+        }
+
+        function applyButtonStyles() {
+            try {
+                // Navigation Button (Primary)
+                const navButton = document.getElementById('nav-button');
+                navButton.className = window.ButtonStylesManager.getButtonClasses('primary', 'standard') + ' text-white';
+                Object.assign(navButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+
+                // Status Button (Custom - Open)
+                const statusButton = document.getElementById('status-button');
+                statusButton.className = window.ButtonStylesManager.getButtonClasses('custom', 'standard');
+                Object.assign(statusButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'custom',
+                    customColors: {
+                        background: '#22c55e',
+                        borderColor: '#22c55e',
+                        color: 'white'
+                    },
+                    state: 'normal'
+                }));
+
+                // Spin Button (Primary)
+                const spinButton = document.getElementById('spin-button');
+                spinButton.className = window.ButtonStylesManager.getButtonClasses('primary', 'standard') + ' text-white';
+                Object.assign(spinButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+
+                // Add Button (Primary)
+                const addButton = document.getElementById('add-button');
+                addButton.className = window.ButtonStylesManager.getButtonClasses('primary', 'standard') + ' text-white';
+                Object.assign(addButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'normal'
+                }));
+
+                updateResults('✅ Button styles applied successfully');
+            } catch (error) {
+                updateResults('❌ Error applying button styles: ' + error.message);
+            }
+        }
+
+        function testNormalState() {
+            clearResults();
+            applyButtonStyles();
+            updateResults('🔄 Testing normal state...');
+        }
+
+        function testDisabledState() {
+            clearResults();
+            updateResults('🔄 Testing disabled state...');
+            
+            try {
+                // Apply disabled state to all buttons
+                const buttons = ['nav-button', 'spin-button', 'add-button'];
+                buttons.forEach(id => {
+                    const button = document.getElementById(id);
+                    Object.assign(button.style, window.ButtonStylesManager.getButtonStyle({
+                        variant: 'primary',
+                        state: 'disabled'
+                    }));
+                });
+                updateResults('✅ Disabled state applied successfully');
+            } catch (error) {
+                updateResults('❌ Error applying disabled state: ' + error.message);
+            }
+        }
+
+        function testLoadingState() {
+            clearResults();
+            updateResults('🔄 Testing loading state...');
+            
+            try {
+                // Apply loading state to spin button
+                const spinButton = document.getElementById('spin-button');
+                Object.assign(spinButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'primary',
+                    state: 'loading'
+                }));
+                updateResults('✅ Loading state applied successfully');
+            } catch (error) {
+                updateResults('❌ Error applying loading state: ' + error.message);
+            }
+        }
+
+        function testClosedStatus() {
+            clearResults();
+            updateResults('🔄 Testing closed status...');
+            
+            try {
+                // Apply closed status to status button
+                const statusButton = document.getElementById('status-button');
+                Object.assign(statusButton.style, window.ButtonStylesManager.getButtonStyle({
+                    variant: 'custom',
+                    customColors: {
+                        background: '#9ca3af',
+                        borderColor: '#9ca3af',
+                        color: 'white'
+                    },
+                    state: 'normal'
+                }));
+                
+                // Update text
+                statusButton.querySelector('.text-lg').textContent = '已打烊';
+                updateResults('✅ Closed status applied successfully');
+            } catch (error) {
+                updateResults('❌ Error applying closed status: ' + error.message);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            if (window.ButtonStylesManager) {
+                updateResults('✅ ButtonStylesManager loaded successfully');
+                applyButtonStyles();
+            } else {
+                updateResults('❌ ButtonStylesManager not found');
+            }
+        });
+
+        // Test ButtonStylesManager API
+        window.addEventListener('buttonStylesManagerLoaded', function(event) {
+            updateResults('✅ ButtonStylesManager loaded event received');
+            
+            // Test API functions
+            try {
+                const classes = window.ButtonStylesManager.getButtonClasses('primary', 'standard');
+                updateResults('✅ getButtonClasses test: ' + classes.substring(0, 50) + '...');
+                
+                const style = window.ButtonStylesManager.getButtonStyle({ variant: 'primary' });
+                updateResults('✅ getButtonStyle test: background=' + style.background);
+                
+            } catch (error) {
+                updateResults('❌ API test error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
