@@ -1485,7 +1485,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     }
 
     let searchRadius;
-    let searchOptions = { attempt: attempt };
+    let searchOptions = { attempt: attempt, backgroundRefill: backgroundRefill };
 
     // 🎯 修改：從第一次就開始逐步擴大範圍
     // 第1次：baseRadius（用戶設定範圍）
@@ -1514,10 +1514,14 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
-    // 🎯 發送搜索半徑更新事件給 SlotMachine
-    if (typeof window !== 'undefined') {
+    // 🎯 發送搜索半徑更新事件給 SlotMachine（只有主搜索才更新顯示）
+    if (typeof window !== 'undefined' && !backgroundRefill) {
       window.dispatchEvent(new CustomEvent('searchRadiusUpdate', {
-        detail: { radius: searchRadius, attempt: attempt }
+        detail: {
+          radius: searchRadius,
+          attempt: attempt,
+          isMainSearch: !backgroundRefill
+        }
       }));
     }
 

@@ -518,13 +518,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, [advancedPreloader, restaurantHistory]);
 
-    // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍
+    // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍（只處理主搜索）
     React.useEffect(() => {
       const handleSearchRadiusUpdate = (event) => {
-        const { radius, attempt = 0 } = event.detail || {};
-        if (radius) {
+        const { radius, attempt = 0, isMainSearch = true } = event.detail || {};
+        if (radius && isMainSearch) {
           setCurrentSearchRadius(radius);
-          console.log(`📏 搜索半徑更新: ${(radius/1000).toFixed(1)}km (第${attempt + 1}次嘗試)`);
+          console.log(`📏 主搜索半徑更新: ${(radius/1000).toFixed(1)}km (第${attempt + 1}次嘗試)`);
+        } else if (radius && !isMainSearch) {
+          console.log(`🔄 幕後搜索半徑: ${(radius/1000).toFixed(1)}km (不影響顯示)`);
         }
       };
 
