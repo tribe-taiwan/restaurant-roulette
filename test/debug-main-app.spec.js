@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test('主應用調試 - 檢查餐廳搜索LOG', async ({ page }) => {
+test('主應用調試 - 檢查餐廳搜索LOG', async ({ page, context }) => {
   console.log('🔍 開始主應用調試測試...');
+  
+  // 🎯 重要：自動授予地理位置權限，避免授權彈窗阻塞測試
+  await context.grantPermissions(['geolocation']);
+  console.log('✅ 已自動授予地理位置權限');
   
   // 捕獲所有控制台日誌
   const logs = [];
@@ -34,8 +38,7 @@ test('主應用調試 - 檢查餐廳搜索LOG', async ({ page }) => {
   const locationStatus = await page.locator('text=/位置|定位|Location/').allTextContents();
   console.log('📍 位置相關文字:', locationStatus);
   
-  // 手動允許位置權限並設置台南市保安路46號
-  await page.context().grantPermissions(['geolocation']);
+  // 設置台南市保安路46號位置作為測試位置
   await page.context().setGeolocation({ latitude: 22.9943, longitude: 120.2038 }); // 台南市保安路46號
   
   console.log('🎯 已設置台南市保安路46號位置，等待應用響應...');
