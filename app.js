@@ -159,6 +159,10 @@ function App() {
           window.clearRestaurantHistory();
         }
         
+        // 🎯 重要：同時清除 React 狀態中的餐廳歷史
+        setRestaurantHistory([]);
+        console.log('🧹 已清除 React 狀態中的餐廳歷史');
+        
         // 如果正在轉動，先停止再重新開始
         if (isSpinning) {
           console.log('⏹️ 正在轉動中，先停止搜尋');
