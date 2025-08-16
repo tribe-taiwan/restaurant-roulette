@@ -154,14 +154,9 @@ function App() {
         console.log('🔄 位置已改變，清除舊快取並自動搜尋新位置的餐廳資料');
         console.log('🔍 當前狀態 - isSpinning:', isSpinning, 'locationStatus:', locationStatus);
         
-        // 清除舊位置的餐廳快取
-        if (window.clearRestaurantHistory) {
-          window.clearRestaurantHistory();
-        }
-        
-        // 🎯 重要：同時清除 React 狀態中的餐廳歷史
-        setRestaurantHistory([]);
-        console.log('🧹 已清除 React 狀態中的餐廳歷史');
+        // 🎯 重要：清除餐廳歷史記錄（包括 localStorage 和 React 狀態）
+        clearHistory();
+        console.log('🧹 已清除餐廳歷史記錄');
         
         // 如果正在轉動，先停止再重新開始
         if (isSpinning) {
