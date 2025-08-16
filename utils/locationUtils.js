@@ -606,7 +606,7 @@ function isRestaurantOpenForMealTime(openingHours, selectedMealTime, utcOffsetMi
  * @param {Object} options - 搜索選項
  * @returns {Promise<Array>} 餐廳列表
  */
-async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', options = {}) {
+window.searchNearbyRestaurants = async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', options = {}) {
   // 解構 abortSignal 參數
   const { abortSignal, ...searchOptions } = options;
   
@@ -824,6 +824,12 @@ async function searchNearbyRestaurants(userLocation, selectedMealTime = 'all', o
     const formattedRestaurants = await Promise.all(
       restaurantsWithDetails.map(restaurant => formatRestaurantData(restaurant))
     );
+
+    // 🎯 幕後補充模式：直接更新快取
+    if (options.backgroundRefill && formattedRestaurants.length > 0) {
+      updateRestaurantCache(formattedRestaurants);
+      console.log(`🔄 幕後補充: 已將 ${formattedRestaurants.length} 家餐廳加入快取`);
+    }
 
     // 移除格式化完成日誌
     return formattedRestaurants;
@@ -1534,10 +1540,9 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         abortSignal
       });
 
-      // 重要：將所有搜索到的餐廳加入快取
-      if (restaurants.length > 0) {
+      // 非幕後模式需要手動更新快取
+      if (restaurants.length > 0 && !backgroundRefill) {
         updateRestaurantCache(restaurants);
-        // 移除快取加入日誌
       }
 
       // 篩選：營業中 + 未出現過 + 🎯 改進的環形搜索邏輯

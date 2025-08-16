@@ -440,36 +440,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
         setBackgroundRestaurants(availableRestaurants.slice(0, 10));
 
-        // Background refill trigger - simplified logic
-        const BACKGROUND_REFILL_THRESHOLD = 9;
-        if (availableRestaurants.length <= BACKGROUND_REFILL_THRESHOLD && userLocation) {
-          console.log('🔄 觸發幕後補充餐廳，剩餘:', availableRestaurants.length, '閾值:', BACKGROUND_REFILL_THRESHOLD);
-          
-          // Background restaurant refill (preserve existing functionality)
-          setTimeout(async () => {
-            try {
-              if (window.getRandomRestaurant) {
-                console.log('🔍 開始幕後補充餐廳，使用環形擴大搜索策略');
-                // 使用用戶當前設定的搜索範圍，讓系統自然觸發逐層擴大邏輯
-                await window.getRandomRestaurant(userLocation, selectedMealTime, {
-                  baseUnit,
-                  unitMultiplier,
-                  backgroundRefill: true // Mark as background refill
-                });
-                console.log('✅ 幕後餐廳補充完成');
-              }
-            } catch (error) {
-              console.warn('⚠️ 幕後補充失敗:', error);
-            }
-          }, 100);
-        } else if (availableRestaurants.length <= BACKGROUND_REFILL_THRESHOLD) {
-          console.log('🚫 幕後補充條件檢查失敗:', {
-            available: availableRestaurants.length,
-            threshold: BACKGROUND_REFILL_THRESHOLD,
-            hasUserLocation: !!userLocation,
-            reason: !userLocation ? '缺少用戶位置' : '未知原因'
-          });
-        }
+        // 幕後補充機制已移至 AdvancedPreloader.js 統一管理
+        console.log('📊 背景餐廳池狀態:', {
+          available: availableRestaurants.length,
+          userLocation: !!userLocation
+        });
 
       } catch (error) {
         console.warn('⚠️ 預載入池管理失敗:', error);

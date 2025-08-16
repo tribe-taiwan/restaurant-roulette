@@ -196,23 +196,25 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
           window.backgroundRefillInProgress = true;
           window.lastBackgroundRefillTime = currentTime;
 
-          // 幕後觸發API搜索，不影響用戶體驗，不觸發老虎機
+          // 幕後觸發完整9個方向搜索，不影響用戶體驗
           setTimeout(async () => {
             try {
-              if (window.getRandomRestaurant) {
+              if (window.searchNearbyRestaurants) {
                 // RR_UI_084: 開始幕後補充餐廳
                 window.RRLog?.debug('RR_UI_UPDATE', '開始幕後補充餐廳', {
                   currentRange: `${(baseUnit * unitMultiplier)/1000}km`,
-                  expandsBy: `${baseUnit/1000}km`,
+                  note: '直接調用完整9個方向搜索'
+                });
+                
+                // 直接調用原來的搜索邏輯，執行完整的9個方向搜索
+                const searchRadius = baseUnit * unitMultiplier;
+                window.GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
+                
+                await window.searchNearbyRestaurants(userLocation, selectedMealTime, {
                   backgroundRefill: true,
-                  note: '使用環形擴大搜索策略'
+                  currentRadius: searchRadius
                 });
-                // 使用用戶當前設定的搜索範圍，讓系統自然觸發逐層擴大邏輯
-                await window.getRandomRestaurant(userLocation, selectedMealTime, {
-                  baseUnit,
-                  unitMultiplier,
-                  backgroundRefill: true // 標記為幕後補充，不觸發老虎機
-                });
+                
                 // RR_UI_085: 幕後餐廳補充完成
                 window.RRLog?.debug('RR_UI_UPDATE', '幕後餐廳補充完成');
                 
