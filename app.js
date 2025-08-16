@@ -9,6 +9,7 @@ function App() {
     const [candidateList, setCandidateList] = React.useState([]); // 用戶候選餐廳列表，最多9家
     const [isSpinning, setIsSpinning] = React.useState(false);
     const [searchAbortController, setSearchAbortController] = React.useState(null); // 搜尋中止控制器
+    const [lastSearchTime, setLastSearchTime] = React.useState(0); // 最後搜尋時間戳
     const [userLocation, setUserLocation] = React.useState(null);
     const [userAddress, setUserAddress] = React.useState(''); // 地址資訊
     const [locationStatus, setLocationStatus] = React.useState('loading');
@@ -319,6 +320,17 @@ function App() {
      * 3. 自動調用：初次載入時的自動搜索 → 根據實際需要決定
      */
     const handleSpin = async (isAutoSpin = false) => {
+      const currentTime = Date.now();
+      
+      // 防抖機制：確保搜尋間隔至少 200ms
+      if (currentTime - lastSearchTime < 200) {
+        console.log('🚫 搜尋頻率過高，跳過此次請求');
+        return;
+      }
+      
+      setLastSearchTime(currentTime);
+      console.log('🎰 轉動開始，isSpinning:', isSpinning, 'isAutoSpin:', isAutoSpin);
+      
       // 如果正在搜尋中，按按鈕停止搜尋
       if (isSpinning) {
         handleStopSearch();
