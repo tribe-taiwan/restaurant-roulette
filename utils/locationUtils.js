@@ -825,11 +825,7 @@ window.searchNearbyRestaurants = async function searchNearbyRestaurants(userLoca
       restaurantsWithDetails.map(restaurant => formatRestaurantData(restaurant))
     );
 
-    // 🎯 幕後補充模式：直接更新快取
-    if (options.backgroundRefill && formattedRestaurants.length > 0) {
-      updateRestaurantCache(formattedRestaurants);
-      console.log(`🔄 幕後補充: 已將 ${formattedRestaurants.length} 家餐廳加入快取`);
-    }
+    // 快取更新由調用方處理
 
     // 移除格式化完成日誌
     return formattedRestaurants;
@@ -1520,13 +1516,14 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
-    // 🎯 發送搜索半徑更新事件給 SlotMachine（只有主搜索才更新顯示）
-    if (typeof window !== 'undefined' && !backgroundRefill) {
+    // 🎯 發送搜索半徑更新事件給 SlotMachine
+    if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('searchRadiusUpdate', {
         detail: {
           radius: searchRadius,
           attempt: attempt,
-          isMainSearch: !backgroundRefill
+          isMainSearch: !backgroundRefill,
+          backgroundRefill: backgroundRefill
         }
       }));
     }
@@ -1540,9 +1537,10 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         abortSignal
       });
 
-      // 非幕後模式需要手動更新快取
-      if (restaurants.length > 0 && !backgroundRefill) {
+      // 重要：將所有搜索到的餐廳加入快取
+      if (restaurants.length > 0) {
         updateRestaurantCache(restaurants);
+        // 移除快取加入日誌
       }
 
       // 篩選：營業中 + 未出現過 + 🎯 改進的環形搜索邏輯

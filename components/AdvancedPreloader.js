@@ -175,6 +175,7 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
 
         // 🎯 關鍵修復：基於預載入池的實際可用餐廳數量觸發幕後補充
         const BACKGROUND_REFILL_THRESHOLD = 9; // 預載入池剩餘9家時觸發幕後補充
+        const TARGET_RESTAURANT_COUNT = 10; // 目標餐廳數量，持續擴大直到達到此數量
 
         // 添加防重複觸發機制
         if (!window.backgroundRefillInProgress) {
@@ -183,45 +184,49 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
         const currentTime = Date.now();
         const lastBackgroundRefillTime = window.lastBackgroundRefillTime || 0;
 
-        if (availableFutureRestaurants <= BACKGROUND_REFILL_THRESHOLD && userLocation && !window.backgroundRefillInProgress && (currentTime - lastBackgroundRefillTime > 5000)) {
+        // 🎯 新邏輯：持續擴大搜索直到餐廳數量達到目標
+        if (availableFutureRestaurants < TARGET_RESTAURANT_COUNT && userLocation && !window.backgroundRefillInProgress && (currentTime - lastBackgroundRefillTime > 2000)) {
           // RR_UI_083: 預載入池不足警告
-          window.RRLog?.info('RR_UI_UPDATE', '預載入池不足警告，觸發幕後補充', {
-            remainingRestaurants: availableFutureRestaurants,
-            threshold: BACKGROUND_REFILL_THRESHOLD,
+          window.RRLog?.info('RR_UI_UPDATE', '可用餐廳不足，持續擴大搜索', {
+            currentAvailable: availableFutureRestaurants,
+            targetCount: TARGET_RESTAURANT_COUNT,
             userLocationExists: !!userLocation,
-            timeSinceLastRefill: currentTime - lastBackgroundRefillTime
+            timeSinceLastRefill: currentTime - lastBackgroundRefillTime,
+            action: '觸發背景擴大搜索'
           });
 
           // 標記正在進行幕後補充
           window.backgroundRefillInProgress = true;
           window.lastBackgroundRefillTime = currentTime;
 
-          // 幕後觸發完整9個方向搜索，不影響用戶體驗
+          // 幕後觸發API搜索，不影響用戶體驗，不觸發老虎機
           setTimeout(async () => {
             try {
-              if (window.searchNearbyRestaurants) {
-                // RR_UI_084: 開始幕後補充餐廳
-                window.RRLog?.debug('RR_UI_UPDATE', '開始幕後補充餐廳', {
+              if (window.getRandomRestaurant) {
+                // RR_UI_084: 開始幕後擴大搜索
+                window.RRLog?.debug('RR_UI_UPDATE', '開始背景擴大搜索', {
+                  currentAvailable: availableFutureRestaurants,
+                  targetCount: TARGET_RESTAURANT_COUNT,
                   currentRange: `${(baseUnit * unitMultiplier)/1000}km`,
-                  note: '直接調用完整9個方向搜索'
-                });
-                
-                // 直接調用原來的搜索邏輯，執行完整的9個方向搜索
-                const searchRadius = baseUnit * unitMultiplier;
-                window.GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
-                
-                await window.searchNearbyRestaurants(userLocation, selectedMealTime, {
+                  expandsBy: `${baseUnit/1000}km`,
                   backgroundRefill: true,
-                  currentRadius: searchRadius
+                  note: '持續擴大直到達到10家可用餐廳'
                 });
                 
-                // RR_UI_085: 幕後餐廳補充完成
-                window.RRLog?.debug('RR_UI_UPDATE', '幕後餐廳補充完成');
+                // 使用用戶當前設定的搜索範圍，讓系統自然觸發逐層擴大邏輯
+                await window.getRandomRestaurant(userLocation, selectedMealTime, {
+                  baseUnit,
+                  unitMultiplier,
+                  backgroundRefill: true // 標記為幕後補充，不觸發老虎機
+                });
                 
-                // 🎯 立即觸發 availableRestaurantsCount 更新
+                // RR_UI_085: 背景擴大搜索完成
+                window.RRLog?.debug('RR_UI_UPDATE', '背景擴大搜索完成');
+                
+                // 🎯 立即觸發 availableRestaurantsCount 更新並檢查是否需要繼續擴大
                 if (window.dispatchEvent) {
                   const refreshEvent = new CustomEvent('restaurantPoolRefreshed', {
-                    detail: { timestamp: Date.now(), source: 'backgroundRefill' }
+                    detail: { timestamp: Date.now(), source: 'backgroundRefill', continueExpanding: true }
                   });
                   window.dispatchEvent(refreshEvent);
                 }
@@ -230,11 +235,14 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
               // RR_UI_086: 幕後餐廳補充失敗
               window.RRLog?.warn('RR_UI_ERROR', '幕後餐廳補充失敗', { error: error.message });
             } finally {
-              // 清除進行中標記
+              // 清除進行中標記，允許立即檢查是否需要繼續擴大
               window.backgroundRefillInProgress = false;
+              
+              // 🎯 縮短重試間隔，讓持續擴大更順暢
+              window.lastBackgroundRefillTime = currentTime - 1500; // 提前設置，允許500ms後重試
             }
           }, 100); // 延遲100ms執行，避免阻塞UI
-        } else if (availableFutureRestaurants <= BACKGROUND_REFILL_THRESHOLD) {
+        } else if (availableFutureRestaurants < TARGET_RESTAURANT_COUNT) {
           // 記錄為什麼沒有觸發
           window.RRLog?.debug('RR_UI_UPDATE', '幕後補充條件檢查', {
             availableFutureRestaurants,

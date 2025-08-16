@@ -509,13 +509,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, [advancedPreloader, restaurantHistory, finalRestaurant]);
 
-    // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍（只處理主搜索）
+    // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍
     React.useEffect(() => {
       const handleSearchRadiusUpdate = (event) => {
-        const { radius, attempt = 0, isMainSearch = true } = event.detail || {};
+        const { radius, attempt = 0, isMainSearch = true, backgroundRefill = false } = event.detail || {};
+        
         if (radius && isMainSearch) {
+          // 主搜索：直接更新顯示
           setCurrentSearchRadius(radius);
           console.log(`📏 主搜索半徑更新: ${(radius/1000).toFixed(1)}km (第${attempt + 1}次嘗試)`);
+        } else if (radius && backgroundRefill && attempt > 0) {
+          // 背景補充：只有當擴大搜尋範圍時才更新顯示（attempt > 0 表示已擴大）
+          setCurrentSearchRadius(radius);
+          console.log(`🔄 幕後搜索擴大範圍: ${(radius/1000).toFixed(1)}km (第${attempt + 1}次嘗試) - 已更新顯示`);
         } else if (radius && !isMainSearch) {
           console.log(`🔄 幕後搜索半徑: ${(radius/1000).toFixed(1)}km (不影響顯示)`);
         }
