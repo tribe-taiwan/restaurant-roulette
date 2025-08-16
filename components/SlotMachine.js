@@ -3,6 +3,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
     // 🎯 整合智能預載入模組 - 恢復舊版本的9個方向預載入功能
     const [preloadedImages, setPreloadedImages] = React.useState(new Map());
     const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState({ available: 0, total: 0 });
+    const [currentSearchRadius, setCurrentSearchRadius] = React.useState(baseUnit * unitMultiplier); // 追蹤當前實際搜索半徑
 
     // 🎯 使用keen-slider處理所有滑動邏輯 - 避免圖片閃爍問題
 
@@ -517,6 +518,29 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, [advancedPreloader, restaurantHistory]);
 
+    // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍
+    React.useEffect(() => {
+      const handleSearchRadiusUpdate = (event) => {
+        const { radius, attempt = 0 } = event.detail || {};
+        if (radius) {
+          setCurrentSearchRadius(radius);
+          console.log(`📏 搜索半徑更新: ${(radius/1000).toFixed(1)}km (第${attempt + 1}次嘗試)`);
+        }
+      };
+
+      // 監聽自定義搜索半徑更新事件
+      window.addEventListener('searchRadiusUpdate', handleSearchRadiusUpdate);
+
+      return () => {
+        window.removeEventListener('searchRadiusUpdate', handleSearchRadiusUpdate);
+      };
+    }, []);
+
+    // 🎯 當用戶設定變更時，重置搜索半徑顯示
+    React.useEffect(() => {
+      setCurrentSearchRadius(baseUnit * unitMultiplier);
+    }, [baseUnit, unitMultiplier]);
+
     // Trigger preload pool management when restaurant changes (備用)
     React.useEffect(() => {
       if (finalRestaurant) {
@@ -723,7 +747,7 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             {/* 顯示快取數量和搜尋範圍 */}
             <div className="absolute top-2 right-0 pointer-events-none">
               <div className="text-black text-xs font-medium px-1">
-                {availableRestaurantsCount.available}／{availableRestaurantsCount.total}（{(baseUnit * unitMultiplier) / 1000}km）
+                {availableRestaurantsCount.available}／{availableRestaurantsCount.total}（{(currentSearchRadius / 1000).toFixed(1)} km）
               </div>
             </div>
           </div>

@@ -1514,6 +1514,13 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
 
+    // 🎯 發送搜索半徑更新事件給 SlotMachine
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('searchRadiusUpdate', {
+        detail: { radius: searchRadius, attempt: attempt }
+      }));
+    }
+
     try {
       // 獲取餐廳列表，傳入搜索選項、當前搜索半徑、嘗試次數和 abortSignal
       const restaurants = await searchNearbyRestaurants(userLocation, selectedMealTime, {
