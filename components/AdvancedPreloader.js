@@ -6,7 +6,7 @@
  * @param {Object} params - 參數對象
  * @returns {Object} 預載入池管理器
  */
-function createAdvancedPreloader({ selectedMealTime, userLocation }) {
+function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, unitMultiplier }) {
   
   /**
    * 圖片預載入函數 - 整合預載入池 (從舊版本直接複製)
@@ -202,12 +202,15 @@ function createAdvancedPreloader({ selectedMealTime, userLocation }) {
               if (window.getRandomRestaurant) {
                 // RR_UI_084: 開始幕後補充餐廳
                 window.RRLog?.debug('RR_UI_UPDATE', '開始幕後補充餐廳', {
-                  expandedRange: '2km',
-                  backgroundRefill: true
+                  currentRange: `${(baseUnit * unitMultiplier)/1000}km`,
+                  expandsBy: `${baseUnit/1000}km`,
+                  backgroundRefill: true,
+                  note: '使用環形擴大搜索策略'
                 });
+                // 使用用戶當前設定的搜索範圍，讓系統自然觸發逐層擴大邏輯
                 await window.getRandomRestaurant(userLocation, selectedMealTime, {
-                  baseUnit: 1000,
-                  unitMultiplier: 2,
+                  baseUnit,
+                  unitMultiplier,
                   backgroundRefill: true // 標記為幕後補充，不觸發老虎機
                 });
                 // RR_UI_085: 幕後餐廳補充完成

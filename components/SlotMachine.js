@@ -8,8 +8,13 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
 
     // 創建智能預載入管理器
     const advancedPreloader = React.useMemo(() => {
-      return window.createAdvancedPreloader({ selectedMealTime, userLocation });
-    }, [selectedMealTime, userLocation]);
+      return window.createAdvancedPreloader({ 
+        selectedMealTime, 
+        userLocation, 
+        baseUnit, 
+        unitMultiplier 
+      });
+    }, [selectedMealTime, userLocation, baseUnit, unitMultiplier]);
 
     // 追蹤按鈕點擊狀態
     const [buttonClickState, setButtonClickState] = React.useState('normal'); // 'normal', 'added', 'exists'
@@ -443,10 +448,11 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
           setTimeout(async () => {
             try {
               if (window.getRandomRestaurant) {
-                console.log('🔍 開始幕後補充餐廳，擴大範圍至2km');
+                console.log('🔍 開始幕後補充餐廳，使用環形擴大搜索策略');
+                // 使用用戶當前設定的搜索範圍，讓系統自然觸發逐層擴大邏輯
                 await window.getRandomRestaurant(userLocation, selectedMealTime, {
-                  baseUnit: 1000,
-                  unitMultiplier: 2,
+                  baseUnit,
+                  unitMultiplier,
                   backgroundRefill: true // Mark as background refill
                 });
                 console.log('✅ 幕後餐廳補充完成');

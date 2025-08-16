@@ -1446,7 +1446,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   const { baseUnit = 1000, unitMultiplier = 2 } = distanceConfig;
   const baseRadius = baseUnit * unitMultiplier;
   
-  // 最多嘗試25次：前5次使用多樣化搜索，後20次使用baseUnit智能擴展
+  // 🎯 新邏輯：每次都逐步擴大，直接開始環形搜索
   const maxAttempts = 25;
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -1458,30 +1458,29 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     let searchRadius;
     let searchOptions = { attempt: attempt };
 
-    // 前5次嘗試：在用戶設定的距離內使用不同搜索策略
-    if (attempt < 5) {
-      searchRadius = baseRadius;
-      // 🎯 修復：第一次Landing直接搜9個區域，獲得最大覆蓋範圍
-      const expectedAreas = 9; // 直接使用9個區域，不再逐步增加
-      const expectedCalls = expectedAreas * 2; // 2種餐廳類型
-      // RR_SEARCH_040: 多區域搜索嘗試
-      window.RRLog?.info('RR_SEARCH_START', '多區域搜索嘗試', {
-        attempt: attempt + 1,
-        radius: `${searchRadius/1000}km`,
-        areas: expectedAreas
-      });
-    } else {
-      // 後續嘗試：使用baseUnit智能擴展範圍
-      const expansionMultiplier = attempt - 4; // 擴展倍數：1, 2, 3, ...
-      searchRadius = baseRadius + (baseUnit * expansionMultiplier);
-      // RR_SEARCH_041: 擴展範圍搜索嘗試
-      window.RRLog?.info('RR_SEARCH_START', '擴展範圍搜索嘗試', {
-        attempt: attempt + 1,
-        radius: `${searchRadius/1000}km`,
-        baseRadius: `${baseRadius/1000}km`,
-        expansion: `${(baseUnit * expansionMultiplier)/1000}km`
-      });
-    }
+    // 🎯 修改：從第一次就開始逐步擴大範圍
+    // 第1次：baseRadius（用戶設定範圍）
+    // 第2次：baseRadius + baseUnit × 1  
+    // 第3次：baseRadius + baseUnit × 2
+    // 第4次：baseRadius + baseUnit × 3
+    // ...依此類推
+    
+    const expansionMultiplier = attempt; // 擴展倍數：0, 1, 2, 3, ...
+    searchRadius = baseRadius + (baseUnit * expansionMultiplier);
+    
+    // 所有嘗試都使用9個區域搜索，確保覆蓋範圍
+    const expectedAreas = 9;
+    const expectedCalls = expectedAreas * 2; // 2種餐廳類型
+    
+    // RR_SEARCH_040: 逐步擴大範圍搜索
+    window.RRLog?.info('RR_SEARCH_START', '逐步擴大範圍搜索', {
+      attempt: attempt + 1,
+      radius: `${searchRadius/1000}km`,
+      baseRadius: `${baseRadius/1000}km`,
+      expansion: attempt === 0 ? '初始範圍' : `+${(baseUnit * expansionMultiplier)/1000}km`,
+      areas: expectedAreas,
+      note: attempt === 0 ? '用戶設定範圍' : `擴大第${attempt}次`
+    });
 
     // 臨時更新搜索半徑
     GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = searchRadius;
@@ -1501,14 +1500,40 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         // 移除快取加入日誌
       }
 
-      // 篩選：營業中 + 未出現過
+      // 篩選：營業中 + 未出現過 + 🎯 環形搜索邏輯
       const availableRestaurants = restaurants.filter(restaurant => {
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
 
+        // 🎯 環形搜索邏輯：過濾掉在較小範圍內已經搜索過的餐廳
+        let inRingArea = true;
+        if (attempt > 0 && userLocation && restaurant.lat && restaurant.lng) {
+          // 計算餐廳到用戶的距離
+          const restaurantDistance = calculateDistance(
+            userLocation.lat, userLocation.lng, 
+            restaurant.lat, restaurant.lng
+          ) * 1000; // 轉換為公尺
+          
+          // 前一次搜索的最大半徑
+          const previousSearchRadius = baseRadius + (baseUnit * (attempt - 1));
+          
+          // 如果餐廳在前一次搜索半徑內，則排除（避免重複）
+          if (restaurantDistance <= previousSearchRadius) {
+            inRingArea = false;
+            // RR_SEARCH_RING: 環形搜索過濾
+            window.RRLog?.debug('RR_SEARCH_FILTER', '環形搜索過濾', {
+              restaurant: restaurant.name,
+              distance: `${(restaurantDistance/1000).toFixed(2)}km`,
+              previousRadius: `${(previousSearchRadius/1000).toFixed(2)}km`,
+              currentRadius: `${(searchRadius/1000).toFixed(2)}km`,
+              filtered: '已在較小範圍搜索過'
+            });
+          }
+        }
+
         // 移除餐廳篩除日誌，減少LOG量
 
-        return isOpen && notShown;
+        return isOpen && notShown && inRingArea;
       });
 
       // RR_SEARCH_042: 搜索結果統計
@@ -1536,8 +1561,8 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
           );
         }
 
-        // 更新歷史記錄
-        const expandedRadius = attempt > 4 ? (attempt - 4) : 0;
+        // 更新歷史記錄 - 🎯 修改：現在每次都有擴展半徑記錄
+        const expandedRadius = attempt; // 擴展嘗試次數，0表示基本範圍
         updateRestaurantHistory(selectedRestaurant.id, expandedRadius);
 
         // 恢復原始搜索半徑
