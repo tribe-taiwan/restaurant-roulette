@@ -728,23 +728,55 @@ window.searchNearbyRestaurants = async function searchNearbyRestaurants(userLoca
       const typeSearchResults = await Promise.allSettled(typeSearchPromises);
       
       // 處理搜索結果
+      let areaNewCount = 0;
+      let areaDetailStats = [];
+      
       typeSearchResults.forEach(result => {
         if (result.status === 'fulfilled' && result.value.results) {
           const { type, results } = result.value;
-          let newCount = 0;
+          let typeNewCount = 0;
           
           results.forEach(restaurant => {
             if (!searchedPlaceIds.has(restaurant.place_id)) {
               searchedPlaceIds.add(restaurant.place_id);
               allRestaurants.push(restaurant);
-              newCount++;
+              typeNewCount++;
+              areaNewCount++;
             }
           });
           
-          // 移除詳細搜索日誌，減少LOG量
+          // 記錄每個餐廳類型的搜索結果
+          areaDetailStats.push({
+            type,
+            原始結果: results.length,
+            新增餐廳: typeNewCount,
+            重複過濾: results.length - typeNewCount
+          });
         }
       });
+
+      // 🎯 調試監控：9方向搜索詳細統計
+      console.log(`📍 9方向搜索統計 - ${area.name}:`, {
+        區域座標: `${area.lat.toFixed(4)}, ${area.lng.toFixed(4)}`,
+        搜索半徑: `${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`,
+        該區域新增: areaNewCount,
+        累計總數: allRestaurants.length,
+        餐廳類型詳情: areaDetailStats,
+        已去重餐廳數: searchedPlaceIds.size
+      });
     }
+
+    // 🎯 調試監控：9方向搜索總結統計
+    console.log('🎯 9方向搜索總結:', {
+      總搜索區域: areasToSearch.length,
+      總搜索呼叫: totalSearchCalls,
+      搜索半徑: `${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`,
+      最終餐廳總數: allRestaurants.length,
+      去重餐廳數: searchedPlaceIds.size,
+      平均每區域: (allRestaurants.length / areasToSearch.length).toFixed(1),
+      搜索完成度: `${areasToSearch.length}/9 區域`,
+      餐廳類型: searchTypes.join(', ')
+    });
     
     if (allRestaurants.length === 0) {
       // 使用實際當前搜索半徑，而不是配置中的固定值
@@ -1548,37 +1580,27 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         const isOpen = isRestaurantOpenInTimeSlot(restaurant, selectedMealTime);
         const notShown = !history.shown_restaurants.includes(restaurant.id);
 
-        // 🎯 改進的環形搜索邏輯：只有在餐廳密集區域才啟用環形過濾
+        // 🎯 環形搜索邏輯：暫時註解掉，避免過度過濾餐廳
         let inRingArea = true;
-        // 不要從 attempt > 0 改為 attempt > 2（讓前3次搜尋都不會被環形過濾影響）
+        
+        // 註解掉環形搜索邏輯，保持簡單的搜索策略
+        // 原因：可能導致搜索到的餐廳被過度過濾，影響可用餐廳數量
+        /*
         if (attempt > 0 && userLocation && restaurant.lat && restaurant.lng) {
-          // 計算餐廳到用戶的距離
           const restaurantDistance = calculateDistance(
             userLocation.lat, userLocation.lng, 
             restaurant.lat, restaurant.lng
-          ) * 1000; // 轉換為公尺
+          ) * 1000;
           
-          // 前一次搜索的最大半徑
           const previousSearchRadius = baseRadius + (baseUnit * (attempt - 1));
-          
-          // 檢查是否在餐廳密集區域：如果快取中已有足夠餐廳（>15家），才啟用環形過濾
           const cachedRestaurants = history.cached_restaurants || [];
           const isDenseArea = cachedRestaurants.length > 15;
           
-          // 只有在餐廳密集區域才過濾較小範圍內的餐廳
           if (isDenseArea && restaurantDistance <= previousSearchRadius) {
             inRingArea = false;
-            // RR_SEARCH_RING: 環形搜索過濾
-            window.RRLog?.debug('RR_SEARCH_FILTER', '環形搜索過濾（密集區域）', {
-              restaurant: restaurant.name,
-              distance: `${(restaurantDistance/1000).toFixed(2)}km`,
-              previousRadius: `${(previousSearchRadius/1000).toFixed(2)}km`,
-              currentRadius: `${(searchRadius/1000).toFixed(2)}km`,
-              cachedCount: cachedRestaurants.length,
-              filtered: '已在較小範圍搜索過（密集區域）'
-            });
           }
         }
+        */
 
         // 移除餐廳篩除日誌，減少LOG量
 

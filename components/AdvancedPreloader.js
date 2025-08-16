@@ -43,6 +43,17 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
       const cachedRestaurants = window.getAvailableRestaurantsFromCache ?
         await window.getAvailableRestaurantsFromCache(selectedMealTime) : [];
 
+      // 🎯 調試監控：快取餐廳統計
+      console.log('📊 AdvancedPreloader 快取餐廳統計:', {
+        快取餐廳總數: cachedRestaurants.length,
+        時段: selectedMealTime,
+        前5家餐廳: cachedRestaurants.slice(0, 5).map(r => ({
+          name: r.name || r.name_zh,
+          id: r.place_id || r.id,
+          有圖片: !!r.image
+        }))
+      });
+
       setPreloadedImages(prevPool => {
         const newPool = new Map();
 
@@ -50,9 +61,21 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
         const allRestaurants = [...restaurantHistory, currentRestaurant].filter(Boolean);
         const currentIndex = allRestaurants.length - 1; // 當前餐廳在歷史的最後
 
-        // 計算總可用餐廳數量
+        // 🎯 調試監控：歷史記錄統計
+        console.log('📈 歷史記錄統計:', {
+          歷史餐廳數: restaurantHistory.length,
+          當前餐廳: currentRestaurant?.name || currentRestaurant?.name_zh,
+          總餐廳數: allRestaurants.length,
+          歷史餐廳ID: allRestaurants.map(r => r.place_id || r.id)
+        });
+
+        // 計算總可用餐廳數量（統一使用 place_id 比對）
         const totalAvailableCount = cachedRestaurants.filter(cached => {
-          return !allRestaurants.some(existing => existing.id === cached.id);
+          const cachedId = cached.place_id || cached.id;
+          return !allRestaurants.some(existing => {
+            const existingId = existing.place_id || existing.id;
+            return existingId === cachedId;
+          });
         }).length;
 
         // 動態計算預載入範圍：智能調整
@@ -74,10 +97,39 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
         const halfRange = Math.floor(maxRange / 2);
 
         // 🎯 關鍵：計算快取中所有可用餐廳數量（不限於預載入範圍）
+        // 統一使用 place_id 比對，確保識別準確性
         const availableCandidates = cachedRestaurants.filter(cached => {
-          return !allRestaurants.some(existing => existing.id === cached.id);
+          const cachedId = cached.place_id || cached.id;
+          return !allRestaurants.some(existing => {
+            const existingId = existing.place_id || existing.id;
+            return existingId === cachedId;
+          });
         });
         let availableFutureRestaurants = availableCandidates.length; // 總可用餐廳數量
+
+        // 🎯 調試監控：可用餐廳過濾統計
+        console.log('🔍 可用餐廳過濾統計:', {
+          快取總數: cachedRestaurants.length,
+          歷史總數: allRestaurants.length,
+          過濾前候選: cachedRestaurants.length,
+          過濾後可用: availableCandidates.length,
+          最終可用數: availableFutureRestaurants,
+          可用餐廳前5家: availableCandidates.slice(0, 5).map(r => ({
+            name: r.name || r.name_zh,
+            id: r.place_id || r.id
+          })),
+          被排除餐廳範例: cachedRestaurants.filter(cached => {
+            const cachedId = cached.place_id || cached.id;
+            return allRestaurants.some(existing => {
+              const existingId = existing.place_id || existing.id;
+              return existingId === cachedId;
+            });
+          }).slice(0, 3).map(r => ({
+            name: r.name || r.name_zh,
+            id: r.place_id || r.id,
+            原因: '已在歷史記錄中'
+          }))
+        });
 
         // 動態預載入範圍：前N家（歷史）+ 當前 + 後N家（候補）
         let skippedNegativeCount = 0;
