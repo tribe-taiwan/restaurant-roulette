@@ -1614,8 +1614,17 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
         const expandedRadius = attempt; // 擴展嘗試次數，0表示基本範圍
         updateRestaurantHistory(selectedRestaurant.id, expandedRadius);
 
-        // 恢復原始搜索半徑
-        GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+        // 🎯 修復：背景補充時保持擴大的半徑，主搜索時才恢復原始半徑
+        if (!backgroundRefill) {
+          GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+        } else {
+          // 背景補充時保持當前擴大的半徑，避免下次重置造成忽大忽小
+          window.RRLog?.debug('RR_SEARCH_BACKGROUND', '背景補充保持擴大半徑', {
+            currentRadius: `${searchRadius/1000}km`,
+            originalRadius: `${originalRadius/1000}km`,
+            note: '避免重置造成忽大忽小'
+          });
+        }
 
         // RR_SEARCH_043: 成功獲取餐廳
         window.RRLog?.info('RR_SEARCH_RESULT', '成功獲取餐廳', {
@@ -1645,8 +1654,15 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     }
   }
 
-  // 恢復原始搜索半徑
-  GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+  // 🎯 修復：背景補充時保持擴大的半徑，主搜索時才恢復原始半徑
+  if (!backgroundRefill) {
+    GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius = originalRadius;
+  } else {
+    window.RRLog?.debug('RR_SEARCH_BACKGROUND', '背景補充結束保持擴大半徑', {
+      finalRadius: `${GOOGLE_PLACES_CONFIG.SEARCH_PARAMS.radius/1000}km`,
+      originalRadius: `${originalRadius/1000}km`
+    });
+  }
 
   throw new Error('使用多種搜索策略後仍未找到合適的餐廳，請稍後再試或清除歷史記錄。');
 };

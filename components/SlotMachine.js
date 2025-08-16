@@ -535,9 +535,19 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
     }, []);
 
-    // 🎯 當用戶設定變更時，重置搜索半徑顯示
+    // 🎯 當用戶設定變更時，只在新值更大時才更新搜索半徑顯示（避免覆蓋已擴大的範圍）
     React.useEffect(() => {
-      setCurrentSearchRadius(baseUnit * unitMultiplier);
+      const newRadius = baseUnit * unitMultiplier;
+      setCurrentSearchRadius(prev => {
+        // 只在新設定的半徑更大時才更新，避免重置已擴大的搜索範圍
+        if (newRadius > prev) {
+          console.log(`📏 用戶設定更新: ${(prev/1000).toFixed(1)}km → ${(newRadius/1000).toFixed(1)}km`);
+          return newRadius;
+        } else {
+          console.log(`📏 用戶設定: ${(newRadius/1000).toFixed(1)}km (保持當前擴大範圍: ${(prev/1000).toFixed(1)}km)`);
+          return prev;
+        }
+      });
     }, [baseUnit, unitMultiplier]);
 
     // Trigger preload pool management when restaurant changes (備用)
