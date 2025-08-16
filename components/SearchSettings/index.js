@@ -87,12 +87,17 @@ function loadSearchSettingsComponents() {
       return components;
     }
 
-    // Node.js 環境
-    return {
-      DistanceControl: require('./DistanceControl'),
-      MealTimeSelector: require('./MealTimeSelector'),
-      SettingsDisplay: require('./SettingsDisplay')
-    };
+    // Node.js 環境 - 只在真正的 Node.js 環境中執行
+    if (typeof module !== 'undefined' && module.exports) {
+      return {
+        DistanceControl: require('./DistanceControl'),
+        MealTimeSelector: require('./MealTimeSelector'),
+        SettingsDisplay: require('./SettingsDisplay')
+      };
+    }
+
+    // 其他環境返回空對象
+    return {};
   } catch (error) {
     console.error('Error loading SearchSettings components:', error);
     return {};
