@@ -73,8 +73,11 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
         }
         const halfRange = Math.floor(maxRange / 2);
 
-        // 🎯 關鍵：計算預載入池中實際可用的未來餐廳數量
-        let availableFutureRestaurants = 0;
+        // 🎯 關鍵：計算快取中所有可用餐廳數量（不限於預載入範圍）
+        const availableCandidates = cachedRestaurants.filter(cached => {
+          return !allRestaurants.some(existing => existing.id === cached.id);
+        });
+        let availableFutureRestaurants = availableCandidates.length; // 總可用餐廳數量
 
         // 動態預載入範圍：前N家（歷史）+ 當前 + 後N家（候補）
         let skippedNegativeCount = 0;
@@ -98,15 +101,10 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
             // 從快取中獲取候補餐廳
             const futureIndex = index - allRestaurants.length;
 
-            // 過濾掉已顯示過的餐廳
-            const availableCandidates = cachedRestaurants.filter(cached => {
-              return !allRestaurants.some(existing => existing.id === cached.id);
-            });
-
+            // 使用已計算的可用候選餐廳
             if (futureIndex < availableCandidates.length) {
               restaurant = availableCandidates[futureIndex];
               isAvailable = true; // 未來餐廳算可用
-              availableFutureRestaurants++;
             }
           }
 
