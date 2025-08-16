@@ -1686,6 +1686,7 @@ window.calculateDistance = calculateDistance;
 window.getBusinessStatus = getBusinessStatus;
 window.getAvailableRestaurantsFromCache = getAvailableRestaurantsFromCache;
 window.isRestaurantOpenInTimeSlot = isRestaurantOpenInTimeSlot; // 用於測試
+window.initializeGoogleMaps = initializeGoogleMaps; // 允許其他模組初始化 Google Maps API
 window.clearRestaurantHistory = function() {
   try {
     localStorage.removeItem('restaurant_history');

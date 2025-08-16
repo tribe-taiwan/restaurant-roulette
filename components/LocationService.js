@@ -14,6 +14,11 @@ function createLocationService() {
    */
   const geocodeAddress = async (address) => {
     try {
+      // 確保 Google Maps API 已載入
+      if (!window.google || !window.google.maps) {
+        await window.initializeGoogleMaps();
+      }
+      
       const geocoder = new google.maps.Geocoder();
       
       return new Promise((resolve, reject) => {
