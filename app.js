@@ -164,13 +164,21 @@ function App() {
           console.log('⏹️ 正在轉動中，先停止搜尋');
           if (searchAbortController) {
             searchAbortController.abort();
+            setSearchAbortController(null); // 立即清除控制器
           }
           setIsSpinning(false);
-          
-          // 短暫延遲後重新搜尋
+
+          // 延遲 250ms 後重新搜尋，確保超過防抖機制的 200ms 間隔
           setTimeout(() => {
-            handleSpin(true);
-          }, 100);
+            // 再次檢查防抖條件，確保不會過於頻繁
+            const newCurrentTime = Date.now();
+            if (newCurrentTime - lastSearchTime >= 200) {
+              setLastSearchTime(newCurrentTime);
+              handleSpin(true);
+            } else {
+              console.log('🚫 重新搜尋被防抖機制阻止');
+            }
+          }, 250);
         } else {
           // 直接搜尋新位置的資料
           handleSpin(true);
@@ -299,7 +307,11 @@ function App() {
       if (searchAbortController) {
         // RR_UI_049: 中止控制器存在
         window.RRLog?.debug('RR_UI_UPDATE', '中止控制器存在，正在中止');
-        searchAbortController.abort();
+        try {
+          searchAbortController.abort();
+        } catch (error) {
+          console.warn('中止控制器時發生錯誤:', error);
+        }
         setSearchAbortController(null);
       } else {
         // RR_UI_050: 沒有中止控制器
