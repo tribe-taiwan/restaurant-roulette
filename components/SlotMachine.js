@@ -1,8 +1,8 @@
-function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onRemoveCandidate, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime }) {
+function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRestaurant, candidateList = [], language, onClearList, onRemoveCandidate, onImageClick, userLocation, userAddress, onPreviousRestaurant, onTriggerSlideTransition, restaurantHistory = [], selectedMealTime, baseUnit, unitMultiplier }) {
   try {
     // 🎯 整合智能預載入模組 - 恢復舊版本的9個方向預載入功能
     const [preloadedImages, setPreloadedImages] = React.useState(new Map());
-    const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState(0);
+    const [availableRestaurantsCount, setAvailableRestaurantsCount] = React.useState({ available: 0, total: 0 });
 
     // 🎯 使用keen-slider處理所有滑動邏輯 - 避免圖片閃爍問題
 
@@ -435,15 +435,15 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
         setBackgroundRestaurants(availableRestaurants.slice(0, 10));
 
         // Background refill trigger - simplified logic
-        const BACKGROUND_REFILL_THRESHOLD = 5;
-        if (availableRestaurants.length <= BACKGROUND_REFILL_THRESHOLD && availableRestaurants.length > 0 && userLocation) {
-          console.log('🔄 觸發幕後補充餐廳，剩餘:', availableRestaurants.length);
+        const BACKGROUND_REFILL_THRESHOLD = 9;
+        if (availableRestaurants.length <= BACKGROUND_REFILL_THRESHOLD && userLocation) {
+          console.log('🔄 觸發幕後補充餐廳，剩餘:', availableRestaurants.length, '閾值:', BACKGROUND_REFILL_THRESHOLD);
           
           // Background restaurant refill (preserve existing functionality)
           setTimeout(async () => {
             try {
               if (window.getRandomRestaurant) {
-                console.log('🔍 開始幕後補充餐廳');
+                console.log('🔍 開始幕後補充餐廳，擴大範圍至2km');
                 await window.getRandomRestaurant(userLocation, selectedMealTime, {
                   baseUnit: 1000,
                   unitMultiplier: 2,
@@ -454,7 +454,14 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             } catch (error) {
               console.warn('⚠️ 幕後補充失敗:', error);
             }
-          }, 1000);
+          }, 100);
+        } else if (availableRestaurants.length <= BACKGROUND_REFILL_THRESHOLD) {
+          console.log('🚫 幕後補充條件檢查失敗:', {
+            available: availableRestaurants.length,
+            threshold: BACKGROUND_REFILL_THRESHOLD,
+            hasUserLocation: !!userLocation,
+            reason: !userLocation ? '缺少用戶位置' : '未知原因'
+          });
         }
 
       } catch (error) {
@@ -707,10 +714,10 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
             <h2 className="text-2xl font-bold text-white drop-shadow-lg text-center">
               {translations.slotMachineTitle}
             </h2>
-            {/* 🎯 使用現有的 availableRestaurantsCount 顯示快取數量 */}
+            {/* 顯示快取數量和搜尋範圍 */}
             <div className="absolute top-2 right-0 pointer-events-none">
-              <div className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium">
-                📦 {availableRestaurantsCount} 家快取
+              <div className="text-black text-xs font-medium px-1">
+                {availableRestaurantsCount.available}／{availableRestaurantsCount.total}（{(baseUnit * unitMultiplier) / 1000}km）
               </div>
             </div>
           </div>

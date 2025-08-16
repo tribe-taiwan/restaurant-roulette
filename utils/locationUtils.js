@@ -1393,8 +1393,8 @@ function isRestaurantOpenInTimeSlot(restaurant, timeSlot, suppressLog = false) {
  * @returns {Promise<Object>} 隨機餐廳
  */
 window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'all', distanceConfig = {}) {
-  // 解構 abortSignal 參數
-  const { abortSignal, ...otherConfig } = distanceConfig;
+  // 解構參數
+  const { abortSignal, backgroundRefill = false, ...otherConfig } = distanceConfig;
   
   // 清除重複日誌記憶，開始新的搜索週期
   loggedRestaurants.clear();
@@ -1408,7 +1408,7 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
   // 第一步：檢查快取中是否有可用餐廳
   // ========================================
   const cachedRestaurants = getAvailableRestaurantsFromCache(selectedMealTime);
-  if (cachedRestaurants.length > 0) {
+  if (cachedRestaurants.length > 0 && !backgroundRefill) {
     // 移除快取選擇日誌
     
     // 隨機選擇一家餐廳
@@ -1427,6 +1427,11 @@ window.getRandomRestaurant = async function(userLocation, selectedMealTime = 'al
     
     // 移除快取獲取成功日誌
     return selectedRestaurant;
+  }
+
+  // 幕後補充模式：即使有快取也繼續搜索以補充餐廳池
+  if (backgroundRefill) {
+    console.log(`🔄 幕後補充模式: 當前${cachedRestaurants.length}家，繼續搜索補充`);
   }
 
   // ========================================

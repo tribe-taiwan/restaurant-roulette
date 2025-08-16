@@ -682,6 +682,8 @@ function App() {
                 onTriggerSlideTransition={handleTriggerSlideTransition}
                 restaurantHistory={restaurantHistory}
                 selectedMealTime={selectedMealTime}
+                baseUnit={baseUnit}
+                unitMultiplier={unitMultiplier}
               />
             </div>
 
