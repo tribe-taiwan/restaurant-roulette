@@ -512,11 +512,27 @@ function SlotMachine({ isSpinning, onSpin, onAddCandidate, translations, finalRe
       };
 
       window.addEventListener('restaurantChanged', handleRestaurantChanged);
+      
+      // 🎯 監聽餐廳池刷新事件，立即更新計數
+      const handleRestaurantPoolRefreshed = async () => {
+        console.log('🔄 接收到餐廳池刷新事件，立即更新計數');
+        if (finalRestaurant) {
+          await advancedPreloader.managePreloadPool(
+            finalRestaurant,
+            restaurantHistory,
+            setPreloadedImages,
+            setAvailableRestaurantsCount
+          );
+        }
+      };
+      
+      window.addEventListener('restaurantPoolRefreshed', handleRestaurantPoolRefreshed);
 
       return () => {
         window.removeEventListener('restaurantChanged', handleRestaurantChanged);
+        window.removeEventListener('restaurantPoolRefreshed', handleRestaurantPoolRefreshed);
       };
-    }, [advancedPreloader, restaurantHistory]);
+    }, [advancedPreloader, restaurantHistory, finalRestaurant]);
 
     // 🎯 監聽搜索半徑變化事件 - 顯示實際搜索範圍（只處理主搜索）
     React.useEffect(() => {

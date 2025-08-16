@@ -215,6 +215,14 @@ function createAdvancedPreloader({ selectedMealTime, userLocation, baseUnit, uni
                 });
                 // RR_UI_085: 幕後餐廳補充完成
                 window.RRLog?.debug('RR_UI_UPDATE', '幕後餐廳補充完成');
+                
+                // 🎯 立即觸發 availableRestaurantsCount 更新
+                if (window.dispatchEvent) {
+                  const refreshEvent = new CustomEvent('restaurantPoolRefreshed', {
+                    detail: { timestamp: Date.now(), source: 'backgroundRefill' }
+                  });
+                  window.dispatchEvent(refreshEvent);
+                }
               }
             } catch (error) {
               // RR_UI_086: 幕後餐廳補充失敗
